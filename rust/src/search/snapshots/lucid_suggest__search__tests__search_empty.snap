@@ -1,0 +1,39 @@
+---
+source: src/search/mod.rs
+expression: hits
+---
+[
+    Hit {
+        id: 10,
+        text: Text { "brown" "plush" "bear" },
+        scores: Scores {
+            matches: [],
+            typos: 0,
+            offset: 0,
+            trans: 0,
+            fin: true,
+        },
+    },
+    Hit {
+        id: 20,
+        text: Text { "metal" "detector" },
+        scores: Scores {
+            matches: [],
+            typos: 0,
+            offset: 0,
+            trans: 0,
+            fin: true,
+        },
+    },
+    Hit {
+        id: 30,
+        text: Text { "yellow" "metal" "mailbox" },
+        scores: Scores {
+            matches: [],
+            typos: 0,
+            offset: 0,
+            trans: 0,
+            fin: true,
+        },
+    },
+]

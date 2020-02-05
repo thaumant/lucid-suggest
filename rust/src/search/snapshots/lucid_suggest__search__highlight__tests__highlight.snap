@@ -1,0 +1,8 @@
+---
+source: src/search/highlight.rs
+expression: highlighted
+---
+[
+    "yellow [Metal] [Mail]box",
+    "[Metal] detector",
+]

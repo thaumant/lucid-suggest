@@ -1,0 +1,46 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Suggest Empty input 1`] = `
+Array [
+  Object {
+    "highlighted": "Hello world!",
+    "id": 10,
+    "text": "Hello world!",
+  },
+  Object {
+    "highlighted": "Foo bar",
+    "id": 20,
+    "text": "Foo bar",
+  },
+  Object {
+    "highlighted": "-BAZZZ-",
+    "id": 30,
+    "text": "-BAZZZ-",
+  },
+]
+`;
+
+exports[`Suggest Equality 1`] = `
+Array [
+  Object {
+    "highlighted": "[Foo] [bar]",
+    "id": 20,
+    "text": "Foo bar",
+  },
+]
+`;
+
+exports[`Suggest Prefix 1`] = `
+Array [
+  Object {
+    "highlighted": "Foo [ba]r",
+    "id": 20,
+    "text": "Foo bar",
+  },
+  Object {
+    "highlighted": "-[BA]ZZZ-",
+    "id": 30,
+    "text": "-BAZZZ-",
+  },
+]
+`;

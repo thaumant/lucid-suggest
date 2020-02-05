@@ -1,0 +1,30 @@
+{
+  "name": "lucid-suggest",
+  "version": "0.1.0",
+  "description": "",
+  "main": "build/index.js",
+  "scripts": {
+    "compile": "cd ../rust && wasm-pack build --target bundler --out-dir ../javascript/pkg",
+    "roll-mod": "rollup -c rollup/config-cjs.js",
+    "roll-web": "rollup -c rollup/config-iife.js",
+    "build": "npm run compile && npm run roll-mod && npm run roll-web",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thaumant/lucid-suggest.git"
+  },
+  "author": "Ilia Schelokov <thaumant@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/thaumant/lucid-suggest/issues"
+  },
+  "homepage": "https://github.com/thaumant/lucid-suggest#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "@rollup/plugin-wasm": "^3.0.0",
+    "benchmark": "^2.1.4",
+    "jest": "^25.1.0",
+    "rollup": "^1.31.1"
+  }
+}

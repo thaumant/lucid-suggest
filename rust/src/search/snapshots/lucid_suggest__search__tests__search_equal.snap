@@ -1,0 +1,34 @@
+---
+source: src/search/mod.rs
+expression: hits
+---
+[
+    Hit {
+        id: 30,
+        text: Text { "yellow" "metal" "mailbox" },
+        scores: Scores {
+            matches: [
+                WordMatch { [rrrrrr] /1/ [qqqqq] },
+                WordMatch { [rrrrr] /1/ [qqqqqq] },
+                WordMatch { [rrrrrrr] /1/ [qqqqqqq] },
+            ],
+            typos: 3,
+            offset: 0,
+            trans: 0,
+            fin: true,
+        },
+    },
+    Hit {
+        id: 20,
+        text: Text { "metal" "detector" },
+        scores: Scores {
+            matches: [
+                WordMatch { [rrrrr] /1/ [qqqqqq] },
+            ],
+            typos: 1,
+            offset: 0,
+            trans: 0,
+            fin: true,
+        },
+    },
+]
