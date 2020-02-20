@@ -3,14 +3,7 @@ use std::iter::empty;
 use super::{Word, Text, CharPattern};
 
 
-impl<'a> Text<'a> {
-    pub fn fin(mut self, fin: bool) -> Self {
-        if let Some(word) = self.words.last_mut() {
-            word.fin = fin;
-        }
-        self
-    }
-
+impl<'a> Text<Cow<'a, [char]>> {
     pub fn split<P: CharPattern>(mut self, pattern: &P) -> Self {
         let mut words = Vec::with_capacity(self.words.len());
         for word in &self.words {
@@ -39,7 +32,7 @@ impl<'a> Text<'a> {
 }
 
 
-impl<'a> Word<'a> {
+impl<'a> Word<Cow<'a, [char]>> {
     pub fn split<'b, 'c, P: CharPattern>(&'b self, pattern: &'c P) -> WordSplit<'a, 'b, 'c, P> {
         WordSplit { word: self, offset: 0, pattern }
     }
@@ -80,14 +73,14 @@ impl<'a> Word<'a> {
 
 #[derive(Debug)]
 pub struct WordSplit<'a, 'b, 'c, P: CharPattern> {
-    word: &'b Word<'a>,
+    word: &'b Word<Cow<'a, [char]>>,
     offset: usize,
     pattern: &'c P,
 }
 
 
 impl<'a, 'b, 'c, P: CharPattern> Iterator for WordSplit<'a, 'b, 'c, P> {
-    type Item = Word<'a>;
+    type Item = Word<Cow<'a, [char]>>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.offset >= self.word.len() {
@@ -113,9 +106,14 @@ impl<'a, 'b, 'c, P: CharPattern> Iterator for WordSplit<'a, 'b, 'c, P> {
             Cow::Owned(c) => Cow::Owned(c[self.offset .. self.offset + len].to_vec()),
         };
 
+        let source = match &self.word.source {
+            Cow::Borrowed(s) => Cow::Borrowed(&s[self.offset .. self.offset + len]),
+            Cow::Owned(s) => Cow::Owned(s[self.offset .. self.offset + len].to_vec()),
+        };
+
         let word = Word {
             fin:    self.word.fin || self.offset + len < self.word.len(),
-            source: &self.word.source[self.offset .. self.offset + len],
+            source,
             slice:  (0, len),
             chars,
         };
@@ -132,6 +130,7 @@ mod tests {
     use insta::assert_debug_snapshot;
     use super::{Word, Text};
     use super::super::Chars;
+    use std::borrow::Cow;
 
     use Chars::{
         Whitespaces,
@@ -147,8 +146,8 @@ mod tests {
     fn word_split() {
         let p = &[Whitespaces, Punctuation];
         let c = chars(" Foo Bar, Baz; ");
-        let w = Word::new(&c);
-        let s: Vec<Word> = w.split(p).collect();
+        let w = Word::new_cow(Cow::Borrowed(&c[..]));
+        let s: Vec<_> = w.split(p).collect();
         assert_debug_snapshot!(s);
     }
 
@@ -156,8 +155,8 @@ mod tests {
     fn word_split_empty() {
         let p = &[Whitespaces, Punctuation];
         let c = chars(" ,;");
-        let w = Word::new(&c);
-        let s: Vec<Word> = w.split(p).collect();
+        let w = Word::new_cow(Cow::Borrowed(&c[..]));
+        let s: Vec<_> = w.split(p).collect();
         assert_debug_snapshot!(s);
     }
 
@@ -166,12 +165,12 @@ mod tests {
         let p = &[Whitespaces, Punctuation];
         let c1 = chars(" Foo Bar, Baz");
         let c2 = chars(" Foo Bar, Baz; ");
-        let mut w1 = Word::new(&c1);
-        let mut w2 = Word::new(&c2);
+        let mut w1 = Word::new_cow(Cow::Borrowed(&c1[..]));
+        let mut w2 = Word::new_cow(Cow::Borrowed(&c2[..]));
         w1.fin = false;
         w2.fin = false;
-        let s1: Vec<Word> = w1.split(p).collect();
-        let s2: Vec<Word> = w2.split(p).collect();
+        let s1: Vec<_> = w1.split(p).collect();
+        let s2: Vec<_> = w2.split(p).collect();
         assert_eq!(s1.last().unwrap().fin, false);
         assert_eq!(s2.last().unwrap().fin, true);
     }
@@ -180,7 +179,7 @@ mod tests {
     fn word_strip() {
         let p = &[Whitespaces, Punctuation];
         let c = chars(" Foo Bar, Baz; ");
-        let mut w = Word::new(&c);
+        let mut w = Word::new_cow(Cow::Borrowed(&c[..]));
         w.strip(p);
         assert_debug_snapshot!(w);
     }
@@ -189,7 +188,7 @@ mod tests {
     fn word_strip_empty() {
         let p = &[Whitespaces, Punctuation];
         let c = chars(" ,;");
-        let mut w = Word::new(&c);
+        let mut w = Word::new_cow(Cow::Borrowed(&c[..]));
         w.strip(p);
         assert_debug_snapshot!(w);
     }
@@ -199,8 +198,8 @@ mod tests {
         let p = &[Whitespaces, Punctuation];
         let c1 = chars(" Foo Bar, Baz");
         let c2 = chars(" Foo Bar, Baz; ");
-        let mut w1 = Word::new(&c1);
-        let mut w2 = Word::new(&c2);
+        let mut w1 = Word::new_cow(Cow::Borrowed(&c1[..]));
+        let mut w2 = Word::new_cow(Cow::Borrowed(&c2[..]));
         w1.fin = false;
         w2.fin = false;
         w1.strip(p);
@@ -212,7 +211,7 @@ mod tests {
     #[test]
     fn word_lower() {
         let c = chars(" Foo Bar, Baz; ");
-        let mut w = Word::new(&c);
+        let mut w = Word::new_cow(Cow::Borrowed(&c[..]));
         w.lower();
         assert_debug_snapshot!(w);
     }
@@ -221,7 +220,7 @@ mod tests {
     fn text_split() {
         let p = &[Whitespaces, Punctuation];
         let c = chars(" Foo Bar, Baz; ");
-        let t = Text::new(&c).split(p);
+        let t = Text::new_cow(Cow::Borrowed(&c[..])).split(p);
         assert_debug_snapshot!(t);
     }
 
@@ -229,7 +228,7 @@ mod tests {
     fn text_split_empty() {
         let p = &[Whitespaces, Punctuation];
         let c = chars(", ");
-        let t = Text::new(&c).split(p);
+        let t = Text::new_cow(Cow::Borrowed(&c[..])).split(p);
         assert_debug_snapshot!(t);
     }
 
@@ -238,8 +237,8 @@ mod tests {
         let p = &[Whitespaces, Punctuation];
         let c1 = chars(" Foo Bar, Baz");
         let c2 = chars(" Foo Bar, Baz; ");
-        let t1 = Text::new(&c1).fin(false).split(p);
-        let t2 = Text::new(&c2).fin(false).split(p);
+        let t1 = Text::new_cow(Cow::Borrowed(&c1[..])).fin(false).split(p);
+        let t2 = Text::new_cow(Cow::Borrowed(&c2[..])).fin(false).split(p);
         assert_eq!(t1.words.last().unwrap().fin, false);
         assert_eq!(t2.words.last().unwrap().fin, true);
     }
@@ -251,11 +250,11 @@ mod tests {
         let c2 = chars(",");
         let c3 = chars("Baz; ");
         let t = Text { 
-                source: &[],
+                source: Cow::Owned(vec![]),
                 words: vec![
-                    Word::new(&c1),
-                    Word::new(&c2),
-                    Word::new(&c3),
+                    Word::new_cow(Cow::Borrowed(&c1[..])),
+                    Word::new_cow(Cow::Borrowed(&c2[..])),
+                    Word::new_cow(Cow::Borrowed(&c3[..])),
                 ],
             }.strip(p);
         assert_debug_snapshot!(t);
@@ -267,8 +266,24 @@ mod tests {
         let c1 = chars("-Foo-");
         let c2 = chars("Baz");
         let c3 = chars("Baz; ");
-        let t1 = Text { source: &[], words: vec![Word::new(&c1), Word::new(&c2)] }.fin(false).strip(p);
-        let t2 = Text { source: &[], words: vec![Word::new(&c1), Word::new(&c3)] }.fin(false).strip(p);
+        let t1 = Text {
+                source: Cow::Owned(vec![]),
+                words: vec![
+                    Word::new_cow(Cow::Borrowed(&c1[..])), 
+                    Word::new_cow(Cow::Borrowed(&c2[..])),
+                ],
+            }
+            .fin(false)
+            .strip(p);
+        let t2 = Text {
+                source: Cow::Owned(vec![]),
+                words: vec![
+                    Word::new_cow(Cow::Borrowed(&c1[..])), 
+                    Word::new_cow(Cow::Borrowed(&c3[..])),
+                ],
+            }
+            .fin(false)
+            .strip(p);
         assert_eq!(t1.words.last().unwrap().fin, false);
         assert_eq!(t2.words.last().unwrap().fin, true);
     }
@@ -279,11 +294,11 @@ mod tests {
         let c2 = chars("Bar");
         let c3 = chars("Baz");
         let t  = Text {
-                source: &[],
+                source: Cow::Owned(vec![]),
                 words: vec![
-                    Word::new(&c1),
-                    Word::new(&c2),
-                    Word::new(&c3),
+                    Word::new_cow(Cow::Borrowed(&c1[..])), 
+                    Word::new_cow(Cow::Borrowed(&c2[..])), 
+                    Word::new_cow(Cow::Borrowed(&c3[..])),
                 ],
             }.lower();
         assert_debug_snapshot!(t);

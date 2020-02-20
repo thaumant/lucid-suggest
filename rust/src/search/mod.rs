@@ -9,28 +9,28 @@ pub use highlight::highlight;
 
 
 #[derive(Debug, Clone)]
-pub struct Hit<'a> {
+pub struct Hit<T: AsRef<[char]>> {
     pub id:      usize,
-    pub text:    Text<'a>,
+    pub text:    Text<T>,
     pub scores:  Scores,
 }
 
 
-impl<'a> Hit<'a> {
-    pub fn new(id: usize, text: Text) -> Hit {
+impl<T: AsRef<[char]>> Hit<T> {
+    pub fn new(id: usize, text: Text<T>) -> Hit<T> {
         Hit { id, text, scores: Default::default() }
     }
 }
 
 
-pub fn search<'b>(query: &'b Text, hits: &mut Vec<Hit>) {
+pub fn search<T: AsRef<[char]>, U: AsRef<[char]>>(query: &Text<T>, hits: &mut Vec<Hit<U>>) {
     score(query, hits);
     filter(query, hits);
     sort(hits);
 }
 
 
-pub fn filter(query: &Text, hits: &mut Vec<Hit>) {
+pub fn filter<T: AsRef<[char]>, U: AsRef<[char]>>(query: &Text<T>, hits: &mut Vec<Hit<U>>) {
     if query.is_empty() {
         return;
     }
@@ -48,7 +48,7 @@ pub fn filter(query: &Text, hits: &mut Vec<Hit>) {
 }
 
 
-pub fn sort(hits: &mut Vec<Hit>) {
+pub fn sort<T: AsRef<[char]>>(hits: &mut Vec<Hit<T>>) {
     hits.sort_by(|hit1, hit2| {
         let s1 = &hit1.scores;
         let s2 = &hit2.scores;
@@ -67,16 +67,18 @@ mod tests {
     use insta::assert_debug_snapshot;
     use crate::lexis::{Text, Chars};
     use super::{Hit, search};
+    use std::borrow::Cow;
 
     fn chars(s: &str) -> Vec<char> {
         s.chars().collect()
     }
 
-    fn record(chars: &[char]) -> Text {
-        Text::new(chars).split(&Chars::Whitespaces)
+    fn record<'a>(chars: &'a [char]) -> Text<Cow<'a, [char]>> {
+        Text::new_cow(Cow::Borrowed(&chars[..]))
+            .split(&Chars::Whitespaces)
     }
 
-    fn query(s: &[char]) -> Text {
+    fn query<'a>(s: &'a [char]) -> Text<Cow<'a, [char]>> {
         record(s).fin(false)
     }
 

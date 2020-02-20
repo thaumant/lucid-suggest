@@ -26,7 +26,7 @@ impl Default for Scores {
 }
 
 
-pub fn score(query: &Text, hits: &mut Vec<Hit>) {
+pub fn score<T: AsRef<[char]>, U: AsRef<[char]>>(query: &Text<T>, hits: &mut Vec<Hit<U>>) {
     for hit in hits.iter_mut() {
         hit.scores.matches = hit.text.matches(&query);
         hit.scores.typos   = score_typos(&hit.scores.matches);
@@ -85,16 +85,18 @@ pub fn score_fin(matches: &[WordMatch]) -> bool {
 mod tests {
     use crate::lexis::{Text, Chars};
     use super::{score_typos, score_offset};
+    use std::borrow::Cow;
 
     fn chars(s: &str) -> Vec<char> {
         s.chars().collect()
     }
 
-    fn record(chars: &[char]) -> Text {
-        Text::new(chars).split(&Chars::Whitespaces)
+    fn record<'a>(chars: &'a [char]) -> Text<Cow<'a, [char]>> {
+        Text::new_cow(Cow::Borrowed(&chars[..]))
+            .split(&Chars::Whitespaces)
     }
 
-    fn query(s: &[char]) -> Text {
+    fn query<'a>(s: &'a [char]) -> Text<Cow<'a, [char]>> {
         record(s).fin(false)
     }
 

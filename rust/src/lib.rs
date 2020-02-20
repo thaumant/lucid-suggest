@@ -8,6 +8,7 @@ use std::cell::RefCell;
 use wasm_bindgen::prelude::*;
 use lexis::{Text, Chars};
 use search::Hit;
+use std::borrow::Cow;
 
 
 // #[wasm_bindgen]
@@ -24,7 +25,25 @@ use search::Hit;
 #[derive(Clone, Debug)]
 pub struct Record {
     id: usize,
-    source: Vec<char>,
+    text: Text<Vec<char>>,
+}
+
+
+impl Record {
+    pub fn new(id: usize, source: &[char]) -> Record {
+        Record {
+            id,
+            text: tokenize_record(source).to_owned(),
+        }
+    }
+
+    pub fn to_hit<'a>(&'a self) -> Hit<Cow<'a, [char]>> {
+        Hit {
+            id: self.id,
+            text: self.text.to_cow(),
+            scores: Default::default(),
+        }
+    }
 }
 
 
@@ -67,10 +86,8 @@ pub fn set_records(ids: &[usize], sources: String) {
         let records = &mut *cell.borrow_mut();
         records.clear();
         for (source, id) in sources.split('\0').zip(ids.iter()) {
-            records.push(Record {
-                id: *id,
-                source: source.chars().collect(),
-            });
+            let source: Vec<char> = source.chars().collect();
+            records.push(Record::new(*id, &source));
         }
         if records.len() != ids.len() {
             panic!("Got less texts than expected");
@@ -83,11 +100,11 @@ pub fn set_records(ids: &[usize], sources: String) {
 pub fn run_search(query: String) -> Vec<usize> {
     RECORDS.with(|cell| {
         let query: Vec<char> = query.chars().collect();
-        let query: Text = tokenize_query(&query);
+        let query = tokenize_query(&query);
 
         let records  = &*cell.borrow();
         let mut hits = records.iter()
-            .map(|r| Hit::new(r.id, tokenize_record(&r.source)))
+            .map(|r| r.to_hit())
             .collect();
 
         search::search(&query, &mut hits);
@@ -100,7 +117,7 @@ pub fn run_search(query: String) -> Vec<usize> {
 }
 
 
-fn save_highlights(hits: &[Hit]) {
+fn save_highlights<T: AsRef<[char]>>(hits: &[Hit<T>]) {
     SEPARATORS.with(|cell_sep| {
     HIGHLIGHTS.with(|cell_hl| {
         let sep = &*cell_sep.borrow_mut();
@@ -110,16 +127,16 @@ fn save_highlights(hits: &[Hit]) {
 }
 
 
-fn tokenize_record<'a>(source: &'a [char]) -> Text<'a> {
-    Text::new(source)
+fn tokenize_record<'a>(source: &'a [char]) -> Text<Cow<'a, [char]>> {
+    Text::new_cow(Cow::Borrowed(source))
         .split(&[Chars::Whitespaces, Chars::Control])
         .strip(&[Chars::NotAlphaNum])
         .lower()
 }
 
 
-fn tokenize_query<'a>(source: &'a [char]) -> Text<'a> {
-    Text::new(source)
+fn tokenize_query<'a>(source: &'a [char]) -> Text<Cow<'a, [char]>> {
+    Text::new_cow(Cow::Borrowed(source))
         .fin(false)
         .split(&[Chars::Whitespaces, Chars::Control, Chars::Punctuation])
         .strip(&[Chars::NotAlphaNum])

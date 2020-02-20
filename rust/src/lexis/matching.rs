@@ -55,8 +55,8 @@ impl fmt::Debug for WordMatch {
 }
 
 
-impl<'a> Text<'a> {
-    pub fn matches(&self, query: &Text) -> Vec<WordMatch> {
+impl<T: AsRef<[char]>> Text<T> {
+    pub fn matches<U: AsRef<[char]>>(&self, query: &Text<U>) -> Vec<WordMatch> {
         let mut matches = Vec::with_capacity(query.words.len());
         let mut taken   = HashSet::with_capacity(query.words.len());
 
@@ -78,8 +78,8 @@ impl<'a> Text<'a> {
 }
 
 
-impl<'a> Word<'a> {
-    pub fn matches(&self, qword: &Word) -> Option<WordMatch> {
+impl<T: AsRef<[char]>> Word<T> {
+    pub fn matches<U: AsRef<[char]>>(&self, qword: &Word<U>) -> Option<WordMatch> {
         if qword.is_empty() { return None; }
         if self.is_empty() { return None; }
     
@@ -89,8 +89,8 @@ impl<'a> Word<'a> {
             if len > self.len() { continue; }
             if len < self.len() && qword.fin { break; }
             if len == 0 { break; }
-            let rslice   = &self.chars[0..len];
-            let dist     = DAMLEV.with(|dl| dl.distance(&qword.chars, &rslice));
+            let rslice   = &self.chars.as_ref()[0..len];
+            let dist     = DAMLEV.with(|dl| dl.distance(qword.chars.as_ref(), &rslice));
             let rel_dist = dist as f64 / max!(qword.len(), len, 1) as f64;
             if rel_dist > DAMLEV_THRESHOLD { continue; }
             match result {
@@ -129,27 +129,18 @@ mod tests {
     use insta::assert_debug_snapshot;
     use crate::lexis::Chars;
     use super::{Word, Text};
+    use std::borrow::Cow;
 
 
     fn chars(s: &str) -> Vec<char> {
         s.chars().collect()
     }
-
-    fn qword(source: &[char]) -> Word {
-        let mut word = Word::new(source);
-        word.fin = false;
-        word
+    
+    fn record(chars: &[char]) -> Text<Cow<[char]>> {
+        Text::new_cow(Cow::Borrowed(chars)).split(&Chars::Whitespaces)
     }
 
-    fn rword(source: &[char]) -> Word {
-        Word::new(source)
-    }
-
-    fn record(chars: &[char]) -> Text {
-        Text::new(chars).split(&Chars::Whitespaces)
-    }
-
-    fn query(s: &[char]) -> Text {
+    fn query(s: &[char]) -> Text<Cow<[char]>> {
         record(s).fin(false)
     }
 
@@ -159,30 +150,24 @@ mod tests {
 
     #[test]
     fn match_word_empty_both() {
-        let c1 = chars("");
-        let c2 = chars("");
-        let q  = qword(&c1);
-        let r  = rword(&c2);
+        let q = Word::new_owned(chars("")).fin(false);
+        let r = Word::new_owned(chars(""));
         assert_eq!(r.matches(&q), None);
     }
 
 
     #[test]
     fn match_word_empty_record() {
-        let c1 = chars("mailbox");
-        let c2 = chars("");
-        let q  = qword(&c1);
-        let r  = rword(&c2);
+        let q  = Word::new_owned(chars("mailbox")).fin(false);
+        let r  = Word::new_owned(chars(""));
         assert_eq!(r.matches(&q), None);
     }
 
 
     #[test]
     fn match_word_empty_query() {
-        let c1 = chars("");
-        let c2 = chars("mailbox");
-        let q  = qword(&c1);
-        let r  = rword(&c2);
+        let q  = Word::new_owned(chars("")).fin(false);
+        let r  = Word::new_owned(chars("mailbox"));
         assert_eq!(r.matches(&q), None);
     }
 
@@ -192,40 +177,32 @@ mod tests {
 
     #[test]
     fn match_word_full_strict() {
-        let c1 = chars("mailbox");
-        let c2 = chars("mailbox");
-        let q  = rword(&c1);
-        let r  = rword(&c2);
+        let q  = Word::new_owned(chars("mailbox")).fin(false);
+        let r  = Word::new_owned(chars("mailbox"));
         assert_debug_snapshot!(r.matches(&q));
     }
 
 
     #[test]
     fn match_word_full_fuzzy_insertion() {
-        let c1 = chars("mailybox");
-        let c2 = chars("mailbox");
-        let q  = rword(&c1);
-        let r  = rword(&c2);
+        let q  = Word::new_owned(chars("mailybox")).fin(false);
+        let r  = Word::new_owned(chars("mailbox"));
         assert_debug_snapshot!(r.matches(&q));
     }
 
 
     #[test]
     fn match_word_full_fuzzy_deletion() {
-        let c1 = chars("mailox");
-        let c2 = chars("mailbox");
-        let q  = rword(&c1);
-        let r  = rword(&c2);
+        let q  = Word::new_owned(chars("mailox")).fin(false);
+        let r  = Word::new_owned(chars("mailbox"));
         assert_debug_snapshot!(r.matches(&q));
     }
 
 
     #[test]
     fn match_word_full_fuzzy_transposition() {
-        let c1 = chars("maiblox");
-        let c2 = chars("mailbox");
-        let q  = rword(&c1);
-        let r  = rword(&c2);
+        let q  = Word::new_owned(chars("maiblox")).fin(false);
+        let r  = Word::new_owned(chars("mailbox"));
         assert_debug_snapshot!(r.matches(&q));
     }
 
@@ -235,40 +212,32 @@ mod tests {
 
     #[test]
     fn match_word_partial_strict() {
-        let c1 = chars("mailb");
-        let c2 = chars("mailbox");
-        let q  = qword(&c1);
-        let r  = rword(&c2);
+        let q  = Word::new_owned(chars("mailb")).fin(false);
+        let r  = Word::new_owned(chars("mailbox"));
         assert_debug_snapshot!(r.matches(&q));
     }
 
 
     #[test]
     fn match_word_partial_fuzzy_insertion() {
-        let c1 = chars("maiylb");
-        let c2 = chars("mailbox");
-        let q  = qword(&c1);
-        let r  = rword(&c2);
+        let q  = Word::new_owned(chars("maiylb")).fin(false);
+        let r  = Word::new_owned(chars("mailbox"));
         assert_debug_snapshot!(r.matches(&q));
     }
 
 
     #[test]
     fn match_word_partial_fuzzy_deletion() {
-        let c1 = chars("maib");
-        let c2 = chars("mailbox");
-        let q  = qword(&c1);
-        let r  = rword(&c2);
+        let q  = Word::new_owned(chars("maib")).fin(false);
+        let r  = Word::new_owned(chars("mailbox"));
         assert_debug_snapshot!(r.matches(&q));
     }
 
 
     #[test]
     fn match_word_partial_fuzzy_transposition() {
-        let c1 = chars("malib");
-        let c2 = chars("mailbox");
-        let q  = qword(&c1);
-        let r  = rword(&c2);
+        let q  = Word::new_owned(chars("malib")).fin(false);
+        let r  = Word::new_owned(chars("mailbox"));
         assert_debug_snapshot!(r.matches(&q));
     }
 

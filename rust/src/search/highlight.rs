@@ -1,20 +1,20 @@
 use crate::lexis::{Text, WordMatch};
 use super::{Hit, Scores};
 
-pub fn highlight(hits: &[Hit], left: &[char], right: &[char]) -> Vec<Vec<char>> {
+pub fn highlight<T: AsRef<[char]>>(hits: &[Hit<T>], left: &[char], right: &[char]) -> Vec<Vec<char>> {
     hits.iter()
         .map(|hit| highlight_one(hit, left, right))
         .collect()
 }
 
-fn highlight_one(hit: &Hit, left: &[char], right: &[char]) -> Vec<char> {
+fn highlight_one<T: AsRef<[char]>>(hit: &Hit<T>, left: &[char], right: &[char]) -> Vec<char> {
     let Hit { 
         scores: Scores { matches, .. }, 
         text: Text { words, source }, 
         ..
     } = hit;
 
-    let capacity   = source.len() + words.len() * (left.len() + right.len() + 1);
+    let capacity   = source.as_ref().len() + words.len() * (left.len() + right.len() + 1);
     let mut result = Vec::with_capacity(capacity);
 
     for (i, w) in words.iter().enumerate() {
@@ -22,14 +22,14 @@ fn highlight_one(hit: &Hit, left: &[char], right: &[char]) -> Vec<char> {
             Some(WordMatch { record: m, .. }) => {
                 let match_start = w.slice.0 + m.slice.0;
                 let match_end   = w.slice.0 + m.slice.1;
-                result.extend(&w.source[.. match_start]);
+                result.extend(&w.source.as_ref()[.. match_start]);
                 result.extend(left);
-                result.extend(&w.source[match_start .. match_end]);
+                result.extend(&w.source.as_ref()[match_start .. match_end]);
                 result.extend(right);
-                result.extend(&w.source[match_end .. ]);
+                result.extend(&w.source.as_ref()[match_end .. ]);
             },
             None => {
-                result.extend(w.source);
+                result.extend(w.source.as_ref());
             },
         }
         result.push(' ');
@@ -45,19 +45,20 @@ mod tests {
     use crate::lexis::{Text, Chars};
     use super::super::{Hit, search};
     use super::highlight;
+    use std::borrow::Cow;
 
     fn chars(s: &str) -> Vec<char> {
         s.chars().collect()
     }
 
-    fn record(chars: &[char]) -> Text {
-        Text::new(chars)
+    fn record<'a>(chars: &'a [char]) -> Text<Cow<'a, [char]>> {
+        Text::new_cow(Cow::Borrowed(&chars[..]))
             .split(&Chars::Whitespaces)
             .strip(&Chars::NotAlphaNum)
             .lower()
     }
 
-    fn query(s: &[char]) -> Text {
+    fn query<'a>(s: &'a [char]) -> Text<Cow<'a, [char]>> {
         record(s).fin(false)
     }
 
