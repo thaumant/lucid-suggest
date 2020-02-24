@@ -5,46 +5,7 @@ mod lexis;
 mod search;
 
 use std::cell::RefCell;
-use wasm_bindgen::prelude::*;
-use lexis::{Text, Chars};
-use search::Hit;
-use std::borrow::Cow;
-
-
-// #[wasm_bindgen]
-// extern "C" {
-//     #[wasm_bindgen(js_namespace = console)]
-//     fn log(s: &str);
-// }
-
-// macro_rules! console_log {
-//     ($($t:tt)*) => (log(&format_args!($($t)*).to_string()))
-// }
-
-
-#[derive(Clone, Debug)]
-pub struct Record {
-    id: usize,
-    text: Text<Vec<char>>,
-}
-
-
-impl Record {
-    pub fn new(id: usize, source: &[char]) -> Record {
-        Record {
-            id,
-            text: tokenize_record(source).to_owned(),
-        }
-    }
-
-    pub fn to_hit<'a>(&'a self) -> Hit<Cow<'a, [char]>> {
-        Hit {
-            id: self.id,
-            text: self.text.to_cow(),
-            scores: Default::default(),
-        }
-    }
-}
+use search::{Record, Hit, tokenize_query};
 
 
 thread_local! {
@@ -54,7 +15,6 @@ thread_local! {
 }
 
 
-#[wasm_bindgen]
 pub fn get_highlights() -> String {
     HIGHLIGHTS.with(|cell| {
         let buffer = &*cell.borrow();
@@ -70,7 +30,6 @@ pub fn get_highlights() -> String {
 }
 
 
-#[wasm_bindgen]
 pub fn highlight_using(l: &str, r: &str) {
     SEPARATORS.with(|cell| {
         let buffer = &mut *cell.borrow_mut();
@@ -80,7 +39,6 @@ pub fn highlight_using(l: &str, r: &str) {
 }
 
 
-#[wasm_bindgen]
 pub fn set_records(ids: &[usize], sources: String) {
     RECORDS.with(|cell| {
         let records = &mut *cell.borrow_mut();
@@ -96,7 +54,6 @@ pub fn set_records(ids: &[usize], sources: String) {
 }
 
 
-#[wasm_bindgen]
 pub fn run_search(query: String) -> Vec<usize> {
     RECORDS.with(|cell| {
         let query: Vec<char> = query.chars().collect();
@@ -124,21 +81,4 @@ fn save_highlights<T: AsRef<[char]>>(hits: &[Hit<T>]) {
         let hl  = &mut *cell_hl.borrow_mut();
         *hl = search::highlight(&hits, &sep.0, &sep.1);
     }); });
-}
-
-
-fn tokenize_record<'a>(source: &'a [char]) -> Text<Cow<'a, [char]>> {
-    Text::new_cow(Cow::Borrowed(source))
-        .split(&[Chars::Whitespaces, Chars::Control])
-        .strip(&[Chars::NotAlphaNum])
-        .lower()
-}
-
-
-fn tokenize_query<'a>(source: &'a [char]) -> Text<Cow<'a, [char]>> {
-    Text::new_cow(Cow::Borrowed(source))
-        .fin(false)
-        .split(&[Chars::Whitespaces, Chars::Control, Chars::Punctuation])
-        .strip(&[Chars::NotAlphaNum])
-        .lower()
 }

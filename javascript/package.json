@@ -4,8 +4,8 @@
   "description": "",
   "main": "build/index.js",
   "scripts": {
-    "compile": "cd ../rust && wasm-pack build --target bundler --out-dir ../javascript/pkg",
-    "roll-mod": "rollup -c rollup/config-cjs.js",
+    "compile": "cd ../rust/wasm-js && wasm-pack build --target bundler --out-dir ../../javascript/pkg",
+    "roll-cjs": "rollup -c rollup/config-cjs.js",
     "roll-web": "rollup -c rollup/config-iife.js",
     "build": "npm run compile && npm run roll-mod && npm run roll-web",
     "test": "jest"

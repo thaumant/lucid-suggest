@@ -1,4 +1,4 @@
-import * as wasm from '../pkg/lucid_suggest'
+import * as wasm from '../pkg/lucid_suggest_wasm_js'
 
 
 let RECORDS = []

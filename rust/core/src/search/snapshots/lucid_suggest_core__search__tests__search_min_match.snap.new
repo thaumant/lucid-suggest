@@ -1,0 +1,5 @@
+---
+source: src/search/mod.rs
+expression: hits1
+---
+[]

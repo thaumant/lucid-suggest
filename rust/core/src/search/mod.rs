@@ -1,11 +1,37 @@
 mod score;
 mod highlight;
 
+use std::borrow::Cow;
 use std::cmp::Ordering;
-use crate::lexis::Text;
+use crate::lexis::{Text, Chars};
 
 pub use score::{score, Scores};
 pub use highlight::highlight;
+
+
+#[derive(Clone, Debug)]
+pub struct Record {
+    id: usize,
+    text: Text<Vec<char>>,
+}
+
+
+impl Record {
+    pub fn new(id: usize, source: &[char]) -> Record {
+        Record {
+            id,
+            text: tokenize_record(source).to_owned(),
+        }
+    }
+
+    pub fn to_hit<'a>(&'a self) -> Hit<Cow<'a, [char]>> {
+        Hit {
+            id: self.id,
+            text: self.text.to_cow(),
+            scores: Default::default(),
+        }
+    }
+}
 
 
 #[derive(Debug, Clone)]
@@ -59,6 +85,23 @@ pub fn sort<T: AsRef<[char]>>(hits: &mut Vec<Hit<T>>) {
         if s1.offset != s2.offset { return s1.offset.cmp(&s2.offset); }
         Ordering::Equal
     });
+}
+
+
+pub fn tokenize_record<'a>(source: &'a [char]) -> Text<Cow<'a, [char]>> {
+    Text::new_cow(Cow::Borrowed(source))
+        .split(&[Chars::Whitespaces, Chars::Control])
+        .strip(&[Chars::NotAlphaNum])
+        .lower()
+}
+
+
+pub fn tokenize_query<'a>(source: &'a [char]) -> Text<Cow<'a, [char]>> {
+    Text::new_cow(Cow::Borrowed(source))
+        .fin(false)
+        .split(&[Chars::Whitespaces, Chars::Control, Chars::Punctuation])
+        .strip(&[Chars::NotAlphaNum])
+        .lower()
 }
 
 
