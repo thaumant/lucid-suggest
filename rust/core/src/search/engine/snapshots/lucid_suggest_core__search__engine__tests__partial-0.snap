@@ -1,0 +1,21 @@
+---
+source: src/search/engine/mod.rs
+expression: finder.hits
+---
+[
+    Hit {
+        id: 10,
+        text: Text { "brown" "plush" "bear" },
+        scores: Scores {
+            matches: [
+                WordMatch { [rrrrr] /0/ [qqqqq] },
+                WordMatch { [rrrrr] /0/ [qqqqq] },
+                WordMatch { [rrrr] /0/ [qqqq] },
+            ],
+            typos: 0,
+            offset: 0,
+            trans: 0,
+            fin: true,
+        },
+    },
+]

@@ -1,0 +1,142 @@
+mod score;
+
+use std::borrow::Cow;
+use std::cmp::Ordering;
+use crate::lexis::Text;
+use super::{Record, Hit};
+use score::score;
+
+
+pub struct Engine<'a> {
+    query: &'a Text<Cow<'a, [char]>>,
+    hits:  Vec<Hit<Cow<'a, [char]>>>,
+    limit: usize,
+}
+
+
+impl<'a> Engine<'a> {
+    pub fn new(query: &'a Text<Cow<'a, [char]>>, limit: usize) -> Self {
+        Self {
+            query,
+            hits: Vec::with_capacity(limit * 2),
+            limit,
+        }
+    }
+
+    pub fn push(&mut self, record: &'a Record) {
+        let mut hit = record.to_hit();
+        score(self.query, &mut hit);
+        if self.matches(&hit) {
+            self.hits.push(hit);
+        }
+        if self.hits.len() >= self.limit * 2 {
+            self.sort_and_truncate();
+        }
+    }
+
+    pub fn push_many<I: IntoIterator<Item=&'a Record>>(&mut self, records: I) {
+        for record in records {
+            self.push(record);
+        }
+    }
+
+    pub fn matches(&self, hit: &Hit<Cow<'a, [char]>>) -> bool {
+        let matches = &hit.scores.matches;
+        if self.query.is_empty() { return true; }
+        if matches.len() == 0 { return false; }
+        if matches.len() == 1 && self.query.words.len() > 1 {
+            let word_match = &matches[0];
+            let unfinished = !word_match.fin;
+            let first_half = (word_match.query.len * 2) < word_match.record.len;
+            if unfinished && first_half { return false; }
+        }
+        true
+    }
+
+    pub fn sort_and_truncate(&mut self) {
+        self.hits.sort_by(|hit1, hit2| {
+            let s1 = &hit1.scores;
+            let s2 = &hit2.scores;
+            if s1.matches.len() != s2.matches.len() { return s1.matches.len().cmp(&s2.matches.len()).reverse(); }
+            if s1.typos  != s2.typos  { return s1.typos.cmp(&s2.typos); }
+            if s1.trans  != s2.trans  { return s1.trans.cmp(&s2.trans); }
+            if s1.fin    != s2.fin    { return s1.fin.cmp(&s2.fin).reverse(); }
+            if s1.offset != s2.offset { return s1.offset.cmp(&s2.offset); }
+            Ordering::Equal
+        });
+        self.hits.truncate(self.limit);
+    }
+
+    pub fn hits<'b>(&'b self) -> &'b [Hit<Cow<'a, [char]>>] {
+        &self.hits
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use insta::assert_debug_snapshot;
+    use crate::lexis::tokenize_query;
+    use super::{Record, Engine};
+
+    fn check(name: &str, queries: &[&str]) {
+        let records = [
+            Record::new(10, "brown plush bear".chars()),
+            Record::new(20, "metal detector".chars()),
+            Record::new(30, "yellow metal mailbox".chars()),
+        ];
+        for (i, query) in queries.iter().enumerate() {
+            let query: Vec<char> = query.chars().collect();
+            let query = tokenize_query(&query);
+
+            let mut finder = Engine::new(&query, 10);
+            finder.push_many(&records);
+            finder.sort_and_truncate();
+
+            assert_debug_snapshot!(format!("{}-{}", name, i), finder.hits);
+        }
+    }
+
+    #[test]
+    fn search_empty() {
+        check("empty", &[""]);
+    }
+
+    #[test]
+    fn search_equal() {
+        check("equal", &["yelow metall maiblox"]);
+    }
+
+    #[test]
+    fn search_partial() {
+        check("partial", &[
+            "brown plush bear",
+            "metal detector",
+            "yellow metal mailbox",
+        ]);
+    }
+
+    #[test]
+    fn search_intersection() {
+        check("intersection", &[
+            "red wooden mailbox",
+            "red wooden mail",
+        ]);
+    }
+
+    #[test]
+    fn search_min_match() {
+        check("min_match", &[
+            "wooden mai",
+            "wooden mail",
+        ]);
+    }
+
+    #[test]
+    fn search_transpositions() {
+        check("transpositions", &[
+            "metal mailbox",
+            "mailbox metal",
+        ]);
+    }
+}

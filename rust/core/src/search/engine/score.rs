@@ -1,39 +1,13 @@
-use std::default::Default;
 use crate::lexis::{Text, WordMatch};
 use super::Hit;
 
 
-#[derive(Debug, Clone)]
-pub struct Scores {
-    pub matches: Vec<WordMatch>,
-    pub typos:   usize,
-    pub offset:  usize,
-    pub trans:   usize,
-    pub fin:     bool,
-}
-
-
-impl Default for Scores {
-    fn default() -> Scores {
-        Scores {
-            matches: Vec::new(),
-            typos:   0,
-            offset:  0,
-            trans:   0,
-            fin:     true,
-        }
-    }
-}
-
-
-pub fn score<T: AsRef<[char]>, U: AsRef<[char]>>(query: &Text<T>, hits: &mut Vec<Hit<U>>) {
-    for hit in hits.iter_mut() {
-        hit.scores.matches = hit.text.matches(&query);
-        hit.scores.typos   = score_typos(&hit.scores.matches);
-        hit.scores.offset  = score_offset(&hit.scores.matches);
-        hit.scores.trans   = score_transpositions(&hit.scores.matches);
-        hit.scores.fin     = score_fin(&hit.scores.matches);
-    }
+pub fn score<T: AsRef<[char]>, U: AsRef<[char]>>(query: &Text<T>, hit: &mut Hit<U>) {
+    hit.scores.matches = hit.text.matches(&query);
+    hit.scores.typos   = score_typos(&hit.scores.matches);
+    hit.scores.offset  = score_offset(&hit.scores.matches);
+    hit.scores.trans   = score_transpositions(&hit.scores.matches);
+    hit.scores.fin     = score_fin(&hit.scores.matches);
 }
 
 
@@ -107,7 +81,7 @@ mod tests {
         let c1 = chars("yellow mailbox");
         let c2 = chars("yelow maiblox");
         let c3 = chars("yellow mail");
-        
+
         let r  = record(&c0);
         let q1 = query(&c1);
         let q2 = query(&c2);
@@ -124,7 +98,7 @@ mod tests {
         let c1 = chars("smal mailbox");
         let c2 = chars("yelow mailbox");
         let c3 = chars("metol maiblox");
-        
+
         let r  = record(&c0);
         let q1 = query(&c1);
         let q2 = query(&c2);

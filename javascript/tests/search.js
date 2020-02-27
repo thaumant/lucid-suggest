@@ -1,27 +1,30 @@
-const mod = require('../build/index')
+const Suggest = require('../build/index')
 
 
 describe('Suggest', () => {
+    let suggest = null
+
     beforeAll(() => {
-        mod.storeRecords([
+        suggest = new Suggest()
+        suggest.addRecords([
             {id: 10, text: 'Hello world!'},
             {id: 20, text: 'Foo bar'},
             {id: 30, text: '-BAZZZ-'},
         ])
     })
-    
+
     test('Empty input', () => {
-        const hits = mod.search('')
+        const hits = suggest.search('')
         expect(hits).toMatchSnapshot()
     })
 
     test('Equality', () => {
-        const hits = mod.search('foo bar')
+        const hits = suggest.search('foo bar')
         expect(hits).toMatchSnapshot()
     })
 
     test('Prefix', () => {
-        const hits = mod.search('ba')
+        const hits = suggest.search('ba')
         expect(hits).toMatchSnapshot()
     })
 })

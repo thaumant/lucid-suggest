@@ -1,6 +1,6 @@
 ---
-source: src/search/mod.rs
-expression: hits
+source: src/search/engine/mod.rs
+expression: finder.hits
 ---
 [
     Hit {
@@ -8,13 +8,12 @@ expression: hits
         text: Text { "yellow" "metal" "mailbox" },
         scores: Scores {
             matches: [
-                WordMatch { [rrrrrr] /1/ [qqqqq] },
-                WordMatch { [rrrrr] /1/ [qqqqqq] },
-                WordMatch { [rrrrrrr] /1/ [qqqqqqq] },
+                WordMatch { [rrrrrrr] /0/ [qqqqqqq] },
+                WordMatch { [rrrrr] /0/ [qqqqq] },
             ],
-            typos: 3,
-            offset: 0,
-            trans: 0,
+            typos: 0,
+            offset: 1,
+            trans: 2,
             fin: true,
         },
     },
@@ -23,9 +22,9 @@ expression: hits
         text: Text { "metal" "detector" },
         scores: Scores {
             matches: [
-                WordMatch { [rrrrr] /1/ [qqqqqq] },
+                WordMatch { [rrrrr] /0/ [qqqqq] },
             ],
-            typos: 1,
+            typos: 0,
             offset: 0,
             trans: 0,
             fin: true,

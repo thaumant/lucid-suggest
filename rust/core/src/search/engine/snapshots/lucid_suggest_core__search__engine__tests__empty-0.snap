@@ -1,6 +1,6 @@
 ---
-source: src/search/mod.rs
-expression: hits
+source: src/search/engine/mod.rs
+expression: finder.hits
 ---
 [
     Hit {

@@ -5,80 +5,63 @@ mod lexis;
 mod search;
 
 use std::cell::RefCell;
-use search::{Record, Hit, tokenize_query};
+use std::collections::HashMap;
+pub use lexis::{Word, Text};
+pub use search::{Record, SearchResult, Store};
 
 
 thread_local! {
-    static SEPARATORS: RefCell<(Vec<char>, Vec<char>)> = RefCell::new((Vec::new(), Vec::new()));
-    static RECORDS:    RefCell<Vec<Record>>            = RefCell::new(Vec::new());
-    static HIGHLIGHTS: RefCell<Vec<Vec<char>>>         = RefCell::new(Vec::new());
+    static STORES: RefCell<HashMap<usize, Store>> = RefCell::new(HashMap::new());
 }
 
 
-pub fn get_highlights() -> String {
-    HIGHLIGHTS.with(|cell| {
-        let buffer = &*cell.borrow();
-        let mut result = String::new();
-        for highlighted in buffer {
-            for ch in highlighted {
-                result.push(*ch);
-            }
-            result.push('\0');
-        }
-        result
+pub fn create_store() -> usize {
+    STORES.with(|cell| {
+        let stores   = &mut *cell.borrow_mut();
+        let store    = Store::new();
+        let store_id = *stores.keys().max().unwrap_or(&0) + 1;
+        stores.insert(store_id, store);
+        store_id
     })
 }
 
 
-pub fn highlight_using(l: &str, r: &str) {
-    SEPARATORS.with(|cell| {
-        let buffer = &mut *cell.borrow_mut();
-        buffer.0 = l.chars().collect();
-        buffer.1 = r.chars().collect();
-    })
+pub fn highlight_using(store_id: usize, separators: (&str, &str)) {
+    using_store(store_id, |store| {
+        store.highlight_using(separators);
+    });
 }
 
 
-pub fn set_records(ids: &[usize], sources: String) {
-    RECORDS.with(|cell| {
-        let records = &mut *cell.borrow_mut();
-        records.clear();
-        for (source, id) in sources.split('\0').zip(ids.iter()) {
-            let source: Vec<char> = source.chars().collect();
-            records.push(Record::new(*id, &source));
-        }
-        if records.len() != ids.len() {
-            panic!("Got less texts than expected");
+pub fn add_records<'a, I>(store_id: usize, records: I) where I: IntoIterator<Item=(usize, &'a str)> {
+    using_store(store_id, |store| {
+        for (id, text) in records {
+            store.add(Record::new(id, text.chars()));
         }
     });
 }
 
 
-pub fn run_search(query: String) -> Vec<usize> {
-    RECORDS.with(|cell| {
-        let query: Vec<char> = query.chars().collect();
-        let query = tokenize_query(&query);
+pub fn search(store_id: usize, query: &str) {
+    using_store(store_id, |store| {
+        store.search(query);
+    });
+}
 
-        let records  = &*cell.borrow();
-        let mut hits = records.iter()
-            .map(|r| r.to_hit())
-            .collect();
 
-        search::search(&query, &mut hits);
-        save_highlights(&hits);
-
-        hits.iter()
-            .map(|h| h.id)
-            .collect()
+pub fn using_store<T, F>(store_id: usize, f: F) -> T where F: (FnOnce(&mut Store) -> T) {
+    STORES.with(|cell| {
+        let stores = &mut *cell.borrow_mut();
+        let store  = stores.get_mut(&store_id).unwrap();
+        f(store)
     })
 }
 
 
-fn save_highlights<T: AsRef<[char]>>(hits: &[Hit<T>]) {
-    SEPARATORS.with(|cell_sep| {
-    HIGHLIGHTS.with(|cell_hl| {
-        let sep = &*cell_sep.borrow_mut();
-        let hl  = &mut *cell_hl.borrow_mut();
-        *hl = search::highlight(&hits, &sep.0, &sep.1);
-    }); });
+pub fn using_results<T, F>(store_id: usize, f: F) -> T where F: (FnOnce(&[SearchResult]) -> T) {
+    STORES.with(|cell| {
+        let stores = &mut *cell.borrow_mut();
+        let store  = stores.get_mut(&store_id).unwrap();
+        f(store.results())
+    })
 }

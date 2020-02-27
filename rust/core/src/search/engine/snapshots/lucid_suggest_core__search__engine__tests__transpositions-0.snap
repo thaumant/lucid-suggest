@@ -1,0 +1,33 @@
+---
+source: src/search/engine/mod.rs
+expression: finder.hits
+---
+[
+    Hit {
+        id: 30,
+        text: Text { "yellow" "metal" "mailbox" },
+        scores: Scores {
+            matches: [
+                WordMatch { [rrrrr] /0/ [qqqqq] },
+                WordMatch { [rrrrrrr] /0/ [qqqqqqq] },
+            ],
+            typos: 0,
+            offset: 1,
+            trans: 0,
+            fin: true,
+        },
+    },
+    Hit {
+        id: 20,
+        text: Text { "metal" "detector" },
+        scores: Scores {
+            matches: [
+                WordMatch { [rrrrr] /0/ [qqqqq] },
+            ],
+            typos: 0,
+            offset: 0,
+            trans: 0,
+            fin: true,
+        },
+    },
+]

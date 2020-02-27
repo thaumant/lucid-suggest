@@ -1,7 +1,5 @@
 #![macro_use]
 
-use std::cell::RefCell;
-
 
 macro_rules! min {
     ($x: expr) => ($x);

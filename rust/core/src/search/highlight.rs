@@ -1,16 +1,12 @@
 use crate::lexis::{Text, WordMatch};
 use super::{Hit, Scores};
 
-pub fn highlight<T: AsRef<[char]>>(hits: &[Hit<T>], left: &[char], right: &[char]) -> Vec<Vec<char>> {
-    hits.iter()
-        .map(|hit| highlight_one(hit, left, right))
-        .collect()
-}
 
-fn highlight_one<T: AsRef<[char]>>(hit: &Hit<T>, left: &[char], right: &[char]) -> Vec<char> {
-    let Hit { 
-        scores: Scores { matches, .. }, 
-        text: Text { words, source }, 
+pub fn highlight<T: AsRef<[char]>>(hit: &Hit<T>, hl: (&[char], &[char])) -> Vec<char> {
+    let (left, right) = hl;
+    let Hit {
+        scores: Scores { matches, .. },
+        text: Text { words, source },
         ..
     } = hit;
 
@@ -39,80 +35,52 @@ fn highlight_one<T: AsRef<[char]>>(hit: &Hit<T>, left: &[char], right: &[char]) 
     result
 }
 
+
 #[cfg(test)]
 mod tests {
-    use insta::assert_debug_snapshot;
-    use crate::lexis::{Text, Chars};
-    use super::super::{Hit, search};
+    use crate::lexis::{WordMatch, MatchSide};
+    use super::super::Record;
     use super::highlight;
-    use std::borrow::Cow;
-
-    fn chars(s: &str) -> Vec<char> {
-        s.chars().collect()
-    }
-
-    fn record<'a>(chars: &'a [char]) -> Text<Cow<'a, [char]>> {
-        Text::new_cow(Cow::Borrowed(&chars[..]))
-            .split(&Chars::Whitespaces)
-            .strip(&Chars::NotAlphaNum)
-            .lower()
-    }
-
-    fn query<'a>(s: &'a [char]) -> Text<Cow<'a, [char]>> {
-        record(s).fin(false)
-    }
 
     #[test]
     fn test_highlight() {
-        let cr1 = chars("brown plush bear");
-        let cr2 = chars("Metal detector");
-        let cr3 = chars("yellow Metal Mailbox");
+        let record = Record::new(10, "metal detector".chars());
 
-        let mut hits = vec![
-            Hit::new(10, record(&cr1)),
-            Hit::new(20, record(&cr2)),
-            Hit::new(30, record(&cr3)),
-        ];
-
-        let cq = chars("metall mail");
-        let q  = query(&cq);
-
-        search(&q, &mut hits);
+        let mut hit = record.to_hit();
+        hit.scores.matches.push(WordMatch {
+            query:  MatchSide { pos: 0, len: 0, slice: (0, 0), },
+            record: MatchSide { pos: 1, len: 6, slice: (0, 6), },
+            typos:  0,
+            fin:    false,
+        });
 
         let left:  Vec<char> = "[".chars().collect();
         let right: Vec<char> = "]".chars().collect();
-        let highlighted: Vec<String> = highlight(&hits, &left, &right)
-            .iter()
-            .map(|h| h.iter().collect())
-            .collect();
 
-        assert_debug_snapshot!(highlighted);
+        let expected = "metal [detect]or";
+        let received: String = highlight(&hit, (&left, &right)).iter().collect();
+
+        assert_eq!(&received, expected);
     }
 
     #[test]
     fn test_highlight_stripped() {
-        let cr1 = chars("brown plush bear");
-        let cr2 = chars("Metal detector");
-        let cr3 = chars("yellow 'Metal' -Mailbox-");
+        let record = Record::new(10, "'metal' mailbox".chars());
 
-        let mut hits = vec![
-            Hit::new(10, record(&cr1)),
-            Hit::new(20, record(&cr2)),
-            Hit::new(30, record(&cr3)),
-        ];
-
-        let cq = chars("metall mail");
-        let q  = query(&cq);
-
-        search(&q, &mut hits);
+        let mut hit = record.to_hit();
+        hit.scores.matches.push(WordMatch {
+            query:  MatchSide { pos: 0, len: 0, slice: (0, 0), },
+            record: MatchSide { pos: 0, len: 5, slice: (0, 5), },
+            typos:  0,
+            fin:    false,
+        });
 
         let left:  Vec<char> = "{{".chars().collect();
         let right: Vec<char> = "}}".chars().collect();
-        let highlighted: Vec<String> = highlight(&hits, &left, &right)
-            .iter()
-            .map(|h| h.iter().collect())
-            .collect();
 
-        assert_debug_snapshot!(highlighted);
+        let expected = "'{{metal}}' mailbox";
+        let received: String = highlight(&hit, (&left, &right)).iter().collect();
+
+        assert_eq!(&received, expected);
     }
 }

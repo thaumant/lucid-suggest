@@ -4,8 +4,25 @@ mod tokenizing;
 
 use std::fmt;
 use std::borrow::Cow;
-pub use matching::WordMatch;
+pub use matching::{WordMatch, MatchSide};
 pub use pattern::{Chars, CharPattern};
+
+
+pub fn tokenize_query<'a>(source: &'a [char]) -> Text<Cow<'a, [char]>> {
+    Text::new_cow(Cow::Borrowed(source))
+        .fin(false)
+        .split(&[Chars::Whitespaces, Chars::Control, Chars::Punctuation])
+        .strip(&[Chars::NotAlphaNum])
+        .lower()
+}
+
+
+pub fn tokenize_record<'a>(source: &'a [char]) -> Text<Cow<'a, [char]>> {
+    Text::new_cow(Cow::Borrowed(source))
+        .split(&[Chars::Whitespaces, Chars::Control])
+        .strip(&[Chars::NotAlphaNum])
+        .lower()
+}
 
 
 #[derive(Clone, PartialEq)]
@@ -21,7 +38,7 @@ impl<'a> Text<Cow<'a, [char]>> {
             Cow::Borrowed(s) => Cow::Borrowed(&s[..]),
             Cow::Owned(ref s) => Cow::Owned(s[..].to_vec()),
         };
-        Text { 
+        Text {
             source,
             words: vec![Word::new_cow(cloned)],
         }
@@ -98,7 +115,7 @@ impl Word<Vec<char>> {
     pub fn new_owned(source: Vec<char>) -> Word<Vec<char>> {
         let len = source.len();
         let chars = source.clone();
-        Word { 
+        Word {
             source,
             slice: (0, len),
             chars,
@@ -115,7 +132,7 @@ impl<'a> Word<Cow<'a, [char]>> {
             Cow::Borrowed(s) => Cow::Borrowed(&s[..]),
             Cow::Owned(ref s) => Cow::Owned(s[..].to_vec()),
         };
-        Word { 
+        Word {
             source,
             slice: (0, len),
             chars,
