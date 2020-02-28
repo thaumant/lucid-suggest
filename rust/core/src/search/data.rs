@@ -1,6 +1,7 @@
 use std::borrow::Cow;
 use std::default::Default;
-use crate::lexis::{Text, WordMatch, tokenize_record};
+use super::Scores;
+use crate::lexis::{Text, tokenize_record};
 
 
 #[derive(Clone, Debug)]
@@ -36,29 +37,6 @@ pub struct Hit<T: AsRef<[char]>> {
 impl<T: AsRef<[char]>> Hit<T> {
     pub fn new(id: usize, text: Text<T>) -> Hit<T> {
         Hit { id, text, scores: Default::default() }
-    }
-}
-
-
-#[derive(Debug, Clone)]
-pub struct Scores {
-    pub matches: Vec<WordMatch>,
-    pub typos:   usize,
-    pub offset:  usize,
-    pub trans:   usize,
-    pub fin:     bool,
-}
-
-
-impl Default for Scores {
-    fn default() -> Scores {
-        Scores {
-            matches: Vec::new(),
-            typos:   0,
-            offset:  0,
-            trans:   0,
-            fin:     true,
-        }
     }
 }
 

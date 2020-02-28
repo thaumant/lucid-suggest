@@ -2,33 +2,76 @@ use crate::lexis::{Text, WordMatch};
 use super::Hit;
 
 
-pub fn score<T: AsRef<[char]>, U: AsRef<[char]>>(query: &Text<T>, hit: &mut Hit<U>) {
-    hit.scores.matches = hit.text.matches(&query);
-    hit.scores.typos   = score_typos(&hit.scores.matches);
-    hit.scores.offset  = score_offset(&hit.scores.matches);
-    hit.scores.trans   = score_transpositions(&hit.scores.matches);
-    hit.scores.fin     = score_fin(&hit.scores.matches);
+pub enum Score {
+    Matches = 0,
+    Typos   = 1,
+    Trans   = 2,
+    Fin     = 3,
+    Offset  = 4,
 }
 
 
-pub fn score_typos(matches: &[WordMatch]) -> usize {
+#[derive(Debug, Clone)]
+pub struct Scores {
+    pub matches: Vec<WordMatch>,
+    pub linear:  [isize; 5],
+}
+
+
+impl std::ops::Index<Score> for Scores {
+    type Output = isize;
+
+    fn index(&self, score: Score) -> &Self::Output {
+        &self.linear[score as usize]
+    }
+}
+
+
+impl std::ops::IndexMut<Score> for Scores {
+    fn index_mut(&mut self, score: Score) -> &mut Self::Output {
+        &mut self.linear[score as usize]
+    }
+}
+
+
+impl Default for Scores {
+    fn default() -> Scores {
+        Scores {
+            matches: Vec::new(),
+            linear:  [0; 5],
+        }
+    }
+}
+
+
+pub fn score<T: AsRef<[char]>, U: AsRef<[char]>>(query: &Text<T>, hit: &mut Hit<U>) {
+    let matches = hit.text.matches(&query);
+
+    hit.scores[Score::Matches] = score_matches_up(&matches);
+    hit.scores[Score::Typos]   = score_typos_down(&matches);
+    hit.scores[Score::Trans]   = score_trans_down(&matches);
+    hit.scores[Score::Fin]     = score_fin_up(&matches);
+    hit.scores[Score::Offset]  = score_offset_down(&matches);
+
+    hit.scores.matches = matches;
+}
+
+
+pub fn score_matches_up(matches: &[WordMatch]) -> isize {
+    matches.len() as isize
+}
+
+
+pub fn score_typos_down(matches: &[WordMatch]) -> isize {
     let mut typos = 0;
     for m in matches {
         typos += m.typos + m.record.slice.0 + (m.record.len - m.record.slice.1);
     }
-    typos
+    -(typos as isize)
 }
 
 
-pub fn score_offset(matches: &[WordMatch]) -> usize {
-    matches.iter()
-        .map(|m| m.record.pos)
-        .min()
-        .unwrap_or(0)
-}
-
-
-pub fn score_transpositions(matches: &[WordMatch]) -> usize {
+pub fn score_trans_down(matches: &[WordMatch]) -> isize {
     if matches.is_empty() { return 0; }
 
     let mut transpositions = 0;
@@ -42,23 +85,32 @@ pub fn score_transpositions(matches: &[WordMatch]) -> usize {
         if prev_ix < next_ix { transpositions += next_ix - prev_ix; }
     }
 
-    transpositions
+    -(transpositions as isize)
 }
 
 
-pub fn score_fin(matches: &[WordMatch]) -> bool {
+pub fn score_fin_up(matches: &[WordMatch]) -> isize {
     if let Some(m) = matches.last() {
-        m.fin
+        m.fin as isize
     } else {
-        true
+        1
     }
+}
+
+
+pub fn score_offset_down(matches: &[WordMatch]) -> isize {
+    let offset = matches.iter()
+        .map(|m| m.record.pos)
+        .min()
+        .unwrap_or(0);
+    -(offset as isize)
 }
 
 
 #[cfg(test)]
 mod tests {
     use crate::lexis::{Text, Chars};
-    use super::{score_typos, score_offset};
+    use super::{score_typos_down, score_offset_down};
     use std::borrow::Cow;
 
     fn chars(s: &str) -> Vec<char> {
@@ -87,9 +139,9 @@ mod tests {
         let q2 = query(&c2);
         let q3 = query(&c3);
 
-        assert_eq!(score_typos(&r.matches(&q1)), 0);
-        assert_eq!(score_typos(&r.matches(&q2)), 2);
-        assert_eq!(score_typos(&r.matches(&q3)), 3);
+        assert_eq!(score_typos_down(&r.matches(&q1)), -0);
+        assert_eq!(score_typos_down(&r.matches(&q2)), -2);
+        assert_eq!(score_typos_down(&r.matches(&q3)), -3);
     }
 
     #[test]
@@ -104,8 +156,8 @@ mod tests {
         let q2 = query(&c2);
         let q3 = query(&c3);
 
-        assert_eq!(score_offset(&r.matches(&q1)), 0);
-        assert_eq!(score_offset(&r.matches(&q2)), 1);
-        assert_eq!(score_offset(&r.matches(&q3)), 2);
+        assert_eq!(score_offset_down(&r.matches(&q1)), -0);
+        assert_eq!(score_offset_down(&r.matches(&q2)), -1);
+        assert_eq!(score_offset_down(&r.matches(&q3)), -2);
     }
 }

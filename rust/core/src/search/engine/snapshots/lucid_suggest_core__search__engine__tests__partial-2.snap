@@ -12,10 +12,13 @@ expression: finder.hits
                 WordMatch { [rrrrr] /0/ [qqqqq] },
                 WordMatch { [rrrrrrr] /0/ [qqqqqqq] },
             ],
-            typos: 0,
-            offset: 0,
-            trans: 0,
-            fin: true,
+            linear: [
+                3,
+                0,
+                0,
+                1,
+                0,
+            ],
         },
     },
     Hit {
@@ -25,10 +28,13 @@ expression: finder.hits
             matches: [
                 WordMatch { [rrrrr] /0/ [qqqqq] },
             ],
-            typos: 0,
-            offset: 0,
-            trans: 0,
-            fin: true,
+            linear: [
+                1,
+                0,
+                0,
+                1,
+                0,
+            ],
         },
     },
 ]

@@ -5,6 +5,7 @@ use std::cmp::Ordering;
 use crate::lexis::Text;
 use super::{Record, Hit};
 use score::score;
+pub use score::Scores;
 
 
 pub struct Engine<'a> {
@@ -55,14 +56,11 @@ impl<'a> Engine<'a> {
 
     pub fn sort_and_truncate(&mut self) {
         self.hits.sort_by(|hit1, hit2| {
-            let s1 = &hit1.scores;
-            let s2 = &hit2.scores;
-            if s1.matches.len() != s2.matches.len() { return s1.matches.len().cmp(&s2.matches.len()).reverse(); }
-            if s1.typos  != s2.typos  { return s1.typos.cmp(&s2.typos); }
-            if s1.trans  != s2.trans  { return s1.trans.cmp(&s2.trans); }
-            if s1.fin    != s2.fin    { return s1.fin.cmp(&s2.fin).reverse(); }
-            if s1.offset != s2.offset { return s1.offset.cmp(&s2.offset); }
-            Ordering::Equal
+            hit1.scores.linear.iter()
+                .zip(hit2.scores.linear.iter())
+                .map(|(s1, s2)| s2.cmp(s1))
+                .find(|&ord| ord != Ordering::Equal)
+                .unwrap_or(Ordering::Equal)
         });
         self.hits.truncate(self.limit);
     }
