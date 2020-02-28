@@ -38,7 +38,7 @@ pub fn score<'a, T: AsRef<[char]>>(query: &Text<T>, hit: &mut Hit<'a>) {
     hit.scores[ScoreType::Fin]     = score_fin_up(&matches);
     hit.scores[ScoreType::Offset]  = score_offset_down(&matches);
 
-    hit.scores.matches = matches;
+    hit.matches = matches;
 }
 
 

@@ -1,5 +1,5 @@
 use crate::lexis::{Text, WordMatch};
-use crate::search::{Hit, SearchResult, Scores};
+use crate::search::{Hit, SearchResult};
 
 
 pub struct Highlighter<'a, Src: Iterator<Item=Hit<'a>>> {
@@ -33,8 +33,8 @@ impl<'a, Src: Iterator<Item=Hit<'a>>> Iterator for Highlighter<'a, Src> {
 fn highlight(hit: &Hit, separators: (&[char], &[char])) -> String {
     let (left, right) = separators;
     let Hit {
-        scores: Scores { matches, .. },
         text: Text { words, source },
+        matches,
         ..
     } = hit;
 
@@ -80,7 +80,7 @@ mod tests {
         let record = Record::new(10, "metal detector");
 
         let mut hit = Hit::from_record(&record);
-        hit.scores.matches.push(WordMatch {
+        hit.matches.push(WordMatch {
             query:  MatchSide { pos: 0, len: 0, slice: (0, 0), },
             record: MatchSide { pos: 1, len: 6, slice: (0, 6), },
             typos:  0,
@@ -101,7 +101,7 @@ mod tests {
         let record = Record::new(10, "'metal' mailbox");
 
         let mut hit = Hit::from_record(&record);
-        hit.scores.matches.push(WordMatch {
+        hit.matches.push(WordMatch {
             query:  MatchSide { pos: 0, len: 0, slice: (0, 0), },
             record: MatchSide { pos: 0, len: 5, slice: (0, 5), },
             typos:  0,

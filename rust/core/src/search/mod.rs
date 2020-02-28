@@ -19,6 +19,7 @@ pub use highlighter::Highlighter;
 pub struct Hit<'a> {
     pub id:      usize,
     pub text:    Text<&'a [char]>,
+    pub matches: Vec<WordMatch>,
     pub scores:  Scores,
 }
 
@@ -26,9 +27,10 @@ pub struct Hit<'a> {
 impl<'a> Hit<'a> {
     pub fn from_record(record: &'a Record) -> Hit<'a> {
         Hit {
-            id:     record.id,
-            text:   record.text.to_ref(),
-            scores: Default::default(),
+            id:      record.id,
+            text:    record.text.to_ref(),
+            scores:  Default::default(),
+            matches: Vec::new(),
         }
     }
 }
@@ -44,9 +46,13 @@ pub enum ScoreType {
 
 
 #[derive(Debug, Clone)]
-pub struct Scores {
-    pub matches: Vec<WordMatch>,
-    pub linear:  [isize; 5],
+pub struct Scores([isize; 5]);
+
+
+impl Scores {
+    pub fn iter(&self) -> impl Iterator<Item=&isize> {
+        self.0.iter()
+    }
 }
 
 
@@ -54,24 +60,21 @@ impl std::ops::Index<ScoreType> for Scores {
     type Output = isize;
 
     fn index(&self, score: ScoreType) -> &Self::Output {
-        &self.linear[score as usize]
+        &self.0[score as usize]
     }
 }
 
 
 impl std::ops::IndexMut<ScoreType> for Scores {
     fn index_mut(&mut self, score: ScoreType) -> &mut Self::Output {
-        &mut self.linear[score as usize]
+        &mut self.0[score as usize]
     }
 }
 
 
 impl Default for Scores {
     fn default() -> Scores {
-        Scores {
-            matches: Vec::new(),
-            linear:  [0; 5],
-        }
+        Scores([0; 5])
     }
 }
 

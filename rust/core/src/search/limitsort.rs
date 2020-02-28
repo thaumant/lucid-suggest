@@ -22,8 +22,8 @@ impl<'a, Src: Iterator<Item=Hit<'a>>> LimitSort<'a, Src> {
 
     fn sort_and_truncate(&mut self) {
         self.buffer.sort_by(|hit1, hit2| {
-            hit1.scores.linear.iter()
-                .zip(hit2.scores.linear.iter())
+            hit1.scores.iter()
+                .zip(hit2.scores.iter())
                 .map(|(s1, s2)| s2.cmp(s1))
                 .find(|&ord| ord != Ordering::Equal)
                 .unwrap_or(Ordering::Equal)
