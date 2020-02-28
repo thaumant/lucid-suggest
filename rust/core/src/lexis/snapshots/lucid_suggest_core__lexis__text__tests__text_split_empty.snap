@@ -1,0 +1,5 @@
+---
+source: src/lexis/text.rs
+expression: t
+---
+Text { }

@@ -40,10 +40,9 @@ impl Store {
     }
 
     pub fn search(&mut self, query: &str) {
-        let query: Vec<char> = query.chars().collect();
-        let query = tokenize_query(&query);
+        let query = tokenize_query(query);
 
-        let mut engine = Engine::new(&query, self.limit);
+        let mut engine = Engine::new(query.to_ref(), self.limit);
         engine.push_many(&self.records);
         engine.sort_and_truncate();
 

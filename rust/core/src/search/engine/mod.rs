@@ -1,6 +1,5 @@
 mod score;
 
-use std::borrow::Cow;
 use std::cmp::Ordering;
 use crate::lexis::Text;
 use super::{Record, Hit};
@@ -9,14 +8,14 @@ pub use score::Scores;
 
 
 pub struct Engine<'a> {
-    query: &'a Text<Cow<'a, [char]>>,
-    hits:  Vec<Hit<Cow<'a, [char]>>>,
+    query: Text<&'a [char]>,
+    hits:  Vec<Hit<'a>>,
     limit: usize,
 }
 
 
 impl<'a> Engine<'a> {
-    pub fn new(query: &'a Text<Cow<'a, [char]>>, limit: usize) -> Self {
+    pub fn new(query: Text<&'a [char]>, limit: usize) -> Self {
         Self {
             query,
             hits: Vec::with_capacity(limit * 2),
@@ -25,8 +24,8 @@ impl<'a> Engine<'a> {
     }
 
     pub fn push(&mut self, record: &'a Record) {
-        let mut hit = record.to_hit();
-        score(self.query, &mut hit);
+        let mut hit = Hit::from_record(record);
+        score(&self.query, &mut hit);
         if self.matches(&hit) {
             self.hits.push(hit);
         }
@@ -41,7 +40,7 @@ impl<'a> Engine<'a> {
         }
     }
 
-    pub fn matches(&self, hit: &Hit<Cow<'a, [char]>>) -> bool {
+    pub fn matches(&self, hit: &Hit<'a>) -> bool {
         let matches = &hit.scores.matches;
         if self.query.is_empty() { return true; }
         if matches.len() == 0 { return false; }
@@ -65,7 +64,7 @@ impl<'a> Engine<'a> {
         self.hits.truncate(self.limit);
     }
 
-    pub fn hits<'b>(&'b self) -> &'b [Hit<Cow<'a, [char]>>] {
+    pub fn hits<'b>(&'b self) -> &'b [Hit<'a>] {
         &self.hits
     }
 }
@@ -79,18 +78,15 @@ mod tests {
 
     fn check(name: &str, queries: &[&str]) {
         let records = [
-            Record::new(10, "brown plush bear".chars()),
-            Record::new(20, "metal detector".chars()),
-            Record::new(30, "yellow metal mailbox".chars()),
+            Record::new(10, "brown plush bear"),
+            Record::new(20, "metal detector"),
+            Record::new(30, "yellow metal mailbox"),
         ];
         for (i, query) in queries.iter().enumerate() {
-            let query: Vec<char> = query.chars().collect();
-            let query = tokenize_query(&query);
-
-            let mut finder = Engine::new(&query, 10);
+            let query = tokenize_query(query);
+            let mut finder = Engine::new(query.to_ref(), 10);
             finder.push_many(&records);
             finder.sort_and_truncate();
-
             assert_debug_snapshot!(format!("{}-{}", name, i), finder.hits);
         }
     }

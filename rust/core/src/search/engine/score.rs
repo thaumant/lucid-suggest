@@ -44,7 +44,7 @@ impl Default for Scores {
 }
 
 
-pub fn score<T: AsRef<[char]>, U: AsRef<[char]>>(query: &Text<T>, hit: &mut Hit<U>) {
+pub fn score<'a, T: AsRef<[char]>>(query: &Text<T>, hit: &mut Hit<'a>) {
     let matches = hit.text.matches(&query);
 
     hit.scores[Score::Matches] = score_matches_up(&matches);
@@ -111,34 +111,17 @@ pub fn score_offset_down(matches: &[WordMatch]) -> isize {
 mod tests {
     use crate::lexis::{Text, Chars};
     use super::{score_typos_down, score_offset_down};
-    use std::borrow::Cow;
 
-    fn chars(s: &str) -> Vec<char> {
-        s.chars().collect()
+    fn text(s: &str) -> Text<Vec<char>> {
+        Text::from_str(s).split(&Chars::Whitespaces)
     }
-
-    fn record<'a>(chars: &'a [char]) -> Text<Cow<'a, [char]>> {
-        Text::new_cow(Cow::Borrowed(&chars[..]))
-            .split(&Chars::Whitespaces)
-    }
-
-    fn query<'a>(s: &'a [char]) -> Text<Cow<'a, [char]>> {
-        record(s).fin(false)
-    }
-
 
     #[test]
     fn test_score_typos() {
-        let c0 = chars("small yellow metal mailbox");
-        let c1 = chars("yellow mailbox");
-        let c2 = chars("yelow maiblox");
-        let c3 = chars("yellow mail");
-
-        let r  = record(&c0);
-        let q1 = query(&c1);
-        let q2 = query(&c2);
-        let q3 = query(&c3);
-
+        let r  = text("small yellow metal mailbox");
+        let q1 = text("yellow mailbox").fin(false);
+        let q2 = text("yelow maiblox").fin(false);
+        let q3 = text("yellow mail").fin(false);
         assert_eq!(score_typos_down(&r.matches(&q1)), -0);
         assert_eq!(score_typos_down(&r.matches(&q2)), -2);
         assert_eq!(score_typos_down(&r.matches(&q3)), -3);
@@ -146,16 +129,10 @@ mod tests {
 
     #[test]
     fn test_score_offset() {
-        let c0 = chars("small yellow metal mailbox");
-        let c1 = chars("smal mailbox");
-        let c2 = chars("yelow mailbox");
-        let c3 = chars("metol maiblox");
-
-        let r  = record(&c0);
-        let q1 = query(&c1);
-        let q2 = query(&c2);
-        let q3 = query(&c3);
-
+        let r  = text("small yellow metal mailbox");
+        let q1 = text("smal mailbox").fin(false);
+        let q2 = text("yelow mailbox").fin(false);
+        let q3 = text("metol maiblox").fin(false);
         assert_eq!(score_offset_down(&r.matches(&q1)), -0);
         assert_eq!(score_offset_down(&r.matches(&q2)), -1);
         assert_eq!(score_offset_down(&r.matches(&q3)), -2);

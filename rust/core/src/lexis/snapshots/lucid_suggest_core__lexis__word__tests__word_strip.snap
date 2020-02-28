@@ -1,5 +1,5 @@
 ---
-source: src/lexis/tokenizing.rs
+source: src/lexis/word.rs
 expression: w
 ---
 Word { "Foo Bar, Baz" }

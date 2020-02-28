@@ -16,8 +16,12 @@ let offset3 = 0
 
 
 new Suite()
+    .add('init', () => {
+        const x = new Suggest()
+    })
     .add('store', () => {
-        storeRecords(STATES)
+        const x = new Suggest()
+        x.addRecords(STATES)
     })
     .add('queries_single_char', () => {
         const query = QUERIES_SINGLE_CHAR[offset1++ % QUERIES_SINGLE_CHAR.length]

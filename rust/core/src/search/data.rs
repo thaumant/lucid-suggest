@@ -1,10 +1,9 @@
-use std::borrow::Cow;
 use std::default::Default;
 use super::Scores;
 use crate::lexis::{Text, tokenize_record};
 
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Record {
     id: usize,
     text: Text<Vec<char>>,
@@ -12,36 +11,35 @@ pub struct Record {
 
 
 impl Record {
-    pub fn new<T: IntoIterator<Item=char>>(id: usize, source: T) -> Record {
-        let source: Vec<char> = source.into_iter().collect();
+    pub fn new(id: usize, source: &str) -> Record {
         Record {
             id,
-            text: tokenize_record(&source).to_owned(),
+            text: tokenize_record(source),
         }
-    }
-
-    pub fn to_hit<'a>(&'a self) -> Hit<Cow<'a, [char]>> {
-        Hit::new(self.id, self.text.to_cow())
     }
 }
 
 
-#[derive(Debug, Clone)]
-pub struct Hit<T: AsRef<[char]>> {
+#[derive(Debug)]
+pub struct Hit<'a> {
     pub id:      usize,
-    pub text:    Text<T>,
+    pub text:    Text<&'a [char]>,
     pub scores:  Scores,
 }
 
 
-impl<T: AsRef<[char]>> Hit<T> {
-    pub fn new(id: usize, text: Text<T>) -> Hit<T> {
-        Hit { id, text, scores: Default::default() }
+impl<'a> Hit<'a> {
+    pub fn from_record(record: &'a Record) -> Hit<'a> {
+        Hit {
+            id:     record.id,
+            text:   record.text.to_ref(),
+            scores: Default::default(),
+        }
     }
 }
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct SearchResult {
     pub id:          usize,
     pub highlighted: Vec<char>,

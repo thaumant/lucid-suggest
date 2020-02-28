@@ -1,5 +1,5 @@
 ---
-source: src/lexis/tokenizing.rs
+source: src/lexis/text.rs
 expression: t
 ---
 Text { "Foo" "Bar" "Baz" }

@@ -2,7 +2,7 @@ use crate::lexis::{Text, WordMatch};
 use super::{Hit, Scores};
 
 
-pub fn highlight<T: AsRef<[char]>>(hit: &Hit<T>, hl: (&[char], &[char])) -> Vec<char> {
+pub fn highlight(hit: &Hit, hl: (&[char], &[char])) -> Vec<char> {
     let (left, right) = hl;
     let Hit {
         scores: Scores { matches, .. },
@@ -39,14 +39,14 @@ pub fn highlight<T: AsRef<[char]>>(hit: &Hit<T>, hl: (&[char], &[char])) -> Vec<
 #[cfg(test)]
 mod tests {
     use crate::lexis::{WordMatch, MatchSide};
-    use super::super::Record;
+    use super::super::{Record, Hit};
     use super::highlight;
 
     #[test]
     fn test_highlight() {
-        let record = Record::new(10, "metal detector".chars());
+        let record = Record::new(10, "metal detector");
 
-        let mut hit = record.to_hit();
+        let mut hit = Hit::from_record(&record);
         hit.scores.matches.push(WordMatch {
             query:  MatchSide { pos: 0, len: 0, slice: (0, 0), },
             record: MatchSide { pos: 1, len: 6, slice: (0, 6), },
@@ -65,9 +65,9 @@ mod tests {
 
     #[test]
     fn test_highlight_stripped() {
-        let record = Record::new(10, "'metal' mailbox".chars());
+        let record = Record::new(10, "'metal' mailbox");
 
-        let mut hit = record.to_hit();
+        let mut hit = Hit::from_record(&record);
         hit.scores.matches.push(WordMatch {
             query:  MatchSide { pos: 0, len: 0, slice: (0, 0), },
             record: MatchSide { pos: 0, len: 5, slice: (0, 5), },

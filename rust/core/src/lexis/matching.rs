@@ -48,7 +48,7 @@ impl fmt::Debug for WordMatch {
         if !self.fin {
             write!(f, "..")?;
         }
-        
+
         write!(f, " }}")?;
         Ok(())
     }
@@ -82,9 +82,9 @@ impl<T: AsRef<[char]>> Word<T> {
     pub fn matches<U: AsRef<[char]>>(&self, qword: &Word<U>) -> Option<WordMatch> {
         if qword.is_empty() { return None; }
         if self.is_empty() { return None; }
-    
+
         let mut result = None;
-    
+
         for &len in &[qword.len() + 1, qword.len(), qword.len() - 1] {
             if len > self.len() { continue; }
             if len < self.len() && qword.fin { break; }
@@ -118,7 +118,7 @@ impl<T: AsRef<[char]>> Word<T> {
                 },
             };
         }
-    
+
         result
     }
 }
@@ -129,19 +129,10 @@ mod tests {
     use insta::assert_debug_snapshot;
     use crate::lexis::Chars;
     use super::{Word, Text};
-    use std::borrow::Cow;
 
 
-    fn chars(s: &str) -> Vec<char> {
-        s.chars().collect()
-    }
-    
-    fn record(chars: &[char]) -> Text<Cow<[char]>> {
-        Text::new_cow(Cow::Borrowed(chars)).split(&Chars::Whitespaces)
-    }
-
-    fn query(s: &[char]) -> Text<Cow<[char]>> {
-        record(s).fin(false)
+    fn text(s: &str) -> Text<Vec<char>> {
+        Text::from_str(s).split(&Chars::Whitespaces)
     }
 
 
@@ -150,24 +141,24 @@ mod tests {
 
     #[test]
     fn match_word_empty_both() {
-        let q = Word::new_owned(chars("")).fin(false);
-        let r = Word::new_owned(chars(""));
+        let q = Word::from_str("").fin(false);
+        let r = Word::from_str("");
         assert_eq!(r.matches(&q), None);
     }
 
 
     #[test]
     fn match_word_empty_record() {
-        let q  = Word::new_owned(chars("mailbox")).fin(false);
-        let r  = Word::new_owned(chars(""));
+        let q = Word::from_str("mailbox").fin(false);
+        let r = Word::from_str("");
         assert_eq!(r.matches(&q), None);
     }
 
 
     #[test]
     fn match_word_empty_query() {
-        let q  = Word::new_owned(chars("")).fin(false);
-        let r  = Word::new_owned(chars("mailbox"));
+        let q = Word::from_str("").fin(false);
+        let r = Word::from_str("mailbox");
         assert_eq!(r.matches(&q), None);
     }
 
@@ -177,32 +168,32 @@ mod tests {
 
     #[test]
     fn match_word_full_strict() {
-        let q  = Word::new_owned(chars("mailbox")).fin(false);
-        let r  = Word::new_owned(chars("mailbox"));
+        let q = Word::from_str("mailbox").fin(false);
+        let r = Word::from_str("mailbox");
         assert_debug_snapshot!(r.matches(&q));
     }
 
 
     #[test]
     fn match_word_full_fuzzy_insertion() {
-        let q  = Word::new_owned(chars("mailybox")).fin(false);
-        let r  = Word::new_owned(chars("mailbox"));
+        let q = Word::from_str("mailybox").fin(false);
+        let r = Word::from_str("mailbox");
         assert_debug_snapshot!(r.matches(&q));
     }
 
 
     #[test]
     fn match_word_full_fuzzy_deletion() {
-        let q  = Word::new_owned(chars("mailox")).fin(false);
-        let r  = Word::new_owned(chars("mailbox"));
+        let q = Word::from_str("mailox").fin(false);
+        let r = Word::from_str("mailbox");
         assert_debug_snapshot!(r.matches(&q));
     }
 
 
     #[test]
     fn match_word_full_fuzzy_transposition() {
-        let q  = Word::new_owned(chars("maiblox")).fin(false);
-        let r  = Word::new_owned(chars("mailbox"));
+        let q = Word::from_str("maiblox").fin(false);
+        let r = Word::from_str("mailbox");
         assert_debug_snapshot!(r.matches(&q));
     }
 
@@ -212,32 +203,32 @@ mod tests {
 
     #[test]
     fn match_word_partial_strict() {
-        let q  = Word::new_owned(chars("mailb")).fin(false);
-        let r  = Word::new_owned(chars("mailbox"));
+        let q = Word::from_str("mailb").fin(false);
+        let r = Word::from_str("mailbox");
         assert_debug_snapshot!(r.matches(&q));
     }
 
 
     #[test]
     fn match_word_partial_fuzzy_insertion() {
-        let q  = Word::new_owned(chars("maiylb")).fin(false);
-        let r  = Word::new_owned(chars("mailbox"));
+        let q = Word::from_str("maiylb").fin(false);
+        let r = Word::from_str("mailbox");
         assert_debug_snapshot!(r.matches(&q));
     }
 
 
     #[test]
     fn match_word_partial_fuzzy_deletion() {
-        let q  = Word::new_owned(chars("maib")).fin(false);
-        let r  = Word::new_owned(chars("mailbox"));
+        let q = Word::from_str("maib").fin(false);
+        let r = Word::from_str("mailbox");
         assert_debug_snapshot!(r.matches(&q));
     }
 
 
     #[test]
     fn match_word_partial_fuzzy_transposition() {
-        let q  = Word::new_owned(chars("malib")).fin(false);
-        let r  = Word::new_owned(chars("mailbox"));
+        let q = Word::from_str("malib").fin(false);
+        let r = Word::from_str("mailbox");
         assert_debug_snapshot!(r.matches(&q));
     }
 
@@ -247,20 +238,16 @@ mod tests {
 
     #[test]
     fn match_text_empty_both() {
-        let c1 = chars("");
-        let c2 = chars("");
-        let q  = query(&c1);
-        let r  = record(&c2);
+        let q = text("").fin(false);
+        let r = text("");
         assert_debug_snapshot!(r.matches(&q));
     }
 
 
     #[test]
     fn match_text_empty_one() {
-        let c1 = chars("mailbox");
-        let c2 = chars("");
-        let q  = query(&c1);
-        let r  = record(&c2);
+        let q = text("mailbox").fin(false);
+        let r = text("");
         assert_debug_snapshot!(r.matches(&q));
         assert_debug_snapshot!(q.matches(&r));
     }
@@ -268,70 +255,56 @@ mod tests {
 
     #[test]
     fn match_text_singleton_equality() {
-        let c1 = chars("mailbox");
-        let c2 = chars("mailbox");
-        let q  = query(&c1);
-        let r  = record(&c2);
+        let q = text("mailbox").fin(false);
+        let r = text("mailbox");
         assert_debug_snapshot!(r.matches(&q));
     }
 
 
     #[test]
     fn match_text_singleton_typos() {
-        let c1 = chars("maiblox");
-        let c2 = chars("mailbox");
-        let q  = query(&c1);
-        let r  = record(&c2);
+        let q = text("maiblox").fin(false);
+        let r = text("mailbox");
         assert_debug_snapshot!(r.matches(&q));
     }
 
 
     #[test]
     fn match_text_pair_first() {
-        let c1 = chars("yelow");
-        let c2 = chars("yellow mailbox");
-        let q  = query(&c1);
-        let r  = record(&c2);
+        let q = text("yelow").fin(false);
+        let r = text("yellow mailbox");
         assert_debug_snapshot!(r.matches(&q));
     }
 
 
     #[test]
     fn match_text_pair_second() {
-        let c1 = chars("maiblox");
-        let c2 = chars("yellow mailbox");
-        let q  = query(&c1);
-        let r  = record(&c2);
+        let q = text("maiblox").fin(false);
+        let r = text("yellow mailbox");
         assert_debug_snapshot!(r.matches(&q));
     }
 
 
     #[test]
     fn match_text_pair_unfinished() {
-        let c1 = chars("maiblox yel");
-        let c2 = chars("yellow mailbox");
-        let q  = query(&c1);
-        let r  = record(&c2);
+        let q = text("maiblox yel").fin(false);
+        let r = text("yellow mailbox");
         assert_debug_snapshot!(r.matches(&q));
     }
 
 
     #[test]
     fn match_text_intersection() {
-        let c1 = chars("big malibox yelo");
-        let c2 = chars("small yellow metal mailbox");
-        let q  = query(&c1);
-        let r  = record(&c2);
+        let q = text("big malibox yelo").fin(false);
+        let r = text("small yellow metal mailbox");
         assert_debug_snapshot!(r.matches(&q));
     }
 
 
     #[test]
     fn match_text_regression_best_match() {
-        let c1 = chars("sneak");
-        let c2 = chars("sneaky");
-        let q  = query(&c1);
-        let r  = record(&c2);
+        let q = text("sneak").fin(false);
+        let r = text("sneaky");
         assert_debug_snapshot!(r.matches(&q));
     }
 }
