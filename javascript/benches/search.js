@@ -1,33 +1,35 @@
 const {Suite} = require('benchmark')
-const {search, storeRecords} = require('../build/index')
+const Suggest = require('../build/index')
 const {
-    STATES, 
+    STATES,
     QUERIES_SINGLE_CHAR,
     QUERIES_PARTIAL,
     QUERIES_FULL,
 } = require('./constants')
 
-storeRecords(STATES)
+const suggest = new Suggest()
+suggest.addRecords(STATES)
 
-let i1 = 0
-let i2 = 0
-let i3 = 0
+let offset1 = 0
+let offset2 = 0
+let offset3 = 0
+
 
 new Suite()
     .add('store', () => {
         storeRecords(STATES)
     })
     .add('queries_single_char', () => {
-        const query = QUERIES_SINGLE_CHAR[i1++ % QUERIES_SINGLE_CHAR.length]
-        search(query)
+        const query = QUERIES_SINGLE_CHAR[offset1++ % QUERIES_SINGLE_CHAR.length]
+        suggest.search(query)
     })
     .add('queries_partial', () => {
-        const query = QUERIES_PARTIAL[i2++ % QUERIES_PARTIAL.length]
-        search(query)
+        const query = QUERIES_PARTIAL[offset2++ % QUERIES_PARTIAL.length]
+        suggest.search(query)
     })
     .add('queries_full', () => {
-        const query = QUERIES_FULL[i3++ % QUERIES_FULL.length]
-        search(query)
+        const query = QUERIES_FULL[offset3++ % QUERIES_FULL.length]
+        suggest.search(query)
     })
     .on('complete', function () {
         const results = []
