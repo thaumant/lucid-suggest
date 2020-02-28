@@ -12,7 +12,6 @@ export default () => ({
     transform(code, id) {
         if (code && /\.wasm$/.test(id)) {
             const src = Buffer.from(code, 'binary').toString('base64');
-            // return `export default _loadWasmModule('${src}')\n`;
             return `
                 var src = '${src}'
 
@@ -27,41 +26,13 @@ export default () => ({
                         buf[i] = raw.charCodeAt(i)
                     }
                 }
-        
-                // TODO async for Chrome
-                // return WebAssembly.compile(buf)
-        
+
                 var module   = new WebAssembly.Module(buf)
                 var memory   = new WebAssembly.Memory({initial: 10})
                 var instance = new WebAssembly.Instance(module, {env: {memory}})
-    
+
                 export default instance.exports
             `;
         }
     },
-
-    // banner: `
-    //     function _loadWasmModule (src) {
-    //         var buf = null
-    //         var isNode = typeof process !== 'undefined' && process.versions != null && process.versions.node != null
-    //         if (isNode) {
-    //             buf = Buffer.from(src, 'base64')
-    //         } else {
-    //             var raw = window.atob(src)
-    //             buf = new Uint8Array(new ArrayBuffer(raw.length))
-    //             for(var i = 0; i < raw.length; i++) {
-    //                 buf[i] = raw.charCodeAt(i)
-    //             }
-    //         }
-    
-    //         // TODO async for Chrome
-    //         // return WebAssembly.compile(buf)
-    
-    //         var module   = new WebAssembly.Module(buf)
-    //         var memory   = new WebAssembly.Memory({initial: 10})
-    //         var instance = new WebAssembly.Instance(module, {env: {memory}})
-
-    //         return instance.exports
-    //     }
-    // `.trim(),
 })
