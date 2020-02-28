@@ -4,9 +4,11 @@
   "description": "",
   "main": "build/index.js",
   "scripts": {
+    "cleanup": "rm -rf build && rm -rf pkg",
     "compile": "cd ../rust/wasm-js && wasm-pack build --target bundler --out-dir ../../javascript/pkg",
     "roll-cjs": "rollup -c rollup/config-cjs.js",
     "roll-web": "rollup -c rollup/config-iife.js",
+    "bench": "node benches/search.js",
     "build": "npm run compile && npm run roll-mod && npm run roll-web",
     "test": "jest"
   },

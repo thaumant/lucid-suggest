@@ -25,30 +25,27 @@ pub fn add_records(store_id: usize, ids: &[usize], texts: String) {
 
 #[wasm_bindgen]
 pub fn search(store_id: usize, query: &str) {
-    core::search(store_id, query)
+    core::run_search(store_id, query)
 }
 
 
 #[wasm_bindgen]
 pub fn get_result_ids(store_id: usize) -> Vec<usize> {
-    core::using_store(store_id, |store| {
-        store.results().iter().map(|r| r.id).collect()
+    core::using_results(store_id, |results| {
+        results.iter().map(|r| r.id).collect()
     })
 }
 
 
 #[wasm_bindgen]
 pub fn get_result_highlights(store_id: usize) -> String {
-    core::using_store(store_id, |store| {
-        let results = store.results();
+    core::using_results(store_id, |results| {
         let bytelen: usize = results.iter()
-            .map(|result| result.highlighted.len() * 4)
+            .map(|result| result.highlighted.len())
             .sum();
         let mut concat = String::with_capacity(bytelen + results.len());
         for result in results {
-            for &ch in &result.highlighted {
-                concat.push(ch);
-            }
+            concat.push_str(&result.highlighted);
             concat.push('\0');
         }
         concat

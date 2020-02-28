@@ -1,45 +1,30 @@
 use crate::lexis::{Text, WordMatch};
-use super::Hit;
+use crate::search::{Hit, ScoreType};
 
 
-pub enum Score {
-    Matches = 0,
-    Typos   = 1,
-    Trans   = 2,
-    Fin     = 3,
-    Offset  = 4,
+pub struct Scorer<'a, Src: Iterator<Item=Hit<'a>>> {
+    source: Src,
+    query:  &'a Text<&'a [char]>,
 }
 
 
-#[derive(Debug, Clone)]
-pub struct Scores {
-    pub matches: Vec<WordMatch>,
-    pub linear:  [isize; 5],
-}
-
-
-impl std::ops::Index<Score> for Scores {
-    type Output = isize;
-
-    fn index(&self, score: Score) -> &Self::Output {
-        &self.linear[score as usize]
+impl<'a, Src: Iterator<Item=Hit<'a>>> Scorer<'a, Src> {
+    pub fn new(source: Src, query: &'a Text<&'a [char]>) -> Self {
+        Self { source, query }
     }
 }
 
 
-impl std::ops::IndexMut<Score> for Scores {
-    fn index_mut(&mut self, score: Score) -> &mut Self::Output {
-        &mut self.linear[score as usize]
-    }
-}
+impl<'a, Src: Iterator<Item=Hit<'a>>> Iterator for Scorer<'a, Src> {
+    type Item = Hit<'a>;
 
-
-impl Default for Scores {
-    fn default() -> Scores {
-        Scores {
-            matches: Vec::new(),
-            linear:  [0; 5],
-        }
+    fn next(&mut self) -> Option<Self::Item> {
+        self.source
+            .next()
+            .map(|mut hit| {
+                score(self.query, &mut hit);
+                hit
+            })
     }
 }
 
@@ -47,11 +32,11 @@ impl Default for Scores {
 pub fn score<'a, T: AsRef<[char]>>(query: &Text<T>, hit: &mut Hit<'a>) {
     let matches = hit.text.matches(&query);
 
-    hit.scores[Score::Matches] = score_matches_up(&matches);
-    hit.scores[Score::Typos]   = score_typos_down(&matches);
-    hit.scores[Score::Trans]   = score_trans_down(&matches);
-    hit.scores[Score::Fin]     = score_fin_up(&matches);
-    hit.scores[Score::Offset]  = score_offset_down(&matches);
+    hit.scores[ScoreType::Matches] = score_matches_up(&matches);
+    hit.scores[ScoreType::Typos]   = score_typos_down(&matches);
+    hit.scores[ScoreType::Trans]   = score_trans_down(&matches);
+    hit.scores[ScoreType::Fin]     = score_fin_up(&matches);
+    hit.scores[ScoreType::Offset]  = score_offset_down(&matches);
 
     hit.scores.matches = matches;
 }

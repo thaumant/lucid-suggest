@@ -1,5 +1,5 @@
 ---
 source: src/search/mod.rs
-expression: hits1
+expression: results
 ---
 []

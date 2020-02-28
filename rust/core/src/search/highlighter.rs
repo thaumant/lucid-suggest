@@ -1,45 +1,78 @@
 use crate::lexis::{Text, WordMatch};
-use super::{Hit, Scores};
+use crate::search::{Hit, SearchResult, Scores};
 
 
-pub fn highlight(hit: &Hit, hl: (&[char], &[char])) -> Vec<char> {
-    let (left, right) = hl;
+pub struct Highlighter<'a, Src: Iterator<Item=Hit<'a>>> {
+    separators: (&'a [char], &'a [char]),
+    source: Src,
+}
+
+
+impl<'a, Src: Iterator<Item=Hit<'a>>> Highlighter<'a, Src> {
+    pub fn new(source: Src, separators: (&'a [char], &'a [char])) -> Self {
+        Self { source, separators }
+    }
+}
+
+
+impl<'a, Src: Iterator<Item=Hit<'a>>> Iterator for Highlighter<'a, Src> {
+    type Item = SearchResult;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let separators = self.separators;
+        self.source.next().map(|hit| {
+            SearchResult {
+                id: hit.id,
+                highlighted: highlight(&hit, separators)
+            }
+        })
+    }
+}
+
+
+fn highlight(hit: &Hit, separators: (&[char], &[char])) -> String {
+    let (left, right) = separators;
     let Hit {
         scores: Scores { matches, .. },
         text: Text { words, source },
         ..
     } = hit;
 
-    let capacity   = source.as_ref().len() + words.len() * (left.len() + right.len() + 1);
-    let mut result = Vec::with_capacity(capacity);
+    let mut highlighted = {
+        let chars_src = source.len();
+        let chars_hl  = (left.len() + right.len() + 1) * words.len();
+        String::with_capacity((chars_src + chars_hl) * 4)
+    };
 
     for (i, w) in words.iter().enumerate() {
         match matches.iter().find(|m| m.record.pos == i) {
             Some(WordMatch { record: m, .. }) => {
                 let match_start = w.slice.0 + m.slice.0;
                 let match_end   = w.slice.0 + m.slice.1;
-                result.extend(&w.source.as_ref()[.. match_start]);
-                result.extend(left);
-                result.extend(&w.source.as_ref()[match_start .. match_end]);
-                result.extend(right);
-                result.extend(&w.source.as_ref()[match_end .. ]);
+
+                highlighted.extend(&w.source[.. match_start]);
+                highlighted.extend(left);
+                highlighted.extend(&w.source[match_start .. match_end]);
+                highlighted.extend(right);
+                highlighted.extend(&w.source[match_end .. ]);
             },
             None => {
-                result.extend(w.source.as_ref());
+                highlighted.extend(w.source);
             },
         }
-        result.push(' ');
+        highlighted.push(' ');
     }
-    result.pop();
+    highlighted.pop();
 
-    result
+    highlighted
 }
 
 
 #[cfg(test)]
 mod tests {
     use crate::lexis::{WordMatch, MatchSide};
-    use super::super::{Record, Hit};
+    use crate::store::Record;
+    use crate::search::Hit;
     use super::highlight;
 
     #[test]
@@ -58,7 +91,7 @@ mod tests {
         let right: Vec<char> = "]".chars().collect();
 
         let expected = "metal [detect]or";
-        let received: String = highlight(&hit, (&left, &right)).iter().collect();
+        let received: String = highlight(&hit, (&left, &right));
 
         assert_eq!(&received, expected);
     }
@@ -79,7 +112,7 @@ mod tests {
         let right: Vec<char> = "}}".chars().collect();
 
         let expected = "'{{metal}}' mailbox";
-        let received: String = highlight(&hit, (&left, &right)).iter().collect();
+        let received: String = highlight(&hit, (&left, &right));
 
         assert_eq!(&received, expected);
     }
