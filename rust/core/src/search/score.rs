@@ -2,33 +2,6 @@ use crate::lexis::Text;
 use crate::search::{Hit, ScoreType};
 
 
-pub struct Scorer<'a, Src: Iterator<Item=Hit<'a>>> {
-    source: Src,
-    query:  &'a Text<&'a [char]>,
-}
-
-
-impl<'a, Src: Iterator<Item=Hit<'a>>> Scorer<'a, Src> {
-    pub fn new(source: Src, query: &'a Text<&'a [char]>) -> Self {
-        Self { source, query }
-    }
-}
-
-
-impl<'a, Src: Iterator<Item=Hit<'a>>> Iterator for Scorer<'a, Src> {
-    type Item = Hit<'a>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        self.source
-            .next()
-            .map(|mut hit| {
-                score(self.query, &mut hit);
-                hit
-            })
-    }
-}
-
-
 pub fn score<'a, T: AsRef<[char]>>(query: &Text<T>, hit: &mut Hit<'a>) {
     hit.matches = hit.text.matches(&query);
 

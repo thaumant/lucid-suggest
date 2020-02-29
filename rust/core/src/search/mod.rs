@@ -1,18 +1,12 @@
-mod fullscan;
-mod scorer;
+mod score;
 mod filter;
-mod limitsort;
-mod highlighter;
+mod sort;
+mod highlight;
 
 use std::default::Default;
+use crate::utils::LimitSortIterator;
 use crate::lexis::{Text, WordMatch};
 use crate::store::{Store, Record};
-
-pub use fullscan::FullScan;
-pub use scorer::Scorer;
-pub use filter::Filter;
-pub use limitsort::LimitSort;
-pub use highlighter::Highlighter;
 
 
 #[derive(Debug)]
@@ -92,15 +86,28 @@ pub struct SearchResult {
 
 
 pub fn search<'a>(
-    store: &'a Store,
-    query: &'a Text<&'a [char]>,
-) -> Highlighter<'a, impl Iterator<Item=Hit<'a>>> {
-    let fullscan    = FullScan::new(store.records.iter());
-    let scorer      = Scorer::new(fullscan, query);
-    let filter      = Filter::new(scorer, query);
-    let limitsort   = LimitSort::new(filter, store.limit);
-    let highlighter = Highlighter::new(limitsort, store.separators());
-    highlighter
+    store:   &'a Store,
+    query:   &'a Text<&'a [char]>,
+) -> std::iter::Map<impl Iterator<Item=Hit<'a>>, impl (FnMut(Hit<'a>) -> SearchResult)> {
+    let separators = store.separators();
+    store.records.iter()
+        .map(|record| {
+            Hit::from_record(record)
+        })
+        .map(move |mut hit| {
+            score::score(query, &mut hit);
+            hit
+        })
+        .filter(move |hit| {
+            filter::hit_matches(query, hit)
+        })
+        .limit_sort(store.limit, sort::compare_hits)
+        .map(move |hit| {
+            SearchResult {
+                id: hit.id,
+                highlighted: highlight::highlight(&hit, separators),
+            }
+        })
 }
 
 

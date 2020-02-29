@@ -1,36 +1,8 @@
 use crate::lexis::{Text, WordMatch};
-use crate::search::{Hit, SearchResult};
+use crate::search::Hit;
 
 
-pub struct Highlighter<'a, Src: Iterator<Item=Hit<'a>>> {
-    separators: (&'a [char], &'a [char]),
-    source: Src,
-}
-
-
-impl<'a, Src: Iterator<Item=Hit<'a>>> Highlighter<'a, Src> {
-    pub fn new(source: Src, separators: (&'a [char], &'a [char])) -> Self {
-        Self { source, separators }
-    }
-}
-
-
-impl<'a, Src: Iterator<Item=Hit<'a>>> Iterator for Highlighter<'a, Src> {
-    type Item = SearchResult;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let separators = self.separators;
-        self.source.next().map(|hit| {
-            SearchResult {
-                id: hit.id,
-                highlighted: highlight(&hit, separators)
-            }
-        })
-    }
-}
-
-
-fn highlight(hit: &Hit, separators: (&[char], &[char])) -> String {
+pub fn highlight(hit: &Hit, separators: (&[char], &[char])) -> String {
     let (left, right) = separators;
     let Hit {
         text: Text { words, source },

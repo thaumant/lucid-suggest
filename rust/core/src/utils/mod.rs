@@ -1,5 +1,9 @@
 #![macro_use]
 
+mod limitsort;
+
+pub use limitsort::{LimitSortIterator, LimitSort};
+
 
 macro_rules! min {
     ($x: expr) => ($x);
