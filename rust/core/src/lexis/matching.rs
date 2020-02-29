@@ -28,6 +28,13 @@ pub struct MatchSide {
 }
 
 
+impl MatchSide {
+    pub fn new(pos: usize, len: usize, slice: (usize, usize)) -> Self {
+        MatchSide { pos, len, slice }
+    }
+}
+
+
 impl fmt::Debug for WordMatch {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "WordMatch {{ ")?;
@@ -55,72 +62,67 @@ impl fmt::Debug for WordMatch {
 }
 
 
-impl<T: AsRef<[char]>> Text<T> {
-    pub fn matches<U: AsRef<[char]>>(&self, query: &Text<U>) -> Vec<WordMatch> {
-        let mut matches = Vec::with_capacity(query.words.len());
-        let mut taken   = HashSet::with_capacity(query.words.len());
+pub fn text_match(rtext: &Text<&[char]>, qtext: &Text<&[char]>) -> Vec<WordMatch> {
+    let mut matches = Vec::with_capacity(qtext.words.len());
+    let mut taken   = HashSet::with_capacity(qtext.words.len());
 
-        for (i, qword) in query.words.iter().enumerate() {
-            for (j, rword) in self.words.iter().enumerate() {
-                if taken.contains(&j) { continue; }
-                if let Some(mut m) = rword.matches(qword) {
-                    m.query.pos  = i;
-                    m.record.pos = j;
-                    taken.insert(j);
-                    matches.push(m);
-                    break;
-                }
+    for (i, qword) in qtext.words.iter().enumerate() {
+        for (j, rword) in rtext.words.iter().enumerate() {
+            if taken.contains(&j) { continue; }
+            if let Some(mut m) = word_match(rword, qword) {
+                m.query.pos  = i;
+                m.record.pos = j;
+                taken.insert(j);
+                matches.push(m);
+                break;
             }
         }
-
-        matches
     }
+
+    matches
 }
 
 
-impl<T: AsRef<[char]>> Word<T> {
-    pub fn matches<U: AsRef<[char]>>(&self, qword: &Word<U>) -> Option<WordMatch> {
-        if qword.is_empty() { return None; }
-        if self.is_empty() { return None; }
+pub fn word_match(rword: &Word<&[char]>, qword: &Word<&[char]>) -> Option<WordMatch> {
+    if qword.is_empty() { return None; }
+    if rword.is_empty() { return None; }
 
-        let mut result = None;
+    let mut best_match = None;
 
-        for &len in &[qword.len() + 1, qword.len(), qword.len() - 1] {
-            if len > self.len() { continue; }
-            if len < self.len() && qword.fin { break; }
-            if len == 0 { break; }
-            let rslice   = &self.chars.as_ref()[0..len];
-            let dist     = DAMLEV.with(|dl| dl.distance(qword.chars.as_ref(), &rslice));
-            let rel_dist = dist as f64 / max!(qword.len(), len, 1) as f64;
+    DAMLEV.with(|damlev| {
+        damlev.distance(qword.chars.as_ref(), rword.chars.as_ref());
+        let dists = &*damlev.dists.borrow();
+        let qlen  = qword.len();
+
+        for &rlen in &[qlen + 1, qlen, qlen - 1] {
+            if rlen > rword.len() { continue; }
+            if rlen < rword.len() && qword.fin { break; }
+            if rlen == 0 { break; }
+
+            let dist     = dists.get(qlen + 1, rlen + 1);
+            let rel_dist = dist as f64 / max!(qlen, rlen, 1) as f64;
             if rel_dist > DAMLEV_THRESHOLD { continue; }
-            match result {
+
+            match best_match {
                 None => {
-                    result = Some(WordMatch {
-                        query: MatchSide {
-                            pos:   0,
-                            len:   qword.len(),
-                            slice: (0, qword.len()),
-                        },
-                        record: MatchSide {
-                            pos:   0,
-                            len:   self.len(),
-                            slice: (0, len),
-                        },
-                        typos: dist,
-                        fin:   qword.fin || self.len() == len,
+                    best_match = Some(WordMatch {
+                        query:  MatchSide::new(0, qlen,        (0, qlen)),
+                        record: MatchSide::new(0, rword.len(), (0, rlen)),
+                        typos:  dist,
+                        fin:    qword.fin || rword.len() == rlen,
                     });
                 },
                 Some(ref mut m) => {
                     if m.typos <= dist { continue; }
-                    m.record.slice = (0, len);
+                    m.record.slice = (0, rlen);
                     m.typos        = dist;
-                    m.fin          = qword.fin || self.len() == len;
+                    m.fin          = qword.fin || rword.len() == rlen;
                 },
             };
         }
+    });
 
-        result
-    }
+    best_match
 }
 
 
@@ -128,7 +130,7 @@ impl<T: AsRef<[char]>> Word<T> {
 mod tests {
     use insta::assert_debug_snapshot;
     use crate::lexis::Chars;
-    use super::{Word, Text};
+    use super::{Word, Text, word_match, text_match};
 
 
     fn text(s: &str) -> Text<Vec<char>> {
@@ -143,7 +145,7 @@ mod tests {
     fn match_word_empty_both() {
         let q = Word::from_str("").fin(false);
         let r = Word::from_str("");
-        assert_eq!(r.matches(&q), None);
+        assert_eq!(word_match(&r.to_ref(), &q.to_ref()), None);
     }
 
 
@@ -151,7 +153,7 @@ mod tests {
     fn match_word_empty_record() {
         let q = Word::from_str("mailbox").fin(false);
         let r = Word::from_str("");
-        assert_eq!(r.matches(&q), None);
+        assert_eq!(word_match(&r.to_ref(), &q.to_ref()), None);
     }
 
 
@@ -159,7 +161,7 @@ mod tests {
     fn match_word_empty_query() {
         let q = Word::from_str("").fin(false);
         let r = Word::from_str("mailbox");
-        assert_eq!(r.matches(&q), None);
+        assert_eq!(word_match(&r.to_ref(), &q.to_ref()), None);
     }
 
 
@@ -170,7 +172,7 @@ mod tests {
     fn match_word_full_strict() {
         let q = Word::from_str("mailbox").fin(false);
         let r = Word::from_str("mailbox");
-        assert_debug_snapshot!(r.matches(&q));
+        assert_debug_snapshot!(word_match(&r.to_ref(), &q.to_ref()));
     }
 
 
@@ -178,7 +180,7 @@ mod tests {
     fn match_word_full_fuzzy_insertion() {
         let q = Word::from_str("mailybox").fin(false);
         let r = Word::from_str("mailbox");
-        assert_debug_snapshot!(r.matches(&q));
+        assert_debug_snapshot!(word_match(&r.to_ref(), &q.to_ref()));
     }
 
 
@@ -186,7 +188,7 @@ mod tests {
     fn match_word_full_fuzzy_deletion() {
         let q = Word::from_str("mailox").fin(false);
         let r = Word::from_str("mailbox");
-        assert_debug_snapshot!(r.matches(&q));
+        assert_debug_snapshot!(word_match(&r.to_ref(), &q.to_ref()));
     }
 
 
@@ -194,7 +196,7 @@ mod tests {
     fn match_word_full_fuzzy_transposition() {
         let q = Word::from_str("maiblox").fin(false);
         let r = Word::from_str("mailbox");
-        assert_debug_snapshot!(r.matches(&q));
+        assert_debug_snapshot!(word_match(&r.to_ref(), &q.to_ref()));
     }
 
 
@@ -205,7 +207,7 @@ mod tests {
     fn match_word_partial_strict() {
         let q = Word::from_str("mailb").fin(false);
         let r = Word::from_str("mailbox");
-        assert_debug_snapshot!(r.matches(&q));
+        assert_debug_snapshot!(word_match(&r.to_ref(), &q.to_ref()));
     }
 
 
@@ -213,7 +215,7 @@ mod tests {
     fn match_word_partial_fuzzy_insertion() {
         let q = Word::from_str("maiylb").fin(false);
         let r = Word::from_str("mailbox");
-        assert_debug_snapshot!(r.matches(&q));
+        assert_debug_snapshot!(word_match(&r.to_ref(), &q.to_ref()));
     }
 
 
@@ -221,7 +223,7 @@ mod tests {
     fn match_word_partial_fuzzy_deletion() {
         let q = Word::from_str("maib").fin(false);
         let r = Word::from_str("mailbox");
-        assert_debug_snapshot!(r.matches(&q));
+        assert_debug_snapshot!(word_match(&r.to_ref(), &q.to_ref()));
     }
 
 
@@ -229,7 +231,7 @@ mod tests {
     fn match_word_partial_fuzzy_transposition() {
         let q = Word::from_str("malib").fin(false);
         let r = Word::from_str("mailbox");
-        assert_debug_snapshot!(r.matches(&q));
+        assert_debug_snapshot!(word_match(&r.to_ref(), &q.to_ref()));
     }
 
 
@@ -240,7 +242,7 @@ mod tests {
     fn match_text_empty_both() {
         let q = text("").fin(false);
         let r = text("");
-        assert_debug_snapshot!(r.matches(&q));
+        assert_debug_snapshot!(text_match(&r.to_ref(), &q.to_ref()));
     }
 
 
@@ -248,8 +250,8 @@ mod tests {
     fn match_text_empty_one() {
         let q = text("mailbox").fin(false);
         let r = text("");
-        assert_debug_snapshot!(r.matches(&q));
-        assert_debug_snapshot!(q.matches(&r));
+        assert_debug_snapshot!(text_match(&r.to_ref(), &q.to_ref()));
+        assert_debug_snapshot!(text_match(&q.to_ref(), &r.to_ref()));
     }
 
 
@@ -257,7 +259,7 @@ mod tests {
     fn match_text_singleton_equality() {
         let q = text("mailbox").fin(false);
         let r = text("mailbox");
-        assert_debug_snapshot!(r.matches(&q));
+        assert_debug_snapshot!(text_match(&r.to_ref(), &q.to_ref()));
     }
 
 
@@ -265,7 +267,7 @@ mod tests {
     fn match_text_singleton_typos() {
         let q = text("maiblox").fin(false);
         let r = text("mailbox");
-        assert_debug_snapshot!(r.matches(&q));
+        assert_debug_snapshot!(text_match(&r.to_ref(), &q.to_ref()));
     }
 
 
@@ -273,7 +275,7 @@ mod tests {
     fn match_text_pair_first() {
         let q = text("yelow").fin(false);
         let r = text("yellow mailbox");
-        assert_debug_snapshot!(r.matches(&q));
+        assert_debug_snapshot!(text_match(&r.to_ref(), &q.to_ref()));
     }
 
 
@@ -281,7 +283,7 @@ mod tests {
     fn match_text_pair_second() {
         let q = text("maiblox").fin(false);
         let r = text("yellow mailbox");
-        assert_debug_snapshot!(r.matches(&q));
+        assert_debug_snapshot!(text_match(&r.to_ref(), &q.to_ref()));
     }
 
 
@@ -289,7 +291,7 @@ mod tests {
     fn match_text_pair_unfinished() {
         let q = text("maiblox yel").fin(false);
         let r = text("yellow mailbox");
-        assert_debug_snapshot!(r.matches(&q));
+        assert_debug_snapshot!(text_match(&r.to_ref(), &q.to_ref()));
     }
 
 
@@ -297,7 +299,7 @@ mod tests {
     fn match_text_intersection() {
         let q = text("big malibox yelo").fin(false);
         let r = text("small yellow metal mailbox");
-        assert_debug_snapshot!(r.matches(&q));
+        assert_debug_snapshot!(text_match(&r.to_ref(), &q.to_ref()));
     }
 
 
@@ -305,6 +307,8 @@ mod tests {
     fn match_text_regression_best_match() {
         let q = text("sneak").fin(false);
         let r = text("sneaky");
-        assert_debug_snapshot!(r.matches(&q));
+        assert_debug_snapshot!(text_match(&r.to_ref(), &q.to_ref()));
     }
+
+
 }

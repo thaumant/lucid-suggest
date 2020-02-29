@@ -27,23 +27,28 @@ impl DistMatrix {
         if self.size == 0 { return; }
         unsafe {
             for i in 0..self.size {
-                self.set(i, 0, self.size);
-                self.set(0, i, self.size);
+                self.set_unchecked(i, 0, self.size);
+                self.set_unchecked(0, i, self.size);
             }
             for i in 1..self.size {
-                self.set(i, 1, i - 1);
-                self.set(1, i, i - 1);
+                self.set_unchecked(i, 1, i - 1);
+                self.set_unchecked(1, i, i - 1);
             }
         }
     }
 
     #[inline]
-    pub unsafe fn get(&self, i: usize, j: usize) -> usize {
+    pub unsafe fn get_unchecked(&self, i: usize, j: usize) -> usize {
         *self.raw.get_unchecked(i * self.size + j)
     }
 
     #[inline]
-    pub unsafe fn set(&mut self, i: usize, j: usize, val: usize) {
+    pub unsafe fn set_unchecked(&mut self, i: usize, j: usize, val: usize) {
         *self.raw.get_unchecked_mut(i * self.size + j) = val;
+    }
+
+    #[inline]
+    pub fn get(&self, i: usize, j: usize) -> usize {
+        self.raw[i * self.size + j]
     }
 }

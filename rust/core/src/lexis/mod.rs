@@ -5,7 +5,7 @@ mod matching;
 
 pub use word::Word;
 pub use text::Text;
-pub use matching::{WordMatch, MatchSide};
+pub use matching::{WordMatch, MatchSide, word_match, text_match};
 pub use pattern::{Chars, CharPattern};
 
 

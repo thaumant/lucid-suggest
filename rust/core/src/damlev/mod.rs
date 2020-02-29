@@ -1,10 +1,8 @@
 mod matrix;
-mod utils;
 
 use std::cmp::max;
 use std::collections::BTreeMap;
 use std::cell::RefCell;
-use utils::common_affix_sizes;
 use matrix::DistMatrix;
 
 
@@ -25,13 +23,6 @@ impl<T: PartialEq + Copy + Ord> DamerauLevenshtein<T> {
     }
 
     pub fn distance(&self, slice1: &[T], slice2: &[T]) -> usize {
-        let (prefix, postfix) = common_affix_sizes(slice1, slice2);
-        let mut slice1 = { let len = slice1.len(); &slice1[prefix .. len - postfix] };
-        let mut slice2 = { let len = slice2.len(); &slice2[prefix .. len - postfix] };
-        if slice2.len() < slice1.len() {
-            std::mem::swap(&mut slice1, &mut slice2);
-        }
-
         let dists = &mut *self.dists.borrow_mut();
         dists.grow(max(slice1.len() + 2, slice2.len() + 2));
 
@@ -43,13 +34,12 @@ impl<T: PartialEq + Copy + Ord> DamerauLevenshtein<T> {
 
             for (i2, &x2) in slice2.iter().enumerate() {
                 let l1 = *last_i1.get(&x2).unwrap_or(&0);
-
                 unsafe {
-                    dists.set(i1 + 2, i2 + 2, min!(
-                        dists.get(i1 + 2, i2 + 1) + 1,
-                        dists.get(i1 + 1, i2 + 2) + 1,
-                        dists.get(i1 + 1, i2 + 1) + (x1 != x2) as usize,
-                        dists.get(l1, l2) + (i1 - l1) + (i2 - l2) + 1
+                    dists.set_unchecked(i1 + 2, i2 + 2, min!(
+                        dists.get_unchecked(i1 + 2, i2 + 1) + 1,
+                        dists.get_unchecked(i1 + 1, i2 + 2) + 1,
+                        dists.get_unchecked(i1 + 1, i2 + 1) + (x1 != x2) as usize,
+                        dists.get_unchecked(l1, l2) + (i1 - l1) + (i2 - l2) + 1
                     ));
                 }
 
@@ -58,7 +48,7 @@ impl<T: PartialEq + Copy + Ord> DamerauLevenshtein<T> {
             last_i1.insert(x1, i1 + 1);
         }
 
-        unsafe { dists.get(slice1.len() + 1, slice2.len() + 1) }
+        unsafe { dists.get_unchecked(slice1.len() + 1, slice2.len() + 1) }
     }
 }
 

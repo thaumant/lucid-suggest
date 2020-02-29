@@ -1,9 +1,9 @@
-use crate::lexis::Text;
+use crate::lexis::{Text, text_match};
 use crate::search::{Hit, ScoreType};
 
 
-pub fn score<'a, T: AsRef<[char]>>(query: &Text<T>, hit: &mut Hit<'a>) {
-    hit.matches = hit.text.matches(&query);
+pub fn score(query: &Text<&[char]>, hit: &mut Hit) {
+    hit.matches = text_match(&hit.text, &query);
 
     hit.scores[ScoreType::SameWords] = score_matches_up(hit);
     hit.scores[ScoreType::Typos]     = score_typos_down(hit);
@@ -97,9 +97,9 @@ mod tests {
         let q1     = tokenize_query("yellow mailbox");
         let q2     = tokenize_query("yelow maiblox");
         let q3     = tokenize_query("yellow mail");
-        score(&q1, &mut h1);
-        score(&q2, &mut h2);
-        score(&q3, &mut h3);
+        score(&q1.to_ref(), &mut h1);
+        score(&q2.to_ref(), &mut h2);
+        score(&q3.to_ref(), &mut h3);
         assert_eq!(h1.scores[ScoreType::Typos], -0);
         assert_eq!(h2.scores[ScoreType::Typos], -2);
         assert_eq!(h3.scores[ScoreType::Typos], -3);
@@ -114,9 +114,9 @@ mod tests {
         let q1     = tokenize_query("smal mailbox");
         let q2     = tokenize_query("yelow mailbox");
         let q3     = tokenize_query("metol maiblox");
-        score(&q1, &mut h1);
-        score(&q2, &mut h2);
-        score(&q3, &mut h3);
+        score(&q1.to_ref(), &mut h1);
+        score(&q2.to_ref(), &mut h2);
+        score(&q3.to_ref(), &mut h3);
         assert_eq!(h1.scores[ScoreType::Offset], -0);
         assert_eq!(h2.scores[ScoreType::Offset], -1);
         assert_eq!(h3.scores[ScoreType::Offset], -2);
