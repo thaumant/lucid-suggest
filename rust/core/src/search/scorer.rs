@@ -1,4 +1,4 @@
-use crate::lexis::{Text, WordMatch};
+use crate::lexis::Text;
 use crate::search::{Hit, ScoreType};
 
 
@@ -30,39 +30,40 @@ impl<'a, Src: Iterator<Item=Hit<'a>>> Iterator for Scorer<'a, Src> {
 
 
 pub fn score<'a, T: AsRef<[char]>>(query: &Text<T>, hit: &mut Hit<'a>) {
-    let matches = hit.text.matches(&query);
+    hit.matches = hit.text.matches(&query);
 
-    hit.scores[ScoreType::Matches] = score_matches_up(&matches);
-    hit.scores[ScoreType::Typos]   = score_typos_down(&matches);
-    hit.scores[ScoreType::Trans]   = score_trans_down(&matches);
-    hit.scores[ScoreType::Fin]     = score_fin_up(&matches);
-    hit.scores[ScoreType::Offset]  = score_offset_down(&matches);
-
-    hit.matches = matches;
+    hit.scores[ScoreType::SameWords] = score_matches_up(hit);
+    hit.scores[ScoreType::Typos]     = score_typos_down(hit);
+    hit.scores[ScoreType::Trans]     = score_trans_down(hit);
+    hit.scores[ScoreType::Fin]       = score_fin_up(hit);
+    hit.scores[ScoreType::Offset]    = score_offset_down(hit);
+    hit.scores[ScoreType::Prio]      = score_prio_up(hit);
+    hit.scores[ScoreType::WordLen]   = score_word_len_down(hit);
+    hit.scores[ScoreType::CharLen]   = score_char_len_down(hit);
 }
 
 
-pub fn score_matches_up(matches: &[WordMatch]) -> isize {
-    matches.len() as isize
+pub fn score_matches_up(hit: &Hit) -> isize {
+    hit.matches.len() as isize
 }
 
 
-pub fn score_typos_down(matches: &[WordMatch]) -> isize {
+pub fn score_typos_down(hit: &Hit) -> isize {
     let mut typos = 0;
-    for m in matches {
+    for m in &hit.matches {
         typos += m.typos + m.record.slice.0 + (m.record.len - m.record.slice.1);
     }
     -(typos as isize)
 }
 
 
-pub fn score_trans_down(matches: &[WordMatch]) -> isize {
-    if matches.is_empty() { return 0; }
+pub fn score_trans_down(hit: &Hit) -> isize {
+    if hit.matches.is_empty() { return 0; }
 
     let mut transpositions = 0;
 
-    let prevs = &matches[ .. matches.len() - 1];
-    let nexts = &matches[1..];
+    let prevs = &hit.matches[ .. hit.matches.len() - 1];
+    let nexts = &hit.matches[1..];
     for (prev, next) in prevs.iter().zip(nexts.iter()) {
         let prev_ix = prev.record.pos + 1;
         let next_ix = next.record.pos;
@@ -74,8 +75,8 @@ pub fn score_trans_down(matches: &[WordMatch]) -> isize {
 }
 
 
-pub fn score_fin_up(matches: &[WordMatch]) -> isize {
-    if let Some(m) = matches.last() {
+pub fn score_fin_up(hit: &Hit) -> isize {
+    if let Some(m) = hit.matches.last() {
         m.fin as isize
     } else {
         1
@@ -83,8 +84,8 @@ pub fn score_fin_up(matches: &[WordMatch]) -> isize {
 }
 
 
-pub fn score_offset_down(matches: &[WordMatch]) -> isize {
-    let offset = matches.iter()
+pub fn score_offset_down(hit: &Hit) -> isize {
+    let offset = hit.matches.iter()
         .map(|m| m.record.pos)
         .min()
         .unwrap_or(0);
@@ -92,34 +93,59 @@ pub fn score_offset_down(matches: &[WordMatch]) -> isize {
 }
 
 
+pub fn score_prio_up(hit: &Hit) -> isize {
+    hit.prio as isize
+}
+
+
+pub fn score_word_len_down(hit: &Hit) -> isize {
+    -(hit.text.words.len() as isize)
+}
+
+
+pub fn score_char_len_down(hit: &Hit) -> isize {
+    -(hit.text.words.iter().map(|w| w.len()).sum::<usize>() as isize)
+}
+
+
 #[cfg(test)]
 mod tests {
-    use crate::lexis::{Text, Chars};
-    use super::{score_typos_down, score_offset_down};
-
-    fn text(s: &str) -> Text<Vec<char>> {
-        Text::from_str(s).split(&Chars::Whitespaces)
-    }
+    use crate::lexis::tokenize_query;
+    use crate::store::Record;
+    use crate::search::{Hit, ScoreType};
+    use super::score;
 
     #[test]
     fn test_score_typos() {
-        let r  = text("small yellow metal mailbox");
-        let q1 = text("yellow mailbox").fin(false);
-        let q2 = text("yelow maiblox").fin(false);
-        let q3 = text("yellow mail").fin(false);
-        assert_eq!(score_typos_down(&r.matches(&q1)), -0);
-        assert_eq!(score_typos_down(&r.matches(&q2)), -2);
-        assert_eq!(score_typos_down(&r.matches(&q3)), -3);
+        let r      = Record::new(10, "small yellow metal mailbox", 0);
+        let mut h1 = Hit::from_record(&r);
+        let mut h2 = Hit::from_record(&r);
+        let mut h3 = Hit::from_record(&r);
+        let q1     = tokenize_query("yellow mailbox");
+        let q2     = tokenize_query("yelow maiblox");
+        let q3     = tokenize_query("yellow mail");
+        score(&q1, &mut h1);
+        score(&q2, &mut h2);
+        score(&q3, &mut h3);
+        assert_eq!(h1.scores[ScoreType::Typos], -0);
+        assert_eq!(h2.scores[ScoreType::Typos], -2);
+        assert_eq!(h3.scores[ScoreType::Typos], -3);
     }
 
     #[test]
     fn test_score_offset() {
-        let r  = text("small yellow metal mailbox");
-        let q1 = text("smal mailbox").fin(false);
-        let q2 = text("yelow mailbox").fin(false);
-        let q3 = text("metol maiblox").fin(false);
-        assert_eq!(score_offset_down(&r.matches(&q1)), -0);
-        assert_eq!(score_offset_down(&r.matches(&q2)), -1);
-        assert_eq!(score_offset_down(&r.matches(&q3)), -2);
+        let r      = Record::new(10, "small yellow metal mailbox", 0);
+        let mut h1 = Hit::from_record(&r);
+        let mut h2 = Hit::from_record(&r);
+        let mut h3 = Hit::from_record(&r);
+        let q1     = tokenize_query("smal mailbox");
+        let q2     = tokenize_query("yelow mailbox");
+        let q3     = tokenize_query("metol maiblox");
+        score(&q1, &mut h1);
+        score(&q2, &mut h2);
+        score(&q3, &mut h3);
+        assert_eq!(h1.scores[ScoreType::Offset], -0);
+        assert_eq!(h2.scores[ScoreType::Offset], -1);
+        assert_eq!(h3.scores[ScoreType::Offset], -2);
     }
 }

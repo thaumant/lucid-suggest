@@ -77,7 +77,7 @@ mod tests {
 
     #[test]
     fn test_highlight() {
-        let record = Record::new(10, "metal detector");
+        let record = Record::new(10, "metal detector", 0);
 
         let mut hit = Hit::from_record(&record);
         hit.matches.push(WordMatch {
@@ -98,7 +98,7 @@ mod tests {
 
     #[test]
     fn test_highlight_stripped() {
-        let record = Record::new(10, "'metal' mailbox");
+        let record = Record::new(10, "'metal' mailbox", 0);
 
         let mut hit = Hit::from_record(&record);
         hit.matches.push(WordMatch {

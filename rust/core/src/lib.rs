@@ -43,10 +43,10 @@ pub fn highlight_using(store_id: usize, separators: (&str, &str)) {
 }
 
 
-pub fn add_records<'a, I>(store_id: usize, records: I) where I: IntoIterator<Item=(usize, &'a str)> {
+pub fn add_records<'a, I>(store_id: usize, records: I) where I: IntoIterator<Item=(usize, &'a str, usize)> {
     using_store(store_id, |store| {
-        for (id, text) in records {
-            store.add(Record::new(id, text));
+        for (id, text, prio) in records {
+            store.add(Record::new(id, text, prio));
         }
     });
 }

@@ -4,15 +4,15 @@ expression: results
 ---
 [
     SearchResult {
-        id: 10,
-        highlighted: "brown plush bear",
+        id: 30,
+        highlighted: "yellow metal mailbox",
     },
     SearchResult {
         id: 20,
         highlighted: "metal detector",
     },
     SearchResult {
-        id: 30,
-        highlighted: "yellow metal mailbox",
+        id: 10,
+        highlighted: "brown plush bear",
     },
 ]

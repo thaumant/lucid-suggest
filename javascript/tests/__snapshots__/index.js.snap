@@ -5,16 +5,19 @@ Array [
   Object {
     "highlighted": "Hello world!",
     "id": 10,
+    "prio": 3,
     "text": "Hello world!",
   },
   Object {
     "highlighted": "Foo bar",
     "id": 20,
+    "prio": 2,
     "text": "Foo bar",
   },
   Object {
     "highlighted": "-BAZZZ-",
     "id": 30,
+    "prio": 1,
     "text": "-BAZZZ-",
   },
 ]
@@ -25,6 +28,7 @@ Array [
   Object {
     "highlighted": "[Foo] [bar]",
     "id": 20,
+    "prio": 2,
     "text": "Foo bar",
   },
 ]
@@ -35,12 +39,37 @@ Array [
   Object {
     "highlighted": "Foo [ba]r",
     "id": 20,
+    "prio": 2,
     "text": "Foo bar",
   },
   Object {
     "highlighted": "-[BA]ZZZ-",
     "id": 30,
+    "prio": 1,
     "text": "-BAZZZ-",
+  },
+]
+`;
+
+exports[`Suggest Prio 1`] = `
+Array [
+  Object {
+    "highlighted": "-BAZZZ-",
+    "id": 30,
+    "prio": 2,
+    "text": "-BAZZZ-",
+  },
+  Object {
+    "highlighted": "Foo bar",
+    "id": 20,
+    "prio": 1,
+    "text": "Foo bar",
+  },
+  Object {
+    "highlighted": "Hello world!",
+    "id": 10,
+    "prio": 0,
+    "text": "Hello world!",
   },
 ]
 `;

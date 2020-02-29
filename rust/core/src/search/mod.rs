@@ -19,6 +19,7 @@ pub use highlighter::Highlighter;
 pub struct Hit<'a> {
     pub id:      usize,
     pub text:    Text<&'a [char]>,
+    pub prio:    usize,
     pub matches: Vec<WordMatch>,
     pub scores:  Scores,
 }
@@ -29,6 +30,7 @@ impl<'a> Hit<'a> {
         Hit {
             id:      record.id,
             text:    record.text.to_ref(),
+            prio:    record.prio,
             scores:  Default::default(),
             matches: Vec::new(),
         }
@@ -37,16 +39,19 @@ impl<'a> Hit<'a> {
 
 
 pub enum ScoreType {
-    Matches = 0,
-    Typos   = 1,
-    Trans   = 2,
-    Fin     = 3,
-    Offset  = 4,
+    SameWords = 0,
+    Typos     = 1,
+    Trans     = 2,
+    Fin       = 3,
+    Offset    = 4,
+    Prio      = 5,
+    WordLen   = 6,
+    CharLen   = 7,
 }
 
 
 #[derive(Debug, Clone)]
-pub struct Scores([isize; 5]);
+pub struct Scores([isize; 8]);
 
 
 impl Scores {
@@ -74,7 +79,7 @@ impl std::ops::IndexMut<ScoreType> for Scores {
 
 impl Default for Scores {
     fn default() -> Scores {
-        Scores([0; 5])
+        Scores([0; 8])
     }
 }
 
@@ -108,9 +113,9 @@ mod tests {
 
     fn check(name: &str, queries: &[&str]) {
         let mut store = Store::new();
-        store.add(Record::new(10, "brown plush bear"));
-        store.add(Record::new(20, "metal detector"));
-        store.add(Record::new(30, "yellow metal mailbox"));
+        store.add(Record::new(10, "brown plush bear", 10));
+        store.add(Record::new(20, "metal detector", 20));
+        store.add(Record::new(30, "yellow metal mailbox", 30));
 
         for (i, query) in queries.iter().enumerate() {
             let query   = tokenize_query(query);

@@ -8,14 +8,16 @@ static DEFAULT_LIMIT: usize = 10;
 pub struct Record {
     pub id: usize,
     pub text: Text<Vec<char>>,
+    pub prio: usize,
 }
 
 
 impl Record {
-    pub fn new(id: usize, source: &str) -> Record {
+    pub fn new(id: usize, source: &str, prio: usize) -> Record {
         Record {
             id,
             text: tokenize_record(source),
+            prio,
         }
     }
 }
