@@ -1,13 +1,16 @@
 use std::fmt;
 use std::collections::HashSet;
 use crate::damlev::DamerauLevenshtein;
+use crate::jaccard::Jaccard;
 use super::{Word, Text};
 
 
-const DAMLEV_THRESHOLD: f64 = 0.21;
+const DAMLEV_THRESHOLD:  f64 = 0.21;
+const JACCARD_THRESHOLD: f64 = 0.41;
 
 thread_local! {
-    static DAMLEV: DamerauLevenshtein<char> = DamerauLevenshtein::new();
+    static DAMLEV:  DamerauLevenshtein<char> = DamerauLevenshtein::new();
+    static JACCARD: Jaccard<char>            = Jaccard::new();
 }
 
 
@@ -84,8 +87,9 @@ pub fn text_match(rtext: &Text<&[char]>, qtext: &Text<&[char]>) -> Vec<WordMatch
 
 
 pub fn word_match(rword: &Word<&[char]>, qword: &Word<&[char]>) -> Option<WordMatch> {
-    if qword.is_empty() { return None; }
-    if rword.is_empty() { return None; }
+    if qword.is_empty() || rword.is_empty() || !jaccard_test(qword, rword) {
+        return None;
+    }
 
     let mut best_match = None;
 
@@ -123,6 +127,17 @@ pub fn word_match(rword: &Word<&[char]>, qword: &Word<&[char]>) -> Option<WordMa
     });
 
     best_match
+}
+
+
+pub fn jaccard_test(qword: &Word<&[char]>, rword: &Word<&[char]>) -> bool {
+    let Word { chars: qchars, fin, .. } = qword;
+    let Word { chars: rchars, .. }      = rword;
+    let qlen   = qchars.len();
+    let rlen   = rchars.len();
+    let rslice = if *fin { &rchars } else { &rchars[.. min!(qlen, rlen)] };
+    let dist   = JACCARD.with(|j| { j.rel_dist(&rslice, &qchars) });
+    dist < JACCARD_THRESHOLD
 }
 
 

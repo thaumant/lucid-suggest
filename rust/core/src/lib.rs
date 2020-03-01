@@ -1,6 +1,7 @@
 mod utils;
 
 mod damlev;
+mod jaccard;
 mod lexis;
 mod store;
 mod search;
