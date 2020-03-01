@@ -5,8 +5,9 @@ use crate::jaccard::Jaccard;
 use super::{Word, Text};
 
 
-const DAMLEV_THRESHOLD:  f64 = 0.21;
+const LENGTH_THRESHOLD:  f64 = 0.51;
 const JACCARD_THRESHOLD: f64 = 0.41;
+const DAMLEV_THRESHOLD:  f64 = 0.21;
 
 thread_local! {
     static DAMLEV:  DamerauLevenshtein<char> = DamerauLevenshtein::new();
@@ -87,7 +88,13 @@ pub fn text_match(rtext: &Text<&[char]>, qtext: &Text<&[char]>) -> Vec<WordMatch
 
 
 pub fn word_match(rword: &Word<&[char]>, qword: &Word<&[char]>) -> Option<WordMatch> {
-    if qword.is_empty() || rword.is_empty() || !jaccard_test(qword, rword) {
+    if qword.is_empty() || rword.is_empty() {
+        return None;
+    }
+    if !length_check(qword, rword) {
+        return None;
+    }
+    if !jaccard_check(qword, rword) {
         return None;
     }
 
@@ -130,12 +137,26 @@ pub fn word_match(rword: &Word<&[char]>, qword: &Word<&[char]>) -> Option<WordMa
 }
 
 
-pub fn jaccard_test(qword: &Word<&[char]>, rword: &Word<&[char]>) -> bool {
+pub fn length_check(qword: &Word<&[char]>, rword: &Word<&[char]>) -> bool {
+    let qlen  = qword.len();
+    let rlen  = if qword.fin { rword.len() } else { min!(qlen, rword.len()) };
+
+    if qlen <= 3 || rlen <= 3 {
+        return qlen == rlen;
+    }
+
+    let long  = max!(qlen, rlen);
+    let short = min!(qlen, rlen);
+    let dist  = 1.0 - (short as f64 / long as f64);
+
+    dist < LENGTH_THRESHOLD
+}
+
+
+pub fn jaccard_check(qword: &Word<&[char]>, rword: &Word<&[char]>) -> bool {
     let Word { chars: qchars, fin, .. } = qword;
     let Word { chars: rchars, .. }      = rword;
-    let qlen   = qchars.len();
-    let rlen   = rchars.len();
-    let rslice = if *fin { &rchars } else { &rchars[.. min!(qlen, rlen)] };
+    let rslice = if *fin { &rchars } else { &rchars[.. min!(qword.len(), rword.len())] };
     let dist   = JACCARD.with(|j| { j.rel_dist(&rslice, &qchars) });
     dist < JACCARD_THRESHOLD
 }
