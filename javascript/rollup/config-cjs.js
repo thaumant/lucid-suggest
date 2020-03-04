@@ -1,4 +1,5 @@
 import wasm from './plugin-wasm'
+import pkg  from './plugin-pkg-es6'
 
 export default {
     input: 'src/index.js',
@@ -8,5 +9,6 @@ export default {
     },
     plugins: [
         wasm(),
+        pkg(),
     ]
 }
