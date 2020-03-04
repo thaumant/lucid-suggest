@@ -31,11 +31,16 @@ export default () => ({
                     }
                 }
 
-                var module   = new WebAssembly.Module(binary)
-                var memory   = new WebAssembly.Memory({initial: 10})
-                var instance = new WebAssembly.Instance(module, {env: {memory}})
+                var instantiatePromise = WebAssembly.instantiate(
+                    binary,
+                    {env: {memory: new WebAssembly.Memory({initial: 10})}}
+                )
 
-                export default instance.exports
+                var exportsPromise = instantiatePromise.then(result => {
+                    return result.instance.exports
+                })
+
+                export default exportsPromise
             `;
         }
     },

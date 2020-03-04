@@ -9,7 +9,7 @@
     "roll-cjs": "rollup -c rollup/config-cjs.js",
     "roll-web": "rollup -c rollup/config-iife.js",
     "bench": "node benches/search.js",
-    "build": "npm run compile && npm run roll-mod && npm run roll-web",
+    "build": "npm run cleanup && npm run compile && npm run roll-cjs && npm run roll-web",
     "test": "jest"
   },
   "repository": {

@@ -1,5 +1,5 @@
-import wasm from './plugin-wasm'
-import pkg  from './plugin-pkg-es6'
+import wasm         from './plugin-wasm'
+import bindgenAsync from './plugin-bindgen-async'
 
 export default {
     input: 'src/index.js',
@@ -9,6 +9,6 @@ export default {
     },
     plugins: [
         wasm(),
-        pkg(),
+        bindgenAsync(),
     ]
 }

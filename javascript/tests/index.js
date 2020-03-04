@@ -1,4 +1,4 @@
-const Suggest = require('../build/index')
+const compile = require('../build/index')
 
 
 describe('Suggest', () => {
@@ -11,8 +11,10 @@ describe('Suggest', () => {
     let suggest = null
 
     beforeAll(() => {
-        suggest = new Suggest()
-        suggest.addRecords(records)
+        return compile.then(LucidSuggest => {
+            suggest = new LucidSuggest()
+            suggest.addRecords(records)
+        })
     })
 
     test('Empty input', () => {
@@ -30,10 +32,12 @@ describe('Suggest', () => {
         expect(hits).toMatchSnapshot()
     })
 
-    test('Prio', () => {{
-        suggest = new Suggest()
-        suggest.addRecords(records.map((r, i) => ({...r, prio: i})))
-        const hits = suggest.search('')
-        expect(hits).toMatchSnapshot()
-    }})
+    test('Prio', () => {
+        return compile.then(LucidSuggest => {
+            suggest = new LucidSuggest()
+            suggest.addRecords(records.map((r, i) => ({...r, prio: i})))
+            const hits = suggest.search('')
+            expect(hits).toMatchSnapshot()
+        })
+    })
 })
