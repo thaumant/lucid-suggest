@@ -5,6 +5,6 @@ expression: results
 [
     SearchResult {
         id: 10,
-        highlighted: "[brown] [plush] [bear]",
+        title: "[brown] [plush] [bear]",
     },
 ]

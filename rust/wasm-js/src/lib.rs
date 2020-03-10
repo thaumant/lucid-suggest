@@ -40,14 +40,14 @@ pub fn get_result_ids(store_id: usize) -> Vec<usize> {
 
 
 #[wasm_bindgen]
-pub fn get_result_highlights(store_id: usize) -> String {
+pub fn get_result_titles(store_id: usize) -> String {
     core::using_results(store_id, |results| {
         let bytelen: usize = results.iter()
-            .map(|result| result.highlighted.len())
+            .map(|result| result.title.len())
             .sum();
         let mut concat = String::with_capacity(bytelen + results.len());
         for result in results {
-            concat.push_str(&result.highlighted);
+            concat.push_str(&result.title);
             concat.push('\0');
         }
         concat

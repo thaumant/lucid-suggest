@@ -5,10 +5,10 @@ expression: results
 [
     SearchResult {
         id: 30,
-        highlighted: "[yellow] [metal] [mailbox]",
+        title: "[yellow] [metal] [mailbox]",
     },
     SearchResult {
         id: 20,
-        highlighted: "[metal] detector",
+        title: "[metal] detector",
     },
 ]

@@ -38,16 +38,16 @@ export default compile.then(function(wasm) {
 
         search(query) {
             wasm.run_search(this.id, query)
-            const ids        = wasm.get_result_ids(this.id)
-            const highlights = wasm.get_result_highlights(this.id).split('\0')
-            const hits       = []
+            const ids    = wasm.get_result_ids(this.id)
+            const titles = wasm.get_result_titles(this.id).split('\0')
+            const hits   = []
             for (let i = 0; i < ids.length; i++) {
-                const id          = ids[i]
-                const highlighted = highlights[i]
-                const record      = this.records.find(r => r.id === id)
-                if (!record)      throw new Error(`Missing record ${id}`)
-                if (!highlighted) throw new Error(`Missing highlight for ${id}`)
-                hits.push({...record, highlighted})
+                const id     = ids[i]
+                const title  = titles[i]
+                const record = this.records.find(r => r.id === id)
+                if (!record) throw new Error(`Missing record ${id}`)
+                if (!title)  throw new Error(`Missing title for ${id}`)
+                hits.push({...record, title})
             }
             return hits
         }

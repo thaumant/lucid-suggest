@@ -12,8 +12,8 @@ use crate::store::{Store, Record};
 #[derive(Debug)]
 pub struct Hit<'a> {
     pub id:      usize,
-    pub text:    Text<&'a [char]>,
-    pub prio:    usize,
+    pub title:   Text<&'a [char]>,
+    pub rating:  usize,
     pub matches: Vec<WordMatch>,
     pub scores:  Scores,
 }
@@ -23,8 +23,8 @@ impl<'a> Hit<'a> {
     pub fn from_record(record: &'a Record) -> Hit<'a> {
         Hit {
             id:      record.id,
-            text:    record.text.to_ref(),
-            prio:    record.prio,
+            title:   record.title.to_ref(),
+            rating:  record.rating,
             scores:  Default::default(),
             matches: Vec::new(),
         }
@@ -80,8 +80,8 @@ impl Default for Scores {
 
 #[derive(Debug)]
 pub struct SearchResult {
-    pub id:          usize,
-    pub highlighted: String,
+    pub id:    usize,
+    pub title: String,
 }
 
 
@@ -104,8 +104,8 @@ pub fn search<'a>(
         .limit_sort(store.limit, sort::compare_hits)
         .map(move |hit| {
             SearchResult {
-                id: hit.id,
-                highlighted: highlight::highlight(&hit, separators),
+                id:    hit.id,
+                title: highlight::highlight(&hit, separators),
             }
         })
 }

@@ -5,7 +5,7 @@ use crate::search::Hit;
 pub fn highlight(hit: &Hit, separators: (&[char], &[char])) -> String {
     let (left, right) = separators;
     let Hit {
-        text: Text { words, source },
+        title: Text { words, source },
         matches,
         ..
     } = hit;

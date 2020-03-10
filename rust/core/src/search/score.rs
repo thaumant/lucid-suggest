@@ -3,14 +3,14 @@ use crate::search::{Hit, ScoreType};
 
 
 pub fn score(query: &Text<&[char]>, hit: &mut Hit) {
-    hit.matches = text_match(&hit.text, &query);
+    hit.matches = text_match(&hit.title, &query);
 
     hit.scores[ScoreType::SameWords] = score_matches_up(hit);
     hit.scores[ScoreType::Typos]     = score_typos_down(hit);
     hit.scores[ScoreType::Trans]     = score_trans_down(hit);
     hit.scores[ScoreType::Fin]       = score_fin_up(hit);
     hit.scores[ScoreType::Offset]    = score_offset_down(hit);
-    hit.scores[ScoreType::Prio]      = score_prio_up(hit);
+    hit.scores[ScoreType::Prio]      = score_rating_up(hit);
     hit.scores[ScoreType::WordLen]   = score_word_len_down(hit);
     hit.scores[ScoreType::CharLen]   = score_char_len_down(hit);
 }
@@ -66,18 +66,18 @@ pub fn score_offset_down(hit: &Hit) -> isize {
 }
 
 
-pub fn score_prio_up(hit: &Hit) -> isize {
-    hit.prio as isize
+pub fn score_rating_up(hit: &Hit) -> isize {
+    hit.rating as isize
 }
 
 
 pub fn score_word_len_down(hit: &Hit) -> isize {
-    -(hit.text.words.len() as isize)
+    -(hit.title.words.len() as isize)
 }
 
 
 pub fn score_char_len_down(hit: &Hit) -> isize {
-    -(hit.text.words.iter().map(|w| w.len()).sum::<usize>() as isize)
+    -(hit.title.words.iter().map(|w| w.len()).sum::<usize>() as isize)
 }
 
 
