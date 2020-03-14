@@ -4,20 +4,17 @@ exports[`Suggest Empty input 1`] = `
 Array [
   Object {
     "id": 10,
-    "prio": 3,
-    "text": "Hello world!",
+    "rating": 3,
     "title": "Hello world!",
   },
   Object {
     "id": 20,
-    "prio": 2,
-    "text": "Foo bar",
+    "rating": 2,
     "title": "Foo bar",
   },
   Object {
     "id": 30,
-    "prio": 1,
-    "text": "-BAZZZ-",
+    "rating": 1,
     "title": "-BAZZZ-",
   },
 ]
@@ -27,8 +24,7 @@ exports[`Suggest Equality 1`] = `
 Array [
   Object {
     "id": 20,
-    "prio": 2,
-    "text": "Foo bar",
+    "rating": 2,
     "title": "[Foo] [bar]",
   },
 ]
@@ -38,14 +34,12 @@ exports[`Suggest Prefix 1`] = `
 Array [
   Object {
     "id": 20,
-    "prio": 2,
-    "text": "Foo bar",
+    "rating": 2,
     "title": "Foo [ba]r",
   },
   Object {
     "id": 30,
-    "prio": 1,
-    "text": "-BAZZZ-",
+    "rating": 1,
     "title": "-[BA]ZZZ-",
   },
 ]
@@ -55,20 +49,17 @@ exports[`Suggest Prio 1`] = `
 Array [
   Object {
     "id": 30,
-    "prio": 2,
-    "text": "-BAZZZ-",
+    "rating": 2,
     "title": "-BAZZZ-",
   },
   Object {
     "id": 20,
-    "prio": 1,
-    "text": "Foo bar",
+    "rating": 1,
     "title": "Foo bar",
   },
   Object {
     "id": 10,
-    "prio": 0,
-    "text": "Hello world!",
+    "rating": 0,
     "title": "Hello world!",
   },
 ]

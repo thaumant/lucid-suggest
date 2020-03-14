@@ -38,7 +38,7 @@ pub enum ScoreType {
     Trans     = 2,
     Fin       = 3,
     Offset    = 4,
-    Prio      = 5,
+    Rating    = 5,
     WordLen   = 6,
     CharLen   = 7,
 }
@@ -89,7 +89,7 @@ pub fn search<'a>(
     store:   &'a Store,
     query:   &'a Text<&'a [char]>,
 ) -> std::iter::Map<impl Iterator<Item=Hit<'a>>, impl (FnMut(Hit<'a>) -> SearchResult)> {
-    let separators = store.separators();
+    let dividers = store.dividers();
     store.records.iter()
         .map(|record| {
             Hit::from_record(record)
@@ -105,7 +105,7 @@ pub fn search<'a>(
         .map(move |hit| {
             SearchResult {
                 id:    hit.id,
-                title: highlight::highlight(&hit, separators),
+                title: highlight::highlight(&hit, dividers),
             }
         })
 }

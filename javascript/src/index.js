@@ -1,37 +1,37 @@
 import compile from '../pkg/lucid_suggest_wasm_js'
 
 export default compile.then(function(wasm) {
-    function setPrios(records) {
-        return records.some(r => r.prio != null && r.prio > 0)
-            ? records.map(r => ({...r, prio: r.prio > 0 ? r.prio : 0}))
-            : records.map((r, i) => ({...r, prio: records.length - i}))
+    function setRatings(records) {
+        return records.some(r => r.rating != null && r.rating > 0)
+            ? records.map(r => ({...r, rating: r.rating > 0 ? r.rating : 0}))
+            : records.map((r, i) => ({...r, rating: records.length - i}))
     }
 
     return class LucidSuggest {
         constructor() {
-            this.id         = wasm.create_store()
-            this.highlights = ['[', ']']
-            this.records    = []
-            this.highlightUsing('[', ']')
+            this.id       = wasm.create_store()
+            this.dividers = ['[', ']']
+            this.records  = []
+            this.highlightWith('[', ']')
         }
 
-        highlightUsing(left, right) {
-            this.highlights[0] = left
-            this.highlights[1] = right
-            wasm.highlight_using(this.id, left, right)
+        highlightWith(left, right) {
+            this.dividers[0] = left
+            this.dividers[1] = right
+            wasm.highlight_with(this.id, left, right)
             return this
         }
 
-        addRecords(records) {
-            records = setPrios(records)
+        setRecords(records) {
+            records = setRatings(records)
             for (const record of records) {
                 this.records.push(record)
             }
-            wasm.add_records(
+            wasm.set_records(
                 this.id,
                 records.map(r => r.id),
-                records.map(r => r.text).join('\0'),
-                records.map(r => r.prio),
+                records.map(r => r.title).join('\0'),
+                records.map(r => r.rating),
             )
             return this
         }

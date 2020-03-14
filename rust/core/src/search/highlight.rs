@@ -2,8 +2,8 @@ use crate::lexis::{Text, WordMatch};
 use crate::search::Hit;
 
 
-pub fn highlight(hit: &Hit, separators: (&[char], &[char])) -> String {
-    let (left, right) = separators;
+pub fn highlight(hit: &Hit, dividers: (&[char], &[char])) -> String {
+    let (left, right) = dividers;
     let Hit {
         title: Text { words, source },
         matches,

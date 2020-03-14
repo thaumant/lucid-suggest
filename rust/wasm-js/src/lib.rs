@@ -9,19 +9,19 @@ pub fn create_store() -> usize {
 
 
 #[wasm_bindgen]
-pub fn highlight_using(store_id: usize, left: &str, right: &str) {
-    core::highlight_using(store_id, (left, right));
+pub fn highlight_with(store_id: usize, left: &str, right: &str) {
+    core::highlight_with(store_id, (left, right));
 }
 
 
 #[wasm_bindgen]
-pub fn add_records(store_id: usize, ids: &[usize], texts: String, prios: &[usize]) {
+pub fn set_records(store_id: usize, ids: &[usize], texts: String, ratings: &[usize]) {
     let records = ids.iter()
         .cloned()
         .zip(texts.split('\0'))
-        .zip(prios)
-        .map(|((id, text), &prio)| (id, text, prio));
-    core::add_records(store_id, records)
+        .zip(ratings)
+        .map(|((id, text), &rating)| (id, text, rating));
+    core::set_records(store_id, records)
 }
 
 

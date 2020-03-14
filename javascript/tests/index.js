@@ -3,9 +3,9 @@ const compile = require('../build/index')
 
 describe('Suggest', () => {
     const records = [
-        {id: 10, text: 'Hello world!'},
-        {id: 20, text: 'Foo bar'},
-        {id: 30, text: '-BAZZZ-'},
+        {id: 10, title: 'Hello world!'},
+        {id: 20, title: 'Foo bar'},
+        {id: 30, title: '-BAZZZ-'},
     ]
 
     let suggest = null
@@ -13,7 +13,7 @@ describe('Suggest', () => {
     beforeAll(() => {
         return compile.then(LucidSuggest => {
             suggest = new LucidSuggest()
-            suggest.addRecords(records)
+            suggest.setRecords(records)
         })
     })
 
@@ -35,7 +35,7 @@ describe('Suggest', () => {
     test('Prio', () => {
         return compile.then(LucidSuggest => {
             suggest = new LucidSuggest()
-            suggest.addRecords(records.map((r, i) => ({...r, prio: i})))
+            suggest.setRecords(records.map((r, i) => ({...r, rating: i})))
             const hits = suggest.search('')
             expect(hits).toMatchSnapshot()
         })

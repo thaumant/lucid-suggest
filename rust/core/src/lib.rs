@@ -37,15 +37,16 @@ pub fn create_store() -> usize {
 }
 
 
-pub fn highlight_using(store_id: usize, separators: (&str, &str)) {
+pub fn highlight_with(store_id: usize, separators: (&str, &str)) {
     using_store(store_id, |store| {
-        store.highlight_using(separators);
+        store.highlight_with(separators);
     });
 }
 
 
-pub fn add_records<'a, I>(store_id: usize, records: I) where I: IntoIterator<Item=(usize, &'a str, usize)> {
+pub fn set_records<'a, I>(store_id: usize, records: I) where I: IntoIterator<Item=(usize, &'a str, usize)> {
     using_store(store_id, |store| {
+        store.clear();
         for (id, title, rating) in records {
             store.add(Record::new(id, title, rating));
         }

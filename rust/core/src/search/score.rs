@@ -10,7 +10,7 @@ pub fn score(query: &Text<&[char]>, hit: &mut Hit) {
     hit.scores[ScoreType::Trans]     = score_trans_down(hit);
     hit.scores[ScoreType::Fin]       = score_fin_up(hit);
     hit.scores[ScoreType::Offset]    = score_offset_down(hit);
-    hit.scores[ScoreType::Prio]      = score_rating_up(hit);
+    hit.scores[ScoreType::Rating]    = score_rating_up(hit);
     hit.scores[ScoreType::WordLen]   = score_word_len_down(hit);
     hit.scores[ScoreType::CharLen]   = score_char_len_down(hit);
 }

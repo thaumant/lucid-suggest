@@ -11,7 +11,7 @@ const {
 compile
     .then(LucidSuggest => {
         const suggest = new LucidSuggest()
-        suggest.addRecords(STATES)
+        suggest.setRecords(STATES)
 
         let offset1 = 0
         let offset2 = 0
@@ -23,7 +23,7 @@ compile
             })
             .add('store', () => {
                 const x = new LucidSuggest()
-                x.addRecords(STATES)
+                x.setRecords(STATES)
             })
             .add('queries_single_char', () => {
                 const query = QUERIES_SINGLE_CHAR[offset1++ % QUERIES_SINGLE_CHAR.length]

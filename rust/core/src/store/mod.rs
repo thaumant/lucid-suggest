@@ -26,16 +26,16 @@ impl Record {
 pub struct Store {
     pub records: Vec<Record>,
     pub limit:   usize,
-    separators:  (Vec<char>, Vec<char>),
+    dividers:  (Vec<char>, Vec<char>),
 }
 
 
 impl Store {
     pub fn new() -> Self {
         Self {
-            records:    Vec::new(),
-            separators: (vec!['['], vec![']']),
-            limit:      DEFAULT_LIMIT,
+            records:  Vec::new(),
+            dividers: (vec!['['], vec![']']),
+            limit:    DEFAULT_LIMIT,
         }
     }
 
@@ -43,13 +43,17 @@ impl Store {
         self.records.push(record);
     }
 
-    pub fn highlight_using(&mut self, separators: (&str, &str)) {
-        let left:  Vec<char> = separators.0.chars().collect();
-        let right: Vec<char> = separators.1.chars().collect();
-        self.separators = (left, right);
+    pub fn clear(&mut self) {
+        self.records.clear();
     }
 
-    pub fn separators<'a>(&'a self) -> (&'a [char], &'a [char]) {
-        (&self.separators.0, &self.separators.1)
+    pub fn highlight_with(&mut self, dividers: (&str, &str)) {
+        let left:  Vec<char> = dividers.0.chars().collect();
+        let right: Vec<char> = dividers.1.chars().collect();
+        self.dividers = (left, right);
+    }
+
+    pub fn dividers<'a>(&'a self) -> (&'a [char], &'a [char]) {
+        (&self.dividers.0, &self.dividers.1)
     }
 }
