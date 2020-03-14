@@ -1,7 +1,7 @@
 {
   "name": "lucid-suggest",
   "version": "0.1.0",
-  "description": "",
+  "description": "Fulltext search and autocomplete engine that works out of the box.",
   "main": "build/index.js",
   "scripts": {
     "cleanup": "rm -rf build && rm -rf pkg",
@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/thaumant/lucid-suggest.git"
+    "url": "git+https://github.com/thaumant/lucid-suggest/tree/master/javascript"
   },
   "author": "Ilia Schelokov <thaumant@gmail.com>",
   "license": "MIT",
@@ -22,6 +22,9 @@
     "url": "https://github.com/thaumant/lucid-suggest/issues"
   },
   "homepage": "https://github.com/thaumant/lucid-suggest#readme",
+  "engines": {
+    "node": ">=8.0.0"
+  },
   "dependencies": {},
   "devDependencies": {
     "@rollup/plugin-wasm": "^3.0.0",
