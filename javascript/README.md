@@ -109,6 +109,8 @@ suggest.search("ne")
 
 If you target 60 fps in a browser, a search through 100 sentences will take 2-5% of a single frame or less, so you can expect negligible cost, even when calling it at every keystroke, without throttling/debouncing.
 
+Full-fledged indexing is not implemented yet, so searching a larger number of records containing long texts can take too long at the moment.
+
 Below are the detailed search performance measurements for record sets with different dimensions. Measured using Node.js 13.8, Intel Core i7 (I7-9750H) 2.6 GHz.
 
 |              | 1-2 words | 4-8 words |
