@@ -1,4 +1,5 @@
 use std::fmt;
+use crate::lang::Lang;
 use super::CharPattern;
 use super::Word;
 
@@ -54,6 +55,20 @@ impl Text<Vec<char>> {
         self
     }
 
+    pub fn stem(mut self, lang: &Lang) -> Self {
+        for word in &mut self.words {
+            word.stem(lang);
+        }
+        self
+    }
+
+    pub fn mark_pos(mut self, lang: &Lang) -> Self {
+        for word in &mut self.words {
+            word.mark_pos(lang);
+        }
+        self
+    }
+
     pub fn lower(mut self) -> Self {
         for word in &mut self.words {
             word.lower();
@@ -91,9 +106,14 @@ impl<T: AsRef<[char]>> fmt::Debug for Text<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Text {{")?;
         for word in &self.words {
+            let len  = word.chars.as_ref().len();
+            let stem = word.stem;
             write!(f, " \"")?;
-            for ch in word.chars.as_ref().iter() {
+            for (i, ch) in word.chars.as_ref().iter().enumerate() {
                 write!(f, "{}", ch)?;
+                if i == stem - 1 && i != len - 1 {
+                    write!(f, "|")?;
+                }
             }
             write!(f, "\"")?;
             if !word.fin { write!(f, "..")?; }
@@ -107,8 +127,9 @@ impl<T: AsRef<[char]>> fmt::Debug for Text<T> {
 #[cfg(test)]
 mod tests {
     use insta::assert_debug_snapshot;
+    use crate::lang::lang_english;
     use super::{Word, Text};
-    use super::super::Chars;
+    use super::super::{Chars, PartOfSpeech};
 
     use Chars::{
         Whitespaces,
@@ -184,5 +205,33 @@ mod tests {
                 ],
             }.lower();
         assert_debug_snapshot!(t);
+    }
+
+    #[test]
+    fn text_stem() {
+        let lang = lang_english();
+        let t  = Text {
+                source: vec![],
+                words: vec![
+                    Word::from_str("hello"),
+                    Word::from_str("universe"),
+                ],
+            }.stem(&lang);
+        assert_eq!(t.words[0].stem, 5);
+        assert_eq!(t.words[1].stem, 7);
+    }
+
+    #[test]
+    fn text_pos() {
+        let lang = lang_english();
+        let t  = Text {
+                source: vec![],
+                words: vec![
+                    Word::from_str("the"),
+                    Word::from_str("universe"),
+                ],
+            }.mark_pos(&lang);
+        assert_eq!(t.words[0].pos, Some(PartOfSpeech::Article));
+        assert_eq!(t.words[1].pos, None);
     }
 }

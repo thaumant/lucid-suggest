@@ -5,9 +5,11 @@ mod jaccard;
 mod lexis;
 mod store;
 mod search;
+mod lang;
 
 use std::cell::RefCell;
 use std::collections::HashMap;
+use lang::lang_english;
 pub use lexis::{Word, Text, tokenize_query};
 pub use store::{Record, Store};
 pub use search::{search, SearchResult};
@@ -44,11 +46,22 @@ pub fn highlight_with(store_id: usize, separators: (&str, &str)) {
 }
 
 
+pub fn set_lang(store_id: usize, lang_code: &str) {
+    using_store(store_id, |store| {
+        let lang = match lang_code {
+            "en" => lang_english(),
+            _    => panic!("Invalid language: {}", lang_code),
+        };
+        store.lang = Some(lang);
+    });
+}
+
+
 pub fn set_records<'a, I>(store_id: usize, records: I) where I: IntoIterator<Item=(usize, &'a str, usize)> {
     using_store(store_id, |store| {
         store.clear();
         for (id, title, rating) in records {
-            store.add(Record::new(id, title, rating));
+            store.add(Record::new(id, title, rating, &store.lang));
         }
     });
 }
@@ -57,7 +70,7 @@ pub fn set_records<'a, I>(store_id: usize, records: I) where I: IntoIterator<Ite
 pub fn run_search(store_id: usize, query: &str) {
     using_store(store_id, |store| {
     using_results(store_id, |buffer| {
-        let query = tokenize_query(query);
+        let query = tokenize_query(query, &None);
         let query = query.to_ref();
         buffer.clear();
         for result in search(&store, &query) {

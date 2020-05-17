@@ -1,0 +1,10 @@
+---
+source: src/search/mod.rs
+expression: results2
+---
+[
+    SearchResult {
+        id: 30,
+        title: "[univers]e",
+    },
+]

@@ -4,12 +4,16 @@ expression: results
 ---
 [
     SearchResult {
+        id: 40,
+        title: "thesaurus",
+    },
+    SearchResult {
         id: 30,
         title: "yellow metal mailbox",
     },
     SearchResult {
         id: 20,
-        title: "metal detector",
+        title: "the metal detector",
     },
     SearchResult {
         id: 10,

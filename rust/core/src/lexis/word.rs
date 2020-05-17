@@ -1,6 +1,8 @@
 use std::fmt;
 use std::iter::empty;
+pub use crate::lang::Lang;
 pub use super::{Chars, CharPattern};
+pub use super::pos::PartOfSpeech;
 
 
 #[derive(PartialEq)]
@@ -8,7 +10,22 @@ pub struct Word<T: AsRef<[char]>> {
     pub source: T,
     pub slice:  (usize, usize),
     pub chars:  T,
+    pub stem:   usize,
+    pub pos:    Option<PartOfSpeech>,
     pub fin:    bool,
+}
+
+
+impl<T: AsRef<[char]>> Word<T> {
+    pub fn is_primary(&self) -> bool {
+        match self.pos {
+            Some(PartOfSpeech::Article)     => false,
+            Some(PartOfSpeech::Preposition) => false,
+            Some(PartOfSpeech::Conjunction) => false,
+            Some(PartOfSpeech::Particle)    => false,
+            _ => true,
+        }
+    }
 }
 
 
@@ -20,6 +37,8 @@ impl Word<Vec<char>> {
             source,
             slice: (0, len),
             chars,
+            stem: len,
+            pos: None,
             fin: true,
          }
     }
@@ -32,7 +51,9 @@ impl Word<Vec<char>> {
             source,
             slice: (0, len),
             chars,
-            fin: true,
+            stem: len,
+            pos:  None,
+            fin:  true,
          }
     }
 
@@ -41,6 +62,8 @@ impl Word<Vec<char>> {
             source: &self.source,
             slice:  self.slice,
             chars:  &self.chars,
+            stem:   self.stem,
+            pos:    self.pos,
             fin:    self.fin,
         }
     }
@@ -67,6 +90,16 @@ impl Word<Vec<char>> {
         self
     }
 
+    pub fn stem(&mut self, lang: &Lang) -> &mut Self {
+        self.stem = lang.stem(&self.chars);
+        self
+    }
+
+    pub fn mark_pos(&mut self, lang: &Lang) -> &mut Self {
+        self.pos = lang.get_pos(&self.chars);
+        self
+    }
+
     pub fn lower(&mut self) -> &mut Self {
         if self.chars.iter().any(|ch| ch.is_uppercase()) {
             for ch in &mut self.chars {
@@ -84,6 +117,8 @@ impl<'a> Word<&'a [char]> {
             source: self.source.to_vec(),
             slice:  self.slice,
             chars:  self.chars.to_vec(),
+            stem:   self.stem,
+            pos:    None,
             fin:    self.fin,
         }
     }
@@ -109,8 +144,13 @@ impl<T: AsRef<[char]>> Word<T> {
 impl<T: AsRef<[char]>> fmt::Debug for Word<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Word {{ \"")?;
-        for ch in self.chars.as_ref().iter() {
+        let len  = self.chars.as_ref().len();
+        let stem = self.stem;
+        for (i, ch) in self.chars.as_ref().iter().enumerate() {
             write!(f, "{}", ch)?;
+            if i == stem - 1 && i != len - 1 {
+                write!(f, "|")?;
+            }
         }
         write!(f, "\"")?;
         if !self.fin { write!(f, "..")?; }
@@ -154,6 +194,8 @@ impl<'b, 'c, P: CharPattern> Iterator for WordSplit<'b, 'c, P> {
             source: &self.word.chars[self.offset .. self.offset + len],
             chars:  &self.word.source[self.offset .. self.offset + len],
             slice:  (0, len),
+            stem:   len,
+            pos:    None,
             fin:    self.word.fin || self.offset + len < self.word.len(),
         };
 
@@ -167,7 +209,8 @@ impl<'b, 'c, P: CharPattern> Iterator for WordSplit<'b, 'c, P> {
 #[cfg(test)]
 mod tests {
     use insta::assert_debug_snapshot;
-    use super::{Word, Chars};
+    use crate::lang::lang_english;
+    use super::{Word, Chars, PartOfSpeech};
 
     use Chars::{
         Whitespaces,
@@ -224,6 +267,25 @@ mod tests {
         w2.strip(&[Whitespaces, Punctuation]);
         assert_eq!(w1.fin, false);
         assert_eq!(w2.fin, true);
+    }
+
+    #[test]
+    fn word_stem() {
+        let lang = lang_english();
+        let mut w = Word::from_str("university");
+        w.stem(&lang);
+        assert_eq!(w.stem, 7);
+    }
+
+    #[test]
+    fn word_pos() {
+        let lang = lang_english();
+        let mut w1 = Word::from_str("university");
+        let mut w2 = Word::from_str("the");
+        w1.mark_pos(&lang);
+        w2.mark_pos(&lang);
+        assert_eq!(w1.pos, None);
+        assert_eq!(w2.pos, Some(PartOfSpeech::Article));
     }
 
     #[test]

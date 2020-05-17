@@ -1,4 +1,5 @@
 use crate::lexis::{Text, tokenize_record};
+use crate::lang::Lang;
 
 
 static DEFAULT_LIMIT: usize = 10;
@@ -13,10 +14,10 @@ pub struct Record {
 
 
 impl Record {
-    pub fn new(id: usize, source: &str, rating: usize) -> Record {
+    pub fn new(id: usize, source: &str, rating: usize, lang: &Option<Lang>) -> Record {
         Record {
             id,
-            title: tokenize_record(source),
+            title: tokenize_record(source, lang),
             rating,
         }
     }
@@ -26,7 +27,8 @@ impl Record {
 pub struct Store {
     pub records: Vec<Record>,
     pub limit:   usize,
-    dividers:  (Vec<char>, Vec<char>),
+    pub lang:    Option<Lang>,
+    dividers:    (Vec<char>, Vec<char>),
 }
 
 
@@ -34,8 +36,9 @@ impl Store {
     pub fn new() -> Self {
         Self {
             records:  Vec::new(),
-            dividers: (vec!['['], vec![']']),
             limit:    DEFAULT_LIMIT,
+            lang:     None,
+            dividers: (vec!['['], vec![']']),
         }
     }
 

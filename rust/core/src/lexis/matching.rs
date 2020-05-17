@@ -24,17 +24,18 @@ pub struct WordMatch {
 }
 
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct MatchSide {
-    pub pos:    usize,
-    pub len:    usize,
-    pub slice:  (usize, usize),
+    pub pos:     usize,
+    pub len:     usize,
+    pub slice:   (usize, usize),
+    pub primary: bool,
 }
 
 
 impl MatchSide {
-    pub fn new(pos: usize, len: usize, slice: (usize, usize)) -> Self {
-        MatchSide { pos, len, slice }
+    pub fn new(pos: usize, len: usize, slice: (usize, usize), primary: bool) -> Self {
+        MatchSide { pos, len, slice, primary }
     }
 }
 
@@ -102,34 +103,54 @@ pub fn word_match(rword: &Word<&[char]>, qword: &Word<&[char]>) -> Option<WordMa
 
     DAMLEV.with(|damlev| {
         damlev.distance(qword.chars.as_ref(), rword.chars.as_ref());
-        let dists = &*damlev.dists.borrow();
-        let qlen  = qword.len();
+        let dists  = &*damlev.dists.borrow();
 
-        for &rlen in &[qlen + 1, qlen, qlen - 1] {
-            if rlen > rword.len() { continue; }
-            if rlen < rword.len() && qword.fin { break; }
-            if rlen == 0 { break; }
+        let left  = if qword.fin { max!(qword.stem, rword.stem) } else { qword.stem } - 1;
+        let right = max!(qword.len(), rword.len()) + 1;
 
-            let dist     = dists.get(qlen + 1, rlen + 1);
-            let rel_dist = dist as f64 / max!(qlen, rlen, 1) as f64;
-            if rel_dist > DAMLEV_THRESHOLD { continue; }
+        if right <= left { return; }
 
-            match best_match {
-                None => {
-                    best_match = Some(WordMatch {
-                        query:  MatchSide::new(0, qlen,        (0, qlen)),
-                        record: MatchSide::new(0, rword.len(), (0, rlen)),
-                        typos:  dist,
-                        fin:    qword.fin || rword.len() == rlen,
-                    });
-                },
-                Some(ref mut m) => {
-                    if m.typos <= dist { continue; }
-                    m.record.slice = (0, rlen);
-                    m.typos        = dist;
-                    m.fin          = qword.fin || rword.len() == rlen;
-                },
-            };
+        let range = (left .. right).rev();
+
+        for rlen in range.clone() {
+            for qlen in range.clone() {
+                // Out of bounds.
+                if qlen > qword.len() { continue; }
+                if rlen > rword.len() { continue; }
+                // Left margin is for insertion/deletion, not for both prefixes at the same time.
+                if rlen == left  && qlen == left  { continue; }
+                // Compare full words only if query is finished.
+                if qword.fin && rlen < rword.stem { break; }
+                if qword.fin && qlen < qword.stem { break; }
+                // Words with 2+ insertions/deletions are mismatched by default.
+                if (qlen as isize - rlen as isize).abs() > 1 { continue; }
+
+                let dist = dists.get(qlen + 1, rlen + 1);
+                let rel  = dist as f64 / max!(qlen, rlen, 1) as f64;
+
+                if rel > DAMLEV_THRESHOLD { continue; }
+
+                match best_match {
+                    None => {
+                        best_match = Some(WordMatch {
+                            query:  MatchSide::new(0, qlen,        (0, qlen), qword.is_primary()),
+                            record: MatchSide::new(0, rword.len(), (0, rlen), rword.is_primary()),
+                            typos:  dist,
+                            fin:    qword.fin || rword.len() == rlen,
+                        });
+                    },
+                    Some(ref mut m) => {
+                        if m.typos <= dist { continue; }
+                        m.record.slice = (0, rlen);
+                        m.typos        = dist;
+                        m.fin          = qword.fin || rword.len() == rlen;
+                    },
+                }
+
+                if dist == 0 {
+                    break;
+                }
+            }
         }
     });
 
@@ -157,7 +178,7 @@ pub fn jaccard_check(qword: &Word<&[char]>, rword: &Word<&[char]>) -> bool {
     let Word { chars: qchars, fin, .. } = qword;
     let Word { chars: rchars, .. }      = rword;
     let rslice = if *fin { &rchars } else { &rchars[.. min!(qword.len(), rword.len())] };
-    let dist   = JACCARD.with(|j| { j.rel_dist(&rslice, &qchars) });
+    let dist   = JACCARD.with(|j| j.rel_dist(&rslice, &qchars));
     dist < JACCARD_THRESHOLD
 }
 
@@ -166,6 +187,7 @@ pub fn jaccard_check(qword: &Word<&[char]>, rword: &Word<&[char]>) -> bool {
 mod tests {
     use insta::assert_debug_snapshot;
     use crate::lexis::Chars;
+    use crate::lang::lang_english;
     use super::{Word, Text, word_match, text_match};
 
 
@@ -233,6 +255,30 @@ mod tests {
         let q = Word::from_str("maiblox").fin(false);
         let r = Word::from_str("mailbox");
         assert_debug_snapshot!(word_match(&r.to_ref(), &q.to_ref()));
+    }
+
+
+    #[test]
+    fn match_word_full_query_too_long() {
+        let q1 = Word::from_str("mailboxes").fin(true);
+        let q2 = Word::from_str("mailboxes").fin(false);
+        let r  = Word::from_str("mail");
+        assert_debug_snapshot!(word_match(&r.to_ref(), &q1.to_ref()));
+        assert_debug_snapshot!(word_match(&r.to_ref(), &q2.to_ref()));
+    }
+
+    #[test]
+    fn match_word_full_stem() {
+        let mut r  = Word::from_str("universe");
+        let mut q1 = Word::from_str("university");
+        let     q2 = Word::from_str("university");
+
+        let lang = lang_english();
+        q1.stem(&lang);
+        r.stem(&lang);
+
+        assert_debug_snapshot!(word_match(&r.to_ref(), &q1.to_ref()));
+        assert_debug_snapshot!(word_match(&r.to_ref(), &q2.to_ref()));
     }
 
 

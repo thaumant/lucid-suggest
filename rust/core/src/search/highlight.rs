@@ -49,12 +49,12 @@ mod tests {
 
     #[test]
     fn test_highlight() {
-        let record = Record::new(10, "metal detector", 0);
+        let record = Record::new(10, "metal detector", 0, &None);
 
         let mut hit = Hit::from_record(&record);
         hit.matches.push(WordMatch {
-            query:  MatchSide { pos: 0, len: 0, slice: (0, 0), },
-            record: MatchSide { pos: 1, len: 6, slice: (0, 6), },
+            query:  MatchSide { pos: 0, len: 0, slice: (0, 0), primary: true },
+            record: MatchSide { pos: 1, len: 6, slice: (0, 6), primary: true },
             typos:  0,
             fin:    false,
         });
@@ -70,12 +70,12 @@ mod tests {
 
     #[test]
     fn test_highlight_stripped() {
-        let record = Record::new(10, "'metal' mailbox", 0);
+        let record = Record::new(10, "'metal' mailbox", 0, &None);
 
         let mut hit = Hit::from_record(&record);
         hit.matches.push(WordMatch {
-            query:  MatchSide { pos: 0, len: 0, slice: (0, 0), },
-            record: MatchSide { pos: 0, len: 5, slice: (0, 5), },
+            query:  MatchSide { pos: 0, len: 0, slice: (0, 0), primary: true },
+            record: MatchSide { pos: 0, len: 5, slice: (0, 5), primary: true },
             typos:  0,
             fin:    false,
         });

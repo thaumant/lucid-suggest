@@ -9,6 +9,6 @@ expression: results
     },
     SearchResult {
         id: 20,
-        title: "[metal] detector",
+        title: "the [metal] detector",
     },
 ]

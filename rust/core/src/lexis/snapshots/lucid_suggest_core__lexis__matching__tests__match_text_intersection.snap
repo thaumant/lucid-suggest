@@ -1,6 +1,6 @@
 ---
 source: src/lexis/matching.rs
-expression: r.matches(&q)
+expression: "text_match(&r.to_ref(), &q.to_ref())"
 ---
 [
     WordMatch { [rrrrrrr] /1/ [qqqqqqq] },

@@ -5,19 +5,27 @@ use crate::search::{Hit, ScoreType};
 pub fn score(query: &Text<&[char]>, hit: &mut Hit) {
     hit.matches = text_match(&hit.title, &query);
 
-    hit.scores[ScoreType::SameWords] = score_matches_up(hit);
-    hit.scores[ScoreType::Typos]     = score_typos_down(hit);
-    hit.scores[ScoreType::Trans]     = score_trans_down(hit);
-    hit.scores[ScoreType::Fin]       = score_fin_up(hit);
-    hit.scores[ScoreType::Offset]    = score_offset_down(hit);
-    hit.scores[ScoreType::Rating]    = score_rating_up(hit);
-    hit.scores[ScoreType::WordLen]   = score_word_len_down(hit);
-    hit.scores[ScoreType::CharLen]   = score_char_len_down(hit);
+    hit.scores[ScoreType::SameWords]   = score_words_up(hit);
+    hit.scores[ScoreType::SamePrimary] = score_primary_up(hit);
+    hit.scores[ScoreType::Typos]       = score_typos_down(hit);
+    hit.scores[ScoreType::Trans]       = score_trans_down(hit);
+    hit.scores[ScoreType::Fin]         = score_fin_up(hit);
+    hit.scores[ScoreType::Offset]      = score_offset_down(hit);
+    hit.scores[ScoreType::Rating]      = score_rating_up(hit);
+    hit.scores[ScoreType::WordLen]     = score_word_len_down(hit);
+    hit.scores[ScoreType::CharLen]     = score_char_len_down(hit);
 }
 
 
-pub fn score_matches_up(hit: &Hit) -> isize {
+pub fn score_words_up(hit: &Hit) -> isize {
     hit.matches.len() as isize
+}
+
+
+pub fn score_primary_up(hit: &Hit) -> isize {
+    hit.matches.iter()
+        .filter(|m| m.record.primary)
+        .count() as isize
 }
 
 
@@ -90,13 +98,13 @@ mod tests {
 
     #[test]
     fn test_score_typos() {
-        let r      = Record::new(10, "small yellow metal mailbox", 0);
+        let r      = Record::new(10, "small yellow metal mailbox", 0, &None);
         let mut h1 = Hit::from_record(&r);
         let mut h2 = Hit::from_record(&r);
         let mut h3 = Hit::from_record(&r);
-        let q1     = tokenize_query("yellow mailbox");
-        let q2     = tokenize_query("yelow maiblox");
-        let q3     = tokenize_query("yellow mail");
+        let q1     = tokenize_query("yellow mailbox", &None);
+        let q2     = tokenize_query("yelow maiblox", &None);
+        let q3     = tokenize_query("yellow mail", &None);
         score(&q1.to_ref(), &mut h1);
         score(&q2.to_ref(), &mut h2);
         score(&q3.to_ref(), &mut h3);
@@ -107,13 +115,13 @@ mod tests {
 
     #[test]
     fn test_score_offset() {
-        let r      = Record::new(10, "small yellow metal mailbox", 0);
+        let r      = Record::new(10, "small yellow metal mailbox", 0, &None);
         let mut h1 = Hit::from_record(&r);
         let mut h2 = Hit::from_record(&r);
         let mut h3 = Hit::from_record(&r);
-        let q1     = tokenize_query("smal mailbox");
-        let q2     = tokenize_query("yelow mailbox");
-        let q3     = tokenize_query("metol maiblox");
+        let q1     = tokenize_query("smal mailbox", &None);
+        let q2     = tokenize_query("yelow mailbox", &None);
+        let q3     = tokenize_query("metol maiblox", &None);
         score(&q1.to_ref(), &mut h1);
         score(&q2.to_ref(), &mut h2);
         score(&q3.to_ref(), &mut h3);
