@@ -10,6 +10,6 @@ edition = "2018"
 rust-stemmers = "1.2"
 
 [dev-dependencies]
-insta = "0.13.1"
+insta = "0.16"
 
 [profile.release]
