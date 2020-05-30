@@ -12,8 +12,9 @@ use std::collections::HashMap;
 
 use lang::lang_english;
 use lang::lang_german;
-use lang::lang_spanish;
 use lang::lang_portuguese;
+use lang::lang_russian;
+use lang::lang_spanish;
 
 pub use lexis::{Word, Text, tokenize_query};
 pub use store::{Record, Store};
@@ -58,6 +59,7 @@ pub fn set_lang(store_id: usize, lang_code: &str) {
             "de" => lang_german(),
             "es" => lang_spanish(),
             "pt" => lang_portuguese(),
+            "ru" => lang_russian(),
             _    => panic!("Invalid language: {}", lang_code),
         };
         store.lang = Some(lang);
