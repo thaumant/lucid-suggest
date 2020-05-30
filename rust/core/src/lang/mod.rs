@@ -1,6 +1,8 @@
 mod lang_english;
+mod lang_german;
 
 pub use lang_english::lang_english;
+pub use lang_german::lang_german;
 
 use std::cell::RefCell;
 use std::collections::HashMap;

@@ -10,6 +10,7 @@ mod lang;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use lang::lang_english;
+use lang::lang_german;
 pub use lexis::{Word, Text, tokenize_query};
 pub use store::{Record, Store};
 pub use search::{search, SearchResult};
@@ -50,6 +51,7 @@ pub fn set_lang(store_id: usize, lang_code: &str) {
     using_store(store_id, |store| {
         let lang = match lang_code {
             "en" => lang_english(),
+            "de" => lang_german(),
             _    => panic!("Invalid language: {}", lang_code),
         };
         store.lang = Some(lang);
