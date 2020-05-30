@@ -29,9 +29,13 @@ export default class LucidSuggest {
     }
 
     destroy() {
-        return this.schedule(true, wasm => {
-            wasm.destroy_store(this.id)
-        })
+        return this
+            .schedule(true, wasm => {
+                wasm.destroy_store(this.id)
+            })
+            .then(() => {
+                this.queue = Promise.reject(new Error('Suggest destroyed'))
+            })
     }
 
     highlightWith(left, right) {
