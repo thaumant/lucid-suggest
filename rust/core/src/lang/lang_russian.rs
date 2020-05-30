@@ -249,10 +249,8 @@ mod tests {
     #[test]
     pub fn stem() {
         let lang = lang_russian();
-        let w1 = "важный".chars().collect::<Vec<_>>();
-        let w2 = "ведь"  .chars().collect::<Vec<_>>();
-        assert_eq!(lang.stem(&w1), 4);
-        assert_eq!(lang.stem(&w2), 3);
+        let w = "важный".chars().collect::<Vec<_>>();
+        assert_eq!(lang.stem(&w), 4);
     }
 
     #[test]

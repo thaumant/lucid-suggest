@@ -150,10 +150,8 @@ mod tests {
     #[test]
     pub fn stem() {
         let lang = lang_portuguese();
-        let w1 = "quilométricas".chars().collect::<Vec<_>>();
-        let w2 = "uma"          .chars().collect::<Vec<_>>();
-        assert_eq!(lang.stem(&w1), 9);
-        assert_eq!(lang.stem(&w2), 3);
+        let w = "quilométricas".chars().collect::<Vec<_>>();
+        assert_eq!(lang.stem(&w), 9);
     }
 
     #[test]

@@ -122,10 +122,8 @@ mod tests {
     #[test]
     pub fn stem() {
         let lang = lang_german();
-        let w1 = "singen".chars().collect::<Vec<_>>();
-        let w2 = "das"   .chars().collect::<Vec<_>>();
-        assert_eq!(lang.stem(&w1), 4);
-        assert_eq!(lang.stem(&w2), 3);
+        let w = "singen".chars().collect::<Vec<_>>();
+        assert_eq!(lang.stem(&w), 4);
     }
 
     #[test]

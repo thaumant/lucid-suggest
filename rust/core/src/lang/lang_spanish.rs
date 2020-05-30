@@ -139,10 +139,8 @@ mod tests {
     #[test]
     pub fn stem() {
         let lang = lang_spanish();
-        let w1 = "torniquete".chars().collect::<Vec<char>>();
-        let w2 = "una"       .chars().collect::<Vec<char>>();
-        assert_eq!(lang.stem(&w1), 9);
-        assert_eq!(lang.stem(&w2), 3);
+        let w = "torniquete".chars().collect::<Vec<char>>();
+        assert_eq!(lang.stem(&w), 9);
     }
 
     #[test]
