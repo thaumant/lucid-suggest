@@ -9,9 +9,12 @@ mod lang;
 
 use std::cell::RefCell;
 use std::collections::HashMap;
+
 use lang::lang_english;
 use lang::lang_german;
 use lang::lang_spanish;
+use lang::lang_portuguese;
+
 pub use lexis::{Word, Text, tokenize_query};
 pub use store::{Record, Store};
 pub use search::{search, SearchResult};
@@ -54,6 +57,7 @@ pub fn set_lang(store_id: usize, lang_code: &str) {
             "en" => lang_english(),
             "de" => lang_german(),
             "es" => lang_spanish(),
+            "pt" => lang_portuguese(),
             _    => panic!("Invalid language: {}", lang_code),
         };
         store.lang = Some(lang);
