@@ -1,4 +1,4 @@
-const compile = require('../build/index')
+const LucidSuggest = require('../build/index')
 
 
 describe('Suggest', () => {
@@ -8,36 +8,28 @@ describe('Suggest', () => {
         {id: 30, title: '-BAZZZ-'},
     ]
 
-    let suggest = null
+    const suggest = new LucidSuggest()
+    suggest.setRecords(records)
 
-    beforeAll(() => {
-        return compile.then(LucidSuggest => {
-            suggest = new LucidSuggest()
-            suggest.setRecords(records)
-        })
-    })
-
-    test('Empty input', () => {
-        const hits = suggest.search('')
+    test('Empty input', async () => {
+        const hits = await suggest.search('')
         expect(hits).toMatchSnapshot()
     })
 
-    test('Equality', () => {
-        const hits = suggest.search('foo bar')
+    test('Equality', async () => {
+        const hits = await suggest.search('foo bar')
         expect(hits).toMatchSnapshot()
     })
 
-    test('Prefix', () => {
-        const hits = suggest.search('ba')
+    test('Prefix', async () => {
+        const hits = await suggest.search('ba')
         expect(hits).toMatchSnapshot()
     })
 
-    test('Prio', () => {
-        return compile.then(LucidSuggest => {
-            suggest = new LucidSuggest()
-            suggest.setRecords(records.map((r, i) => ({...r, rating: i})))
-            const hits = suggest.search('')
-            expect(hits).toMatchSnapshot()
-        })
+    test('Prio', async () => {
+        const suggest = new LucidSuggest()
+        suggest.setRecords(records.map((r, i) => ({...r, rating: i})))
+        const hits = await suggest.search('')
+        expect(hits).toMatchSnapshot()
     })
 })

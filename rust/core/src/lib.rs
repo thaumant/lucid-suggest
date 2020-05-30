@@ -27,21 +27,41 @@ thread_local! {
 }
 
 
-pub fn create_store() -> usize {
-    let store_id = STORES.with(|cell| {
-        let stores   = &mut *cell.borrow_mut();
-        let store    = Store::new();
-        let store_id = *stores.keys().max().unwrap_or(&0) + 1;
-        stores.insert(store_id, store);
-        store_id
+pub fn create_store(id: usize) {
+    STORES.with(|cell| {
+        let stores = &mut *cell.borrow_mut();
+        if stores.contains_key(&id) {
+            panic!("Duplicate store id {}", id);
+        }
+        stores.insert(id, Store::new());
     });
 
     RESULTS.with(|cell| {
         let buffers = &mut *cell.borrow_mut();
-        buffers.insert(store_id, Vec::with_capacity(10));
+        if buffers.contains_key(&id) {
+            panic!("Duplicate store id {}", id);
+        }
+        buffers.insert(id, Vec::with_capacity(10));
+    });
+}
+
+
+pub fn destroy_store(id: usize) {
+    STORES.with(|cell| {
+        let stores = &mut *cell.borrow_mut();
+        if !stores.contains_key(&id) {
+            panic!("Missing store id {}", id);
+        }
+        stores.remove(&id);
     });
 
-    store_id
+    RESULTS.with(|cell| {
+        let buffers = &mut *cell.borrow_mut();
+        if !buffers.contains_key(&id) {
+            panic!("Missing store id {}", id);
+        }
+        buffers.remove(&id);
+    });
 }
 
 

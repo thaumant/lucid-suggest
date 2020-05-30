@@ -3,8 +3,14 @@ use lucid_suggest_core as core;
 
 
 #[wasm_bindgen]
-pub fn create_store() -> usize {
-    core::create_store()
+pub fn create_store(id: usize) {
+    core::create_store(id);
+}
+
+
+#[wasm_bindgen]
+pub fn destroy_store(id: usize) {
+    core::destroy_store(id);
 }
 
 

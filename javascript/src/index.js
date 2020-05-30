@@ -1,42 +1,61 @@
-import compile from '../pkg/lucid_suggest_wasm_js'
+import compileWasm from '../pkg/lucid_suggest_wasm_js'
 
-export default compile.then(function(wasm) {
-    function setRatings(records) {
-        return records.some(r => r.rating != null && r.rating > 0)
-            ? records.map(r => ({...r, rating: r.rating > 0 ? r.rating : 0}))
-            : records.map((r, i) => ({...r, rating: records.length - i}))
+var NEXT_ID = 1
+
+export default class LucidSuggest {
+    constructor() {
+        this.id       = NEXT_ID++
+        this.dividers = ['[', ']']
+        this.records  = []
+        this.queue    = compileWasm
+        this.schedule(true, wasm => {
+            wasm.create_store(this.id)
+        })
     }
 
-    return class LucidSuggest {
-        constructor() {
-            this.id       = wasm.create_store()
-            this.dividers = ['[', ']']
-            this.records  = []
-            this.highlightWith('[', ']')
-        }
+    schedule(critical, fn) {
+        return new Promise((resolve, reject) => {
+            this.queue = this.queue.then(async wasm => {
+                try {
+                    resolve(await fn(wasm))
+                } catch (err) {
+                    reject(err)
+                    if (critical) throw err
+                }
+                this.queue = Promise.resolve(wasm)
+                return wasm
+            })
+        })
+    }
 
-        highlightWith(left, right) {
+    destroy() {
+        return this.schedule(true, wasm => {
+            wasm.destroy_store(this.id)
+        })
+    }
+
+    highlightWith(left, right) {
+        return this.schedule(true, wasm => {
             this.dividers[0] = left
             this.dividers[1] = right
             wasm.highlight_with(this.id, left, right)
-            return this
-        }
+        })
+    }
 
-        setRecords(records) {
-            records = setRatings(records)
-            for (const record of records) {
-                this.records.push(record)
-            }
+    setRecords(records) {
+        return this.schedule(true, wasm => {
+            this.records = setRatings(records)
             wasm.set_records(
                 this.id,
-                records.map(r => r.id),
-                records.map(r => r.title).join('\0'),
-                records.map(r => r.rating),
+                this.records.map(r => r.id),
+                this.records.map(r => r.title).join('\0'),
+                this.records.map(r => r.rating),
             )
-            return this
-        }
+        })
+    }
 
-        search(query) {
+    search(query) {
+        return this.schedule(false, wasm => {
             wasm.run_search(this.id, query)
             const ids    = wasm.get_result_ids(this.id)
             const titles = wasm.get_result_titles(this.id).split('\0')
@@ -50,7 +69,13 @@ export default compile.then(function(wasm) {
                 hits.push({...record, title})
             }
             return hits
-        }
+        })
     }
-})
+}
 
+
+function setRatings(records) {
+    return records.some(r => r.rating != null && r.rating > 0)
+        ? records.map(r => ({...r, rating: r.rating > 0 ? r.rating : 0}))
+        : records.map((r, i) => ({...r, rating: records.length - i}))
+}
