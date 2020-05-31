@@ -102,6 +102,10 @@ await suggest.search("ne")
 ]
 ```
 
+### Bundle size
+
+185K plain, 70K gzipped.
+
 ### Performance
 
 If you target 60 fps in a browser, a search through 100 sentences will take 2-5% of a single frame or less, so you can expect negligible cost, even when calling it at every keystroke, without throttling/debouncing.
