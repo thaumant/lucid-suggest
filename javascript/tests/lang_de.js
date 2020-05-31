@@ -10,7 +10,7 @@ describe('German language', () => {
     ]
 
     const suggest = new LucidSuggest()
-    suggest.setLang('de')
+    suggest.setLanguage('de')
     suggest.setRecords(records)
 
     test('Empty input', async () => {
