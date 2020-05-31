@@ -15,6 +15,12 @@ pub fn destroy_store(id: usize) {
 
 
 #[wasm_bindgen]
+pub fn set_lang(id: usize, lang: &str) {
+    core::set_lang(id, lang);
+}
+
+
+#[wasm_bindgen]
 pub fn highlight_with(store_id: usize, left: &str, right: &str) {
     core::highlight_with(store_id, (left, right));
 }

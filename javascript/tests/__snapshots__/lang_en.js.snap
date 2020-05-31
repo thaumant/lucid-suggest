@@ -1,0 +1,61 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`English language Empty input 1`] = `
+Array [
+  Object {
+    "id": 10,
+    "rating": 4,
+    "title": "AA 1.5 Alkaline Batteries Pack of 12",
+  },
+  Object {
+    "id": 20,
+    "rating": 3,
+    "title": "Lightning to USB A Cable",
+  },
+  Object {
+    "id": 30,
+    "rating": 2,
+    "title": "Electric Toothbrush",
+  },
+  Object {
+    "id": 40,
+    "rating": 1,
+    "title": "Vacuum Compression Storage Bags",
+  },
+]
+`;
+
+exports[`English language Equality 1`] = `
+Array [
+  Object {
+    "id": 30,
+    "rating": 2,
+    "title": "[Electric] [Toothbrush]",
+  },
+]
+`;
+
+exports[`English language Partiles 1`] = `
+Array [
+  Object {
+    "id": 30,
+    "rating": 2,
+    "title": "Electric [To]othbrush",
+  },
+  Object {
+    "id": 20,
+    "rating": 3,
+    "title": "Lightning [to] USB A Cable",
+  },
+]
+`;
+
+exports[`English language Stemming 1`] = `
+Array [
+  Object {
+    "id": 10,
+    "rating": 4,
+    "title": "[AA] 1.5 Alkaline [Batteri]es Pack of 12",
+  },
+]
+`;

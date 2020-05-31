@@ -1,0 +1,86 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Spanish language Empty input 1`] = `
+Array [
+  Object {
+    "id": 10,
+    "rating": 4,
+    "title": "Pack de 24 pilas alcalinas AA",
+  },
+  Object {
+    "id": 20,
+    "rating": 3,
+    "title": "Cable de USB A a Lightning",
+  },
+  Object {
+    "id": 30,
+    "rating": 2,
+    "title": "Cepillo de dientes eléctrico",
+  },
+  Object {
+    "id": 40,
+    "rating": 1,
+    "title": "Deshumidificador Eléctrico portátil",
+  },
+]
+`;
+
+exports[`Spanish language Equality 1`] = `
+Array [
+  Object {
+    "id": 30,
+    "rating": 2,
+    "title": "[Cepillo] [de] [dientes] [eléctrico]",
+  },
+  Object {
+    "id": 40,
+    "rating": 1,
+    "title": "Deshumidificador [Eléctrico] portátil",
+  },
+  Object {
+    "id": 10,
+    "rating": 4,
+    "title": "Pack [de] 24 pilas alcalinas AA",
+  },
+  Object {
+    "id": 20,
+    "rating": 3,
+    "title": "Cable [de] USB A a Lightning",
+  },
+]
+`;
+
+exports[`Spanish language Partiles 1`] = `
+Array [
+  Object {
+    "id": 40,
+    "rating": 1,
+    "title": "[De]shumidificador Eléctrico portátil",
+  },
+  Object {
+    "id": 10,
+    "rating": 4,
+    "title": "Pack [de] 24 pilas alcalinas AA",
+  },
+  Object {
+    "id": 20,
+    "rating": 3,
+    "title": "Cable [de] USB A a Lightning",
+  },
+  Object {
+    "id": 30,
+    "rating": 2,
+    "title": "Cepillo [de] dientes eléctrico",
+  },
+]
+`;
+
+exports[`Spanish language Stemming 1`] = `
+Array [
+  Object {
+    "id": 10,
+    "rating": 4,
+    "title": "Pack de 24 pilas [alcalina]s AA",
+  },
+]
+`;
