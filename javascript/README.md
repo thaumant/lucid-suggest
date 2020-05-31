@@ -9,15 +9,12 @@ Install:
 npm install lucid-suggest
 ```
 
-Import:
+Import and initialize:
 ```javascript
-import loadWasm from 'lucid-suggest'
-```
+import LucidSuggest from 'lucid-suggest'
 
-Initialize:
-```javascript
-const {LucidSuggest} = await loadWasm()
 const suggest = new LucidSuggest()
+
 suggest.setRecords([
     {id: 1, title: "Nevada"},
     {id: 2, title: "New Jersey"},
@@ -27,7 +24,7 @@ suggest.setRecords([
 
 Search:
 ```javascript
-suggest.search("nevada")
+await suggest.search("nevada")
 // returns:
 [
  {id: 1, title: "[Nevada]"},
@@ -38,7 +35,7 @@ suggest.search("nevada")
 
 Partial matches:
 ```javascript
-suggest.search("new vegas")
+await suggest.search("new vegas")
 // returns:
 [
  {id: 2, title: "[New] Jersey"},
@@ -48,7 +45,7 @@ suggest.search("new vegas")
 
 Search as you type:
 ```javascript
-suggest.search("new j")
+await suggest.search("new j")
 // returns:
 [
  {id: 2, title: "[New] [J]ersey"},
@@ -58,7 +55,7 @@ suggest.search("new j")
 
 Typo resilience:
 ```javascript
-suggest.search("new jersy")
+await suggest.search("new jersy")
 // returns:
 [
  {id: 2, title: "[New] [Jersey]"},
@@ -74,7 +71,7 @@ suggest.highlightWith('<strong>', '</strong>')
 ```
 
 ```javascript
-suggest.search("new j")
+await suggest.search("new j")
 // returns:
 [
  {id: 2, title: "<strong>New</strong> <strong>J</strong>ersey"},
@@ -96,7 +93,7 @@ suggest.setRecords([
 ```
 
 ```javascript
-suggest.search("ne")
+await suggest.search("ne")
 // returns:
 [
  {id: 3, title: "[Ne]w York"},
@@ -115,6 +112,6 @@ Below are the detailed search performance measurements for record sets with diff
 
 |              | 1-2 words | 4-8 words |
 | -----------: | --------: | --------: |
-|   10 records |     14 μs |     40 μs |
-|  100 records |    130 μs |    410 μs |
-| 1000 records |   1100 μs |   4000 μs |
+|   10 records |     15 μs |     45 μs |
+|  100 records |    140 μs |    440 μs |
+| 1000 records |   1300 μs |   4300 μs |
