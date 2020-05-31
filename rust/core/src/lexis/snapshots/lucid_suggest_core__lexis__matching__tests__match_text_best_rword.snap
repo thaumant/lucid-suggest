@@ -1,0 +1,7 @@
+---
+source: src/lexis/matching.rs
+expression: "text_match(&r.to_ref(), &q.to_ref())"
+---
+[
+    WordMatch { [rrr] /0/ [qqq] },
+]

@@ -68,19 +68,31 @@ impl fmt::Debug for WordMatch {
 
 
 pub fn text_match(rtext: &Text<&[char]>, qtext: &Text<&[char]>) -> Vec<WordMatch> {
-    let mut matches = Vec::with_capacity(qtext.words.len());
-    let mut taken   = HashSet::with_capacity(qtext.words.len());
+    let capacity = min!(rtext.words.len(), qtext.words.len());
+    let mut taken: HashSet<usize> = HashSet::with_capacity(capacity);
+    let mut matches: Vec<WordMatch> = Vec::with_capacity(capacity);
 
     for (i, qword) in qtext.words.iter().enumerate() {
+        let mut found: Option<WordMatch> = None;
+
         for (j, rword) in rtext.words.iter().enumerate() {
             if taken.contains(&j) { continue; }
             if let Some(mut m) = word_match(rword, qword) {
                 m.query.pos  = i;
                 m.record.pos = j;
-                taken.insert(j);
-                matches.push(m);
-                break;
+                if m.record.primary {
+                    found = Some(m);
+                    break;
+                }
+                if found.is_none() {
+                    found = Some(m);
+                }
             }
+        }
+
+        if let Some(m) = found {
+            taken.insert(m.record.pos);
+            matches.push(m);
         }
     }
 
@@ -386,11 +398,21 @@ mod tests {
 
 
     #[test]
+    fn match_text_best_rword() {
+        let mut q = text("the").fin(false);
+        let mut r = text("the theme");
+        assert_debug_snapshot!(text_match(&r.to_ref(), &q.to_ref()));
+        let lang = lang_english();
+        q = q.mark_pos(&lang);
+        r = r.mark_pos(&lang);
+        assert_debug_snapshot!(text_match(&r.to_ref(), &q.to_ref()));
+    }
+
+
+    #[test]
     fn match_text_regression_best_match() {
         let q = text("sneak").fin(false);
         let r = text("sneaky");
         assert_debug_snapshot!(text_match(&r.to_ref(), &q.to_ref()));
     }
-
-
 }
