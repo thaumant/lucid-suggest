@@ -4,50 +4,37 @@ var NEXT_ID = 1
 
 export default class LucidSuggest {
     constructor() {
-        this.id       = NEXT_ID++
-        this.dividers = ['[', ']']
-        this.records  = []
-        this.queue    = compileWasm
-        this.schedule(true, wasm => {
+        this.id         = NEXT_ID++
+        this.dividers   = ['[', ']']
+        this.records    = []
+        this.setupQueue = compileWasm
+
+        this.setup(wasm => {
             wasm.create_store(this.id)
         })
     }
 
-    schedule(critical, fn) {
-        return new Promise((resolve, reject) => {
-            this.queue = this.queue.then(async wasm => {
-                try {
-                    resolve(await fn(wasm))
-                } catch (err) {
-                    reject(err)
-                    if (critical) throw err
-                }
-                this.queue = Promise.resolve(wasm)
-                return wasm
-            })
+    setup(fn) {
+        this.setupQueue = this.setupQueue.then(async wasm => {
+            await fn(wasm)
+            this.setupQueue = Promise.resolve(wasm)
+            return wasm
         })
+        return this.setupQueue
     }
 
     destroy() {
         return this
-            .schedule(true, wasm => {
+            .setup(wasm => {
                 wasm.destroy_store(this.id)
             })
             .then(() => {
-                this.queue = Promise.reject(new Error('Suggest destroyed'))
+                this.setupQueue = Promise.reject(new Error('Suggest destroyed'))
             })
     }
 
-    highlightWith(left, right) {
-        return this.schedule(true, wasm => {
-            this.dividers[0] = left
-            this.dividers[1] = right
-            wasm.highlight_with(this.id, left, right)
-        })
-    }
-
     setRecords(records) {
-        return this.schedule(true, wasm => {
+        return this.setup(wasm => {
             this.records = setRatings(records)
             wasm.set_records(
                 this.id,
@@ -58,22 +45,29 @@ export default class LucidSuggest {
         })
     }
 
-    search(query) {
-        return this.schedule(false, wasm => {
-            wasm.run_search(this.id, query)
-            const ids    = wasm.get_result_ids(this.id)
-            const titles = wasm.get_result_titles(this.id).split('\0')
-            const hits   = []
-            for (let i = 0; i < ids.length; i++) {
-                const id     = ids[i]
-                const title  = titles[i]
-                const record = this.records.find(r => r.id === id)
-                if (!record) throw new Error(`Missing record ${id}`)
-                if (!title)  throw new Error(`Missing title for ${id}`)
-                hits.push({...record, title})
-            }
-            return hits
+    highlightWith(left, right) {
+        return this.setup(wasm => {
+            this.dividers[0] = left
+            this.dividers[1] = right
+            wasm.highlight_with(this.id, left, right)
         })
+    }
+
+    async search(query) {
+        const wasm = await this.setupQueue
+        wasm.run_search(this.id, query)
+        const ids    = wasm.get_result_ids(this.id)
+        const titles = wasm.get_result_titles(this.id).split('\0')
+        const hits   = []
+        for (let i = 0; i < ids.length; i++) {
+            const id     = ids[i]
+            const title  = titles[i]
+            const record = this.records.find(r => r.id === id)
+            if (!record) throw new Error(`Missing record ${id}`)
+            if (!title)  throw new Error(`Missing title for ${id}`)
+            hits.push({...record, title})
+        }
+        return hits
     }
 }
 
