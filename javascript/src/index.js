@@ -24,13 +24,11 @@ export default class LucidSuggest {
     }
 
     destroy() {
-        return this
-            .setup(wasm => {
-                wasm.destroy_store(this.id)
-            })
-            .then(() => {
-                this.setupQueue = Promise.reject(new Error('Suggest destroyed'))
-            })
+        const oldQueue = this.setupQueue
+        this.setupQueue = Promise.reject(new Error('Suggest destroyed'))
+        oldQueue.then(wasm => {
+            wasm.destroy_store(this.id)
+        })
     }
 
     setRecords(records) {
