@@ -1,0 +1,8 @@
+---
+source: src/lexis/word.rs
+expression: "&w.slice"
+---
+(
+    1,
+    13,
+)

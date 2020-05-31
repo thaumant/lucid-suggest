@@ -85,7 +85,7 @@ impl Word<Vec<char>> {
         self.chars.splice(self.chars.len() - right .., empty());
         self.chars.splice(0 .. left, empty());
 
-        self.slice = (self.slice.0 + right, self.slice.1 - left);
+        self.slice = (self.slice.0 + left, self.slice.1 - right);
         self.fin = self.fin || right != 0;
         self
     }
@@ -247,7 +247,8 @@ mod tests {
     fn word_strip() {
         let mut w = Word::from_str(" Foo Bar, Baz; ");
         w.strip(&[Whitespaces, Punctuation]);
-        assert_debug_snapshot!(w);
+        assert_debug_snapshot!(&w);
+        assert_debug_snapshot!(&w.slice);
     }
 
     #[test]
