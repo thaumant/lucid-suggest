@@ -14,54 +14,80 @@ Import and initialize:
 import LucidSuggest from 'lucid-suggest'
 
 const suggest = new LucidSuggest()
-
+suggest.setLanguage('en')
 suggest.setRecords([
-    {id: 1, title: "Nevada"},
-    {id: 2, title: "New Jersey"},
-    {id: 3, title: "New York"},
+    {id: 1, title: "Electric Toothbrush"},
+    {id: 2, title: "Lightning to USB C Cable"},
+    {id: 3, title: "AA Alkaline Batteries"},
 ])
 ```
 
 Search:
 ```javascript
-await suggest.search("nevada")
+await suggest.search("batteries")
 // returns:
 [
- {id: 1, title: "[Nevada]"},
+ {id: 3, title: "AA Alkaline [Batteries]"},
 ]
 ```
 
 ## Fulltext search features
 
-Partial matches:
+When an exact match is unavailable, the best possible partial matches are returned:
 ```javascript
-await suggest.search("new vegas")
+await suggest.search("plastic toothbrush")
 // returns:
 [
- {id: 2, title: "[New] Jersey"},
- {id: 3, title: "[New] York"},
+ {id: 1, title: "Electric [Toothbrush]"},
 ]
 ```
 
-Search as you type:
+Search as you type, results are provided from the first letter:
 ```javascript
-await suggest.search("new j")
+await suggest.search("c")
 // returns:
 [
- {id: 2, title: "[New] [J]ersey"},
- {id: 3, title: "[New] York"},
+ {id: 2, title: "Lightning to USB C [C]able"},
 ]
 ```
 
 Typo resilience:
 ```javascript
-await suggest.search("new jersy")
+await suggest.search("alcaline bateries")
 // returns:
 [
- {id: 2, title: "[New] [Jersey]"},
- {id: 3, title: "[New] York"},
+ {id: 3, title: "AA [Alkaline] [Batteries]"},
 ]
 ```
+
+Stemming is used to handle different word endings:
+```javascript
+await suggest.search("battery")
+// returns:
+[
+ {id: 3, title: "AA Alkaline [Batteri]es"},
+]
+```
+
+Particles receive special treatment, so they don't pop up every time you start typing a word:
+```javascript
+await suggest.search("to")
+// returns:
+[
+    {id: 1, title: "Electric [To]othbrush"},
+    {id: 2, title: "Lightning [to] USB C Cable"},
+]
+```
+
+
+## Supported languages
+
+- German (de)
+- English (en)
+- Spanish (es)
+- Portuguese (pt)
+- Russian (ru)
+
 
 ## Highlighting
 
@@ -71,11 +97,10 @@ suggest.highlightWith('<strong>', '</strong>')
 ```
 
 ```javascript
-await suggest.search("new j")
+await suggest.search("battery")
 // returns:
 [
- {id: 2, title: "<strong>New</strong> <strong>J</strong>ersey"},
- {id: 3, title: "<strong>New</strong> York"},
+ {id: 3, title: "AA Alkaline <strong>Batteri</strong>es"},
 ]
 ```
 
