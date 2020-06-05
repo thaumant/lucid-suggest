@@ -1,5 +1,5 @@
 [package]
-name = "lucid-suggest-wasm-js"
+name = "lucid-suggest-wasm"
 version = "0.2.0"
 authors = ["Ilia Schelokov <thaumant@gmail.com>"]
 edition = "2018"

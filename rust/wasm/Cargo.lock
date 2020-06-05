@@ -31,7 +31,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "lucid-suggest-wasm-js"
+name = "lucid-suggest-wasm"
 version = "0.2.0"
 dependencies = [
  "lucid-suggest-core 0.2.0",

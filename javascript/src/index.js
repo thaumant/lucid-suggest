@@ -1,4 +1,4 @@
-import compileWasm from '../pkg/lucid_suggest_wasm_js'
+import compileWasm from '../pkg/lucid_suggest_wasm'
 
 var NEXT_ID = 1
 
