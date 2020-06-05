@@ -1,8 +1,9 @@
 {
   "name": "lucid-suggest",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Fulltext search and autocomplete engine that works out of the box.",
   "main": "build/index.js",
+  "types": "typings.d.ts",
   "scripts": {
     "cleanup": "rm -rf build && rm -rf pkg",
     "compile": "cd ../rust/wasm-js && wasm-pack build --target bundler --out-dir ../../javascript/pkg",
