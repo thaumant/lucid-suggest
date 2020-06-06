@@ -1,4 +1,4 @@
-const LucidSuggest = require('../build/index')
+const LucidSuggest = require('../dist/index')
 
 describe('Suggest', () => {
     const records = [

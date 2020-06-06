@@ -11,10 +11,9 @@ npm install lucid-suggest
 
 Import and initialize:
 ```javascript
-import LucidSuggest from 'lucid-suggest'
+import LucidSuggest from 'lucid-suggest/en'
 
 const suggest = new LucidSuggest()
-suggest.setLanguage('en')
 suggest.setRecords([
     {id: 1, title: "Electric Toothbrush"},
     {id: 2, title: "Lightning to USB C Cable"},
@@ -80,15 +79,6 @@ await suggest.search("to")
 ```
 
 
-## Supported languages
-
-- German (de)
-- English (en)
-- Spanish (es)
-- Portuguese (pt)
-- Russian (ru)
-
-
 ## Highlighting
 
 By default LucidSuggest highlights matched parts of text using `[ ]`. You can pick your own markup:
@@ -127,9 +117,28 @@ await suggest.search("ne")
 ]
 ```
 
-### Bundle size
 
-185K plain, 70K gzipped.
+## Supported languages
+
+| language   | import command |
+| :--------- | :------------- |
+| German     | `import LucidSuggest from 'lucid-suggest/de'` |
+| English    | `import LucidSuggest from 'lucid-suggest/en'` |
+| Spanish    | `import LucidSuggest from 'lucid-suggest/es'` |
+| Portuguese | `import LucidSuggest from 'lucid-suggest/pt'` |
+| Russian    | `import LucidSuggest from 'lucid-suggest/ru'` |
+
+
+### Bundle sizes
+
+| lang | size | gzipped |
+| :--- | ---: | ------: |
+| de   | 137K |     57K |
+| en   | 143K |     59K |
+| es   | 142K |     58K |
+| pt   | 141K |     58K |
+| ru   | 139K |     57K |
+
 
 ### Performance
 

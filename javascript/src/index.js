@@ -31,12 +31,6 @@ export default class LucidSuggest {
         })
     }
 
-    setLanguage(lang) {
-        return this.setup(wasm => {
-            wasm.set_lang(this.id, lang)
-        })
-    }
-
     setRecords(records) {
         return this.setup(wasm => {
             this.records = setRatings(records)

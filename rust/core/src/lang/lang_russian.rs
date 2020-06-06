@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::collections::HashMap;
 use rust_stemmers::{Algorithm, Stemmer};
 use super::Lang;

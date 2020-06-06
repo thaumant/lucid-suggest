@@ -2,16 +2,9 @@
   "name": "lucid-suggest",
   "version": "0.2.0",
   "description": "Fulltext search and autocomplete engine that works out of the box.",
-  "main": "build/index.js",
+  "main": "dist/en.js",
   "types": "typings.d.ts",
   "scripts": {
-    "cleanup": "rm -rf build && rm -rf pkg",
-    "compile": "cd ../rust/wasm && wasm-pack build --target bundler --out-dir ../../javascript/pkg",
-    "roll-cjs": "rollup -c rollup/config-cjs.js",
-    "roll-web": "rollup -c rollup/config-iife.js",
-    "bench": "node benches/search.js",
-    "build": "npm run cleanup && npm run compile && npm run roll-cjs && npm run roll-web",
-    "test": "jest"
   },
   "repository": {
     "type": "git",

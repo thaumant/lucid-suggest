@@ -1,4 +1,4 @@
-const LucidSuggest = require('../build/index')
+const LucidSuggest = require('../dist/es')
 
 
 describe('Spanish language', () => {
@@ -10,7 +10,6 @@ describe('Spanish language', () => {
     ]
 
     const suggest = new LucidSuggest()
-    suggest.setLanguage('es')
     suggest.setRecords(records)
 
     test('Empty input', async () => {
