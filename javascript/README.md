@@ -9,7 +9,7 @@ Install:
 npm install lucid-suggest
 ```
 
-Import and initialize:
+Import and initialize, in JavaScript or TypeScript:
 ```javascript
 import LucidSuggest from 'lucid-suggest/en'
 
