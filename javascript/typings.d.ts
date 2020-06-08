@@ -1,21 +1,23 @@
-export type Lang =
-    | 'de'
-    | 'en'
-    | 'es'
-    | 'pt'
-    | 'ru';
+declare module 'lucid-suggest' {
+    export interface Record {
+        id: number,
+        title: string,
+        rating?: number,
+    }
 
-export type Record = {
-    id: number,
-    title: string,
-    rating?: number,
-};
-
-declare class LucidSuggest {
-    setLanguage(lang: Lang): Promise<void>;
-    setRecords(records: Record[]): Promise<void>;
-    highlightWith(left: string, right: string): Promise<void>;
-    search(query: string): Promise<Record[]>;
+    export interface ILucidSuggest {
+        setRecords(records: Record[]): Promise<void>;
+        highlightWith(left: string, right: string): Promise<void>;
+        search(query: string): Promise<Record[]>;
+    }
 }
 
-export default LucidSuggest;
+declare module 'lucid-suggest/en' {
+    import {ILucidSuggest, Record} from 'lucid-suggest';
+    export {Record} from 'lucid-suggest';
+    export default class LucidSuggest implements ILucidSuggest {
+        setRecords(records: Record[]): Promise<void>;
+        highlightWith(left: string, right: string): Promise<void>;
+        search(query: string): Promise<Record[]>;
+    }
+}

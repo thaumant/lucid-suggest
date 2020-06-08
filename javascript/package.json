@@ -2,10 +2,14 @@
   "name": "lucid-suggest",
   "version": "0.2.0",
   "description": "Fulltext search and autocomplete engine that works out of the box.",
-  "main": "dist/en.js",
-  "types": "typings.d.ts",
-  "scripts": {
+  "files": [
+    "dist/*",
+    "typings.d.ts"
+  ],
+  "exports": {
+    "./": "dist/"
   },
+  "typings": "./typings.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/thaumant/lucid-suggest/tree/master/javascript"
