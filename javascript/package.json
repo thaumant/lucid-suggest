@@ -1,10 +1,10 @@
 {
   "name": "lucid-suggest",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Fulltext search and autocomplete engine that works out of the box.",
   "files": [
-    "./dist/*",
-    "./typings.d.ts"
+    "dist/*",
+    "typings.d.ts"
   ],
   "main": "./dist/index.js",
   "exports": {
