@@ -3,11 +3,13 @@
   "version": "0.2.0",
   "description": "Fulltext search and autocomplete engine that works out of the box.",
   "files": [
-    "dist/*",
-    "typings.d.ts"
+    "./dist/*",
+    "./typings.d.ts"
   ],
+  "main": "./dist/index.js",
   "exports": {
-    "./": "dist/"
+    ".": "./dist/index.js",
+    "./": "./dist/"
   },
   "typings": "./typings.d.ts",
   "repository": {

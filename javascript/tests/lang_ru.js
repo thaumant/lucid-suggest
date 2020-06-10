@@ -1,4 +1,4 @@
-const LucidSuggest = require('../dist/ru')
+const {LucidSuggest} = require('../dist/ru')
 
 
 describe('Russian language', () => {

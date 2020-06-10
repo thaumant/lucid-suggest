@@ -2,7 +2,7 @@ import compileWasm from '../pkg/lucid_suggest_wasm'
 
 var NEXT_ID = 1
 
-export default class LucidSuggest {
+export class LucidSuggest {
     constructor() {
         this.id         = NEXT_ID++
         this.dividers   = ['[', ']']

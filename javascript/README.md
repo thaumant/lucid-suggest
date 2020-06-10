@@ -9,9 +9,9 @@ Install:
 npm install lucid-suggest
 ```
 
-Import and initialize, in JavaScript or TypeScript:
+Import and initialize, in JavaScript:
 ```javascript
-import LucidSuggest from 'lucid-suggest/en'
+import {LucidSuggest} from 'lucid-suggest/en'
 
 const suggest = new LucidSuggest()
 suggest.setRecords([
@@ -19,6 +19,12 @@ suggest.setRecords([
     {id: 2, title: "Lightning to USB C Cable"},
     {id: 3, title: "AA Alkaline Batteries"},
 ])
+```
+
+When using TypeScript you have to import empty root module, otherwise TypeScript compiler will not read `typings.d.ts` containing submodule declarations.
+```
+import 'lucid-suggest'
+import {LucidSuggest} from 'lucid-suggest/en'
 ```
 
 Search:
@@ -122,11 +128,11 @@ await suggest.search("ne")
 
 | language   | import command |
 | :--------- | :------------- |
-| German     | `import LucidSuggest from 'lucid-suggest/de'` |
-| English    | `import LucidSuggest from 'lucid-suggest/en'` |
-| Spanish    | `import LucidSuggest from 'lucid-suggest/es'` |
-| Portuguese | `import LucidSuggest from 'lucid-suggest/pt'` |
-| Russian    | `import LucidSuggest from 'lucid-suggest/ru'` |
+| German     | `import {LucidSuggest} from 'lucid-suggest/de'` |
+| English    | `import {LucidSuggest} from 'lucid-suggest/en'` |
+| Spanish    | `import {LucidSuggest} from 'lucid-suggest/es'` |
+| Portuguese | `import {LucidSuggest} from 'lucid-suggest/pt'` |
+| Russian    | `import {LucidSuggest} from 'lucid-suggest/ru'` |
 
 
 ### Bundle sizes

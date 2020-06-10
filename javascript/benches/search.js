@@ -1,5 +1,5 @@
 const {Suite} = require('benchmark')
-const LucidSuggest = require('../dist/index')
+const {LucidSuggest} = require('../dist/en')
 const {
     STATES,
     QUERIES_SINGLE_CHAR,
