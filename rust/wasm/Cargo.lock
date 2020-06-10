@@ -32,7 +32,7 @@ dependencies = [
 
 [[package]]
 name = "lucid-suggest-wasm"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "lucid-suggest-core 0.2.0",
  "wasm-bindgen 0.2.58 (registry+https://github.com/rust-lang/crates.io-index)",

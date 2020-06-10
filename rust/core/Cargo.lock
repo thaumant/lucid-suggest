@@ -93,7 +93,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "lucid-suggest-core"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "insta 0.16.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rust-stemmers 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
