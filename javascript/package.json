@@ -1,6 +1,6 @@
 {
   "name": "lucid-suggest",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "Fulltext search and autocomplete engine that works out of the box.",
   "files": [
     "dist/*",
@@ -30,6 +30,6 @@
     "@rollup/plugin-wasm": "^3.0.0",
     "benchmark": "^2.1.4",
     "jest": "^25.5.4",
-    "rollup": "^2.12.0"
+    "rollup": "^2.16.1"
   }
 }
