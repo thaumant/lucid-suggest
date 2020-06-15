@@ -59,6 +59,19 @@ describe('Suggest', () => {
         expect(hits).toMatchSnapshot()
     })
 
+    test('Limit', async () => {
+        const hits1 = await suggest.search('b')
+        expect(hits1).toHaveLength(2)
+
+        await suggest.setLimit(1)
+        const hits2 = await suggest.search('b')
+        expect(hits2).toHaveLength(1)
+
+        await suggest.setLimit(100)
+        const hits3 = await suggest.search('b')
+        expect(hits3).toHaveLength(2)
+    })
+
     test('Prio', async () => {
         const suggest = new LucidSuggest()
         suggest.setRecords(records.map((r, i) => ({...r, rating: i})))

@@ -21,6 +21,12 @@ pub fn highlight_with(store_id: usize, left: &str, right: &str) {
 
 
 #[wasm_bindgen]
+pub fn set_limit(id: usize, limit: usize)  {
+    core::set_limit(id, limit);
+}
+
+
+#[wasm_bindgen]
 pub fn set_records(store_id: usize, ids: &[usize], texts: String, ratings: &[usize]) {
     let records = ids.iter()
         .cloned()

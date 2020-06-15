@@ -7,6 +7,7 @@ declare module 'lucid-suggest' {
 
     export interface ILucidSuggest {
         setRecords(records: Record[]): Promise<void>;
+        setLimit(limit: number): Promise<void>;
         highlightWith(left: string, right: string): Promise<void>;
         search(query: string): Promise<Record[]>;
     }
@@ -18,6 +19,7 @@ declare module 'lucid-suggest/de' {
     export {Record} from 'lucid-suggest';
     export class LucidSuggest implements ILucidSuggest {
         setRecords(records: Record[]): Promise<void>;
+        setLimit(limit: number): Promise<void>;
         highlightWith(left: string, right: string): Promise<void>;
         search(query: string): Promise<Record[]>;
     }
@@ -29,6 +31,7 @@ declare module 'lucid-suggest/en' {
     export {Record} from 'lucid-suggest';
     export class LucidSuggest implements ILucidSuggest {
         setRecords(records: Record[]): Promise<void>;
+        setLimit(limit: number): Promise<void>;
         highlightWith(left: string, right: string): Promise<void>;
         search(query: string): Promise<Record[]>;
     }
@@ -40,6 +43,7 @@ declare module 'lucid-suggest/es' {
     export {Record} from 'lucid-suggest';
     export class LucidSuggest implements ILucidSuggest {
         setRecords(records: Record[]): Promise<void>;
+        setLimit(limit: number): Promise<void>;
         highlightWith(left: string, right: string): Promise<void>;
         search(query: string): Promise<Record[]>;
     }
@@ -51,6 +55,7 @@ declare module 'lucid-suggest/pt' {
     export {Record} from 'lucid-suggest';
     export class LucidSuggest implements ILucidSuggest {
         setRecords(records: Record[]): Promise<void>;
+        setLimit(limit: number): Promise<void>;
         highlightWith(left: string, right: string): Promise<void>;
         search(query: string): Promise<Record[]>;
     }
@@ -62,6 +67,7 @@ declare module 'lucid-suggest/ru' {
     export {Record} from 'lucid-suggest';
     export class LucidSuggest implements ILucidSuggest {
         setRecords(records: Record[]): Promise<void>;
+        setLimit(limit: number): Promise<void>;
         highlightWith(left: string, right: string): Promise<void>;
         search(query: string): Promise<Record[]>;
     }

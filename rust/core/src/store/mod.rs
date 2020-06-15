@@ -2,7 +2,7 @@ use crate::lexis::{Text, tokenize_record};
 use crate::lang::Lang;
 
 
-static DEFAULT_LIMIT: usize = 10;
+pub static DEFAULT_LIMIT: usize = 10;
 
 
 #[derive(Debug)]

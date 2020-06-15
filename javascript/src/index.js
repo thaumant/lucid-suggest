@@ -1,10 +1,13 @@
 import compileWasm from '../pkg/lucid_suggest_wasm'
 
+const DEFAULT_LIMIT = 10
 var NEXT_ID = 1
+
 
 export class LucidSuggest {
     constructor() {
         this.id         = NEXT_ID++
+        this.limit      = DEFAULT_LIMIT
         this.dividers   = ['[', ']']
         this.records    = []
         this.setupQueue = compileWasm
@@ -40,6 +43,13 @@ export class LucidSuggest {
                 this.records.map(r => r.title).join('\0'),
                 this.records.map(r => r.rating),
             )
+        })
+    }
+
+    setLimit(limit) {
+        return this.setup(wasm => {
+            this.limit = limit
+            wasm.set_limit(this.id, this.limit)
         })
     }
 

@@ -12,7 +12,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 
 pub use lexis::{Word, Text, tokenize_query};
-pub use store::{Record, Store};
+pub use store::{Record, Store, DEFAULT_LIMIT};
 pub use search::{search, SearchResult};
 
 
@@ -38,7 +38,7 @@ pub fn create_store(id: usize) {
         if buffers.contains_key(&id) {
             panic!("Duplicate store id {}", id);
         }
-        buffers.insert(id, Vec::with_capacity(10));
+        buffers.insert(id, Vec::with_capacity(DEFAULT_LIMIT));
     });
 }
 
@@ -89,6 +89,17 @@ pub fn set_records<'a, I>(store_id: usize, records: I) where I: IntoIterator<Ite
             store.add(Record::new(id, title, rating, &store.lang));
         }
     });
+}
+
+
+pub fn set_limit(store_id: usize, limit: usize)  {
+    using_store(store_id, |store| {
+    using_results(store_id, |buffer| {
+        store.limit = limit;
+        if limit > buffer.capacity() {
+            buffer.reserve_exact(limit - buffer.len());
+        }
+    }); });
 }
 
 
