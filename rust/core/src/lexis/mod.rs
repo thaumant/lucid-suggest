@@ -1,10 +1,10 @@
+mod pos;
+mod pattern;
 mod word;
 mod text;
-mod pattern;
 mod matching;
-mod pos;
 
-pub use crate::lang::Lang;
+use crate::lang::Lang;
 pub use pos::PartOfSpeech;
 pub use word::Word;
 pub use text::Text;
@@ -31,7 +31,7 @@ pub fn tokenize_query(source: &str, lang: &Option<Lang>) -> Text<Vec<char>> {
 
 pub fn tokenize_record(source: &str, lang: &Option<Lang>) -> Text<Vec<char>> {
     let mut text = Text::from_str(source)
-        .split(&[Chars::Whitespaces, Chars::Control])
+        .split(&[Chars::Whitespaces, Chars::Control, Chars::Punctuation])
         .strip(&[Chars::NotAlphaNum])
         .lower();
 

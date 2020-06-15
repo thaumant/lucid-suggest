@@ -28,14 +28,44 @@ impl Text<Vec<char>> {
             words: vec![Word::from_vec(word)],
         }
     }
+}
 
+
+impl Text<Vec<char>> {
     pub fn to_ref<'a>(&'a self) -> Text<&'a [char]> {
         Text {
             source: &self.source,
             words: self.words.iter().map(|w| w.to_ref()).collect()
         }
     }
+}
 
+
+impl<'a> Text<&'a [char]> {
+    pub fn to_own(&self) -> Text<Vec<char>> {
+        Text {
+            source: self.source.to_vec(),
+            words:  self.words.iter().map(|w| w.to_own()).collect(),
+        }
+    }
+}
+
+
+impl<T: AsRef<[char]>> Text<T> {
+    pub fn fin(mut self, fin: bool) -> Self {
+        if let Some(word) = self.words.last_mut() {
+            word.fin = fin;
+        }
+        self
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.words.is_empty()
+    }
+}
+
+
+impl Text<Vec<char>> {
     pub fn split<P: CharPattern>(mut self, pattern: &P) -> Self {
         let mut words = Vec::with_capacity(self.words.len());
         for word in &self.words {
@@ -74,30 +104,6 @@ impl Text<Vec<char>> {
             word.lower();
         }
         self
-    }
-}
-
-
-impl<'a> Text<&'a [char]> {
-    pub fn to_own(&self) -> Text<Vec<char>> {
-        Text {
-            source: self.source.to_vec(),
-            words:  self.words.iter().map(|w| w.to_own()).collect(),
-        }
-    }
-}
-
-
-impl<T: AsRef<[char]>> Text<T> {
-    pub fn fin(mut self, fin: bool) -> Self {
-        if let Some(word) = self.words.last_mut() {
-            word.fin = fin;
-        }
-        self
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.words.is_empty()
     }
 }
 

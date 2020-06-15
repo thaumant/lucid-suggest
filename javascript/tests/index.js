@@ -54,6 +54,11 @@ describe('Suggest', () => {
         expect(hits).toMatchSnapshot()
     })
 
+    test('Typos', async () => {
+        const hits = await suggest.search('helo')
+        expect(hits).toMatchSnapshot()
+    })
+
     test('Prio', async () => {
         const suggest = new LucidSuggest()
         suggest.setRecords(records.map((r, i) => ({...r, rating: i})))

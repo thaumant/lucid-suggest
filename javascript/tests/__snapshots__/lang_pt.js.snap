@@ -5,7 +5,7 @@ Array [
   Object {
     "id": 10,
     "rating": 4,
-    "title": "Pilhas Alcalinas AA Embalagem com 12",
+    "title": "Pilhas Alcalinas AA — Embalagem com 12",
   },
   Object {
     "id": 20,
@@ -60,7 +60,7 @@ Array [
   Object {
     "id": 10,
     "rating": 4,
-    "title": "Pilhas [Alcalina]s AA Embalagem com 12",
+    "title": "Pilhas [Alcalina]s AA — Embalagem com 12",
   },
 ]
 `;

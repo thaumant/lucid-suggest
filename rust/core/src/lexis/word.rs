@@ -7,16 +7,77 @@ pub use super::pos::PartOfSpeech;
 
 #[derive(PartialEq)]
 pub struct Word<T: AsRef<[char]>> {
-    pub source: T,
-    pub slice:  (usize, usize),
-    pub chars:  T,
-    pub stem:   usize,
-    pub pos:    Option<PartOfSpeech>,
-    pub fin:    bool,
+    pub chars: T,
+    pub place: (usize, usize),
+    pub stem:  usize,
+    pub pos:   Option<PartOfSpeech>,
+    pub fin:   bool,
+}
+
+
+impl Word<Vec<char>> {
+    pub fn from_vec(source: Vec<char>) -> Word<Vec<char>> {
+        let len = source.len();
+        let chars = source.clone();
+        Word {
+            chars,
+            place: (0, len),
+            stem:  len,
+            pos:   None,
+            fin:   true,
+        }
+    }
+
+    pub fn from_str(source: &str) -> Word<Vec<char>> {
+        let source = source.chars().collect::<Vec<_>>();
+        let chars  = source.clone();
+        let len    = source.len();
+        Word {
+            chars,
+            place: (0, len),
+            stem:  len,
+            pos:   None,
+            fin:   true,
+        }
+    }
+}
+
+
+impl Word<Vec<char>> {
+    pub fn to_ref<'a>(&'a self) -> Word<&'a [char]> {
+        Word {
+            chars: &self.chars,
+            place: self.place,
+            stem:  self.stem,
+            pos:   self.pos,
+            fin:   self.fin,
+        }
+    }
+}
+
+
+impl<'a> Word<&'a [char]> {
+    pub fn to_own(&self) -> Word<Vec<char>> {
+        Word {
+            chars: self.chars.to_vec(),
+            place: self.place,
+            stem:  self.stem,
+            pos:   self.pos,
+            fin:   self.fin,
+        }
+    }
 }
 
 
 impl<T: AsRef<[char]>> Word<T> {
+    pub fn len(&self) -> usize {
+        self.chars.as_ref().len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.chars.as_ref().is_empty()
+    }
+
     pub fn is_primary(&self) -> bool {
         match self.pos {
             Some(PartOfSpeech::Article)     => false,
@@ -30,62 +91,29 @@ impl<T: AsRef<[char]>> Word<T> {
 
 
 impl Word<Vec<char>> {
-    pub fn from_vec(source: Vec<char>) -> Word<Vec<char>> {
-        let len = source.len();
-        let chars = source.clone();
-        Word {
-            source,
-            slice: (0, len),
-            chars,
-            stem: len,
-            pos: None,
-            fin: true,
-         }
-    }
-
-    pub fn from_str(source: &str) -> Word<Vec<char>> {
-        let source = source.chars().collect::<Vec<_>>();
-        let chars  = source.clone();
-        let len    = source.len();
-        Word {
-            source,
-            slice: (0, len),
-            chars,
-            stem: len,
-            pos:  None,
-            fin:  true,
-         }
-    }
-
-    pub fn to_ref<'a>(&'a self) -> Word<&'a [char]> {
-        Word {
-            source: &self.source,
-            slice:  self.slice,
-            chars:  &self.chars,
-            stem:   self.stem,
-            pos:    self.pos,
-            fin:    self.fin,
-        }
+    pub fn fin(mut self, fin: bool) -> Self {
+        self.fin = fin;
+        self
     }
 
     pub fn split<'a, 'b, P: CharPattern>(&'a self, pattern: &'b P) -> WordSplit<'a, 'b, P> {
-        WordSplit { word: self, offset: 0, pattern }
+        WordSplit { word: self, pattern, offset: 0 }
     }
 
     pub fn strip<P: CharPattern>(&mut self, pattern: &P) -> &mut Self {
-        let left = self.chars.iter()
+        let Self { chars, place, .. } = self;
+        let left = chars.iter()
             .take_while(|&&ch| pattern.matches(ch))
             .count();
-        let right = self.chars.iter()
+        let right = chars.iter()
             .rev()
             .take_while(|&&ch| pattern.matches(ch))
-            .take(self.chars.len() - left)
+            .take(chars.len() - left)
             .count();
-
-        self.chars.splice(self.chars.len() - right .., empty());
-        self.chars.splice(0 .. left, empty());
-
-        self.slice = (self.slice.0 + left, self.slice.1 - right);
+        if left  > 0 { chars.splice(..left, empty()); }
+        if right > 0 { chars.splice(chars.len() - right .., empty()); }
+        place.0 += left;
+        place.1 -= right;
         self.fin = self.fin || right != 0;
         self
     }
@@ -107,36 +135,6 @@ impl Word<Vec<char>> {
             }
         }
         self
-    }
-}
-
-
-impl<'a> Word<&'a [char]> {
-    pub fn to_own(&self) -> Word<Vec<char>> {
-        Word {
-            source: self.source.to_vec(),
-            slice:  self.slice,
-            chars:  self.chars.to_vec(),
-            stem:   self.stem,
-            pos:    None,
-            fin:    self.fin,
-        }
-    }
-}
-
-
-impl<T: AsRef<[char]>> Word<T> {
-    pub fn fin(mut self, fin: bool) -> Self {
-        self.fin = fin;
-        self
-    }
-
-    pub fn len(&self) -> usize {
-        self.chars.as_ref().len()
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.chars.as_ref().is_empty()
     }
 }
 
@@ -172,36 +170,37 @@ impl<'b, 'c, P: CharPattern> Iterator for WordSplit<'b, 'c, P> {
     type Item = Word<&'b [char]>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.offset >= self.word.len() {
+        let Self { word, offset, pattern } = self;
+
+        if *offset >= word.len() {
             return None;
         }
 
-        self.offset += self.word.chars[self.offset ..]
+        *offset += word.chars[*offset ..]
             .iter()
-            .take_while(|&&ch| self.pattern.matches(ch))
+            .take_while(|&&ch| pattern.matches(ch))
             .count();
 
-        let len = self.word.chars[self.offset ..]
+        let len = word.chars[*offset ..]
             .iter()
-            .take_while(|&&ch| !self.pattern.matches(ch))
+            .take_while(|&&ch| !pattern.matches(ch))
             .count();
 
         if len == 0 {
             return None;
         }
 
-        let word = Word {
-            source: &self.word.chars[self.offset .. self.offset + len],
-            chars:  &self.word.source[self.offset .. self.offset + len],
-            slice:  (0, len),
+        let splitted = Word {
+            chars:  &word.chars[*offset .. *offset + len],
+            place:  (word.place.0 + *offset, word.place.0 + *offset + len),
             stem:   len,
             pos:    None,
-            fin:    self.word.fin || self.offset + len < self.word.len(),
+            fin:    word.fin || *offset + len < word.len(),
         };
 
-        self.offset += word.len();
+        *offset += splitted.len();
 
-        Some(word)
+        Some(splitted)
     }
 }
 
@@ -225,6 +224,22 @@ mod tests {
     }
 
     #[test]
+    fn word_split_place() {
+        let mut  w = Word::from_str(" Foo Bar, Baz; ");
+
+        let s = w.split(&[Whitespaces, Punctuation]).collect::<Vec<_>>();
+        assert_eq!(s[0].place, (1, 4));
+        assert_eq!(s[1].place, (5, 8));
+        assert_eq!(s[2].place, (10, 13));
+
+        w.place = (10, 10 + w.len());
+        let s = w.split(&[Whitespaces, Punctuation]).collect::<Vec<_>>();
+        assert_eq!(s[0].place, (11, 14));
+        assert_eq!(s[1].place, (15, 18));
+        assert_eq!(s[2].place, (20, 23));
+    }
+
+    #[test]
     fn word_split_empty() {
         let w = Word::from_str(" ,;");
         let s = w.split(&[Whitespaces, Punctuation]).collect::<Vec<_>>();
@@ -233,10 +248,8 @@ mod tests {
 
     #[test]
     fn word_split_unfinished() {
-        let mut w1 = Word::from_str(" Foo Bar, Baz");
-        let mut w2 = Word::from_str(" Foo Bar, Baz; ");
-        w1.fin = false;
-        w2.fin = false;
+        let w1 = Word::from_str(" Foo Bar, Baz").fin(false);
+        let w2 = Word::from_str(" Foo Bar, Baz; ").fin(false);
         let s1 = w1.split(&[Whitespaces, Punctuation]).collect::<Vec<_>>();
         let s2 = w2.split(&[Whitespaces, Punctuation]).collect::<Vec<_>>();
         assert_eq!(s1.last().unwrap().fin, false);
@@ -245,10 +258,21 @@ mod tests {
 
     #[test]
     fn word_strip() {
-        let mut w = Word::from_str(" Foo Bar, Baz; ");
+        let mut w = Word::from_str(" Foo; ");
         w.strip(&[Whitespaces, Punctuation]);
         assert_debug_snapshot!(&w);
-        assert_debug_snapshot!(&w.slice);
+    }
+
+    #[test]
+    fn word_strip_place() {
+        let mut w = Word::from_str(" Foo; ");
+        w.strip(&[Whitespaces, Punctuation]);
+        assert_eq!(w.place, (1, 4));
+
+        let mut w = Word::from_str(" Foo; ");
+        w.place = (10, 16);
+        w.strip(&[Whitespaces, Punctuation]);
+        assert_eq!(w.place, (11, 14));
     }
 
     #[test]

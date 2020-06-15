@@ -2,4 +2,4 @@
 source: src/lexis/word.rs
 expression: w
 ---
-Word { "Foo Bar, Baz" }
+Word { "Foo" }

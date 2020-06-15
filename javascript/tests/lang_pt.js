@@ -6,7 +6,7 @@ describe('Portuguese language', () => {
         {id: 10, title: 'Pilhas Alcalinas AA — Embalagem com 12'},
         {id: 20, title: 'Cabo Lightning para USB-A'},
         {id: 30, title: 'Escova de dentes elétrica'},
-        {id: 40, title: 'Sacos de armazenamento a vácuo '},
+        {id: 40, title: 'Sacos de armazenamento a vácuo'},
     ]
 
     const suggest = new LucidSuggest()

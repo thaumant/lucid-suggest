@@ -26,7 +26,7 @@ pub struct WordMatch {
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct MatchSide {
-    pub pos:     usize,
+    pub ix:      usize,
     pub len:     usize,
     pub slice:   (usize, usize),
     pub primary: bool,
@@ -34,8 +34,8 @@ pub struct MatchSide {
 
 
 impl MatchSide {
-    pub fn new(pos: usize, len: usize, slice: (usize, usize), primary: bool) -> Self {
-        MatchSide { pos, len, slice, primary }
+    pub fn new(len: usize, slice: (usize, usize), primary: bool) -> Self {
+        MatchSide { ix: 0, len, slice, primary }
     }
 }
 
@@ -78,8 +78,8 @@ pub fn text_match(rtext: &Text<&[char]>, qtext: &Text<&[char]>) -> Vec<WordMatch
         for (j, rword) in rtext.words.iter().enumerate() {
             if taken.contains(&j) { continue; }
             if let Some(mut m) = word_match(rword, qword) {
-                m.query.pos  = i;
-                m.record.pos = j;
+                m.query.ix  = i;
+                m.record.ix = j;
                 if m.record.primary {
                     found = Some(m);
                     break;
@@ -91,7 +91,7 @@ pub fn text_match(rtext: &Text<&[char]>, qtext: &Text<&[char]>) -> Vec<WordMatch
         }
 
         if let Some(m) = found {
-            taken.insert(m.record.pos);
+            taken.insert(m.record.ix);
             matches.push(m);
         }
     }
@@ -145,8 +145,8 @@ pub fn word_match(rword: &Word<&[char]>, qword: &Word<&[char]>) -> Option<WordMa
                 match best_match {
                     None => {
                         best_match = Some(WordMatch {
-                            query:  MatchSide::new(0, qlen,        (0, qlen), qword.is_primary()),
-                            record: MatchSide::new(0, rword.len(), (0, rlen), rword.is_primary()),
+                            query:  MatchSide::new(qlen,        (0, qlen), qword.is_primary()),
+                            record: MatchSide::new(rword.len(), (0, rlen), rword.is_primary()),
                             typos:  dist,
                             fin:    qword.fin || rword.len() == rlen,
                         });

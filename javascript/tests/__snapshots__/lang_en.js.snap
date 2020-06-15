@@ -5,7 +5,7 @@ Array [
   Object {
     "id": 10,
     "rating": 4,
-    "title": "AA 1.5 Alkaline Batteries Pack of 12",
+    "title": "AA 1.5 Alkaline Batteries — Pack of 12",
   },
   Object {
     "id": 20,
@@ -55,7 +55,7 @@ Array [
   Object {
     "id": 10,
     "rating": 4,
-    "title": "[AA] 1.5 Alkaline [Batteri]es Pack of 12",
+    "title": "[AA] 1.5 Alkaline [Batteri]es — Pack of 12",
   },
 ]
 `;

@@ -64,3 +64,13 @@ Array [
   },
 ]
 `;
+
+exports[`Suggest Typos 1`] = `
+Array [
+  Object {
+    "id": 10,
+    "rating": 3,
+    "title": "[Hello] world!",
+  },
+]
+`;

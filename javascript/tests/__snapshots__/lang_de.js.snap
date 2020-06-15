@@ -5,7 +5,7 @@ Array [
   Object {
     "id": 10,
     "rating": 4,
-    "title": "AA Batterien, Alkaline 12er Pack",
+    "title": "AA Batterien, Alkaline — 12er Pack",
   },
   Object {
     "id": 20,
@@ -40,7 +40,7 @@ Array [
   Object {
     "id": 40,
     "rating": 1,
-    "title": "Hi-Fi-Mitteltöner, Speaker für die [Mit]telton-Wiedergabe",
+    "title": "Hi-Fi-[Mit]teltöner, Speaker für die Mittelton-Wiedergabe",
   },
   Object {
     "id": 30,
@@ -55,7 +55,7 @@ Array [
   Object {
     "id": 10,
     "rating": 4,
-    "title": "[AA] [Batterie]n, Alkaline 12er Pack",
+    "title": "[AA] [Batterie]n, Alkaline — 12er Pack",
   },
 ]
 `;

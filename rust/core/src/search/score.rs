@@ -46,8 +46,8 @@ pub fn score_trans_down(hit: &Hit) -> isize {
     let prevs = &hit.matches[ .. hit.matches.len() - 1];
     let nexts = &hit.matches[1..];
     for (prev, next) in prevs.iter().zip(nexts.iter()) {
-        let prev_ix = prev.record.pos + 1;
-        let next_ix = next.record.pos;
+        let prev_ix = prev.record.ix + 1;
+        let next_ix = next.record.ix;
         if prev_ix > next_ix { transpositions += prev_ix - next_ix; }
         if prev_ix < next_ix { transpositions += next_ix - prev_ix; }
     }
@@ -67,7 +67,7 @@ pub fn score_fin_up(hit: &Hit) -> isize {
 
 pub fn score_offset_down(hit: &Hit) -> isize {
     let offset = hit.matches.iter()
-        .map(|m| m.record.pos)
+        .map(|m| m.record.ix)
         .min()
         .unwrap_or(0);
     -(offset as isize)
