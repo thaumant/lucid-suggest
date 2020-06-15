@@ -16,7 +16,7 @@ import {LucidSuggest} from 'lucid-suggest/en'
 const suggest = new LucidSuggest()
 suggest.setRecords([
     {id: 1, title: "Electric Toothbrush"},
-    {id: 2, title: "Lightning to USB C Cable"},
+    {id: 2, title: "Lightning to USB-C Cable"},
     {id: 3, title: "AA Alkaline Batteries"},
 ])
 ```
@@ -52,7 +52,7 @@ Search as you type, results are provided from the first letter:
 await suggest.search("c")
 // returns:
 [
- {id: 2, title: "Lightning to USB C [C]able"},
+ {id: 2, title: "Lightning to USB-C [C]able"},
 ]
 ```
 
@@ -80,7 +80,7 @@ await suggest.search("to")
 // returns:
 [
     {id: 1, title: "Electric [To]othbrush"},
-    {id: 2, title: "Lightning [to] USB C Cable"},
+    {id: 2, title: "Lightning [to] USB-C Cable"},
 ]
 ```
 
@@ -126,16 +126,16 @@ await suggest.search("ne")
 
 ## Supported languages
 
-| language   | import command |
-| :--------- | :------------- |
-| German     | `import {LucidSuggest} from 'lucid-suggest/de'` |
-| English    | `import {LucidSuggest} from 'lucid-suggest/en'` |
-| Spanish    | `import {LucidSuggest} from 'lucid-suggest/es'` |
-| Portuguese | `import {LucidSuggest} from 'lucid-suggest/pt'` |
-| Russian    | `import {LucidSuggest} from 'lucid-suggest/ru'` |
+| Language   | Module             |
+| :--------- | :----------------- |
+| German     | `lucid-suggest/de` |
+| English    | `lucid-suggest/en` |
+| Spanish    | `lucid-suggest/es` |
+| Portuguese | `lucid-suggest/pt` |
+| Russian    | `lucid-suggest/ru` |
 
 
-### Bundle sizes
+## Bundle sizes
 
 | lang | size | gzipped |
 | :--- | ---: | ------: |
@@ -146,7 +146,7 @@ await suggest.search("ne")
 | ru   | 139K |     57K |
 
 
-### Performance
+## Performance
 
 If you target 60 fps in a browser, a search through 100 sentences will take 2-5% of a single frame or less, so you can expect negligible cost, even when calling it at every keystroke, without throttling/debouncing.
 
