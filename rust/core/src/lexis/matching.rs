@@ -5,7 +5,7 @@ use crate::jaccard::Jaccard;
 use super::{Word, Text};
 
 
-const LENGTH_THRESHOLD:  f64 = 0.51;
+const LENGTH_THRESHOLD:  f64 = 0.26;
 const JACCARD_THRESHOLD: f64 = 0.41;
 const DAMLEV_THRESHOLD:  f64 = 0.21;
 
@@ -177,7 +177,7 @@ pub fn length_check(rword: &Word, qword: &Word) -> bool {
     let qlen  = qword.len();
     let rlen  = if qword.fin { rword.len() } else { min!(qlen, rword.len()) };
 
-    if qlen <= 3 || rlen <= 3 {
+    if qlen <= 1 || rlen <= 1 {
         return qlen == rlen;
     }
 
@@ -203,13 +203,72 @@ mod tests {
     use insta::assert_debug_snapshot;
     use crate::lexis::Chars;
     use crate::lang::lang_english;
-    use super::{Word, Text, word_match, text_match};
+    use super::{Word, Text, length_check, word_match, text_match};
 
 
     fn text(s: &str) -> Text<Vec<char>> {
         Text::from_str(s).split(&Chars::Whitespaces)
     }
 
+    #[test]
+    fn test_length_check_len4() {
+        let sample = [
+            (false, "m"),
+            (false, "ma"),
+            (true,  "mai"),
+            (true,  "mail"),
+            (true,  "mailb"),
+            (false, "mailbo"),
+            (false, "mailbox"),
+        ];
+        for &(expect, query) in sample.iter() {
+            let rtext  = text("mail");
+            let qtext  = text(query);
+            let result = length_check(&rtext.words[0], &qtext.words[0]);
+            assert_eq!(result, expect, "Failed length_check(\"mail\", \"{}\") == {}", query, expect);
+        }
+    }
+
+    #[test]
+    fn test_length_check_len7() {
+        let sample = [
+            (false, "m"),
+            (false, "ma"),
+            (false, "mai"),
+            (false, "mail"),
+            (false, "mailb"),
+            (true,  "mailbo"),
+            (true,  "mailbox"),
+            (true,  "mailboxe"),
+            (true,  "mailboxes"),
+            (false, "mailboxess"),
+        ];
+        for &(expect, query) in sample.iter() {
+            let rtext  = text("mailbox");
+            let qtext  = text(query);
+            let result = length_check(&rtext.words[0], &qtext.words[0]);
+            assert_eq!(result, expect, "Failed length_check(\"mailbox\", \"{}\") == {}", query, expect);
+        }
+    }
+
+    #[test]
+    fn test_length_check_unfinished() {
+        let sample = [
+            (true,  "m"),
+            (true,  "ma"),
+            (true,  "mai"),
+            (true,  "mail"),
+            (true,  "mailb"),
+            (false, "mailbo"),
+            (false, "mailbox"),
+        ];
+        for &(expect, query) in sample.iter() {
+            let rtext  = text("mail");
+            let qtext  = text(query).fin(false);
+            let result = length_check(&rtext.words[0], &qtext.words[0]);
+            assert_eq!(result, expect, "Failed length_check(\"mail\", \"{}\") == {}", query, expect);
+        }
+    }
 
     // Match word
     // ----------------------------------------------------------------
