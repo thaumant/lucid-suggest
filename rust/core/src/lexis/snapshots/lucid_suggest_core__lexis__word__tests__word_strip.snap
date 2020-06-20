@@ -1,5 +1,13 @@
 ---
 source: src/lexis/word.rs
-expression: w
+expression: "&w"
 ---
-Word { "Foo" }
+Word {
+    place: (
+        1,
+        4,
+    ),
+    stem: 6,
+    pos: None,
+    fin: true,
+}

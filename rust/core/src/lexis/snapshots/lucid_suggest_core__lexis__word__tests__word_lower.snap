@@ -2,4 +2,12 @@
 source: src/lexis/word.rs
 expression: w
 ---
-Word { " foo bar, baz; " }
+Word {
+    place: (
+        0,
+        15,
+    ),
+    stem: 15,
+    pos: None,
+    fin: true,
+}
