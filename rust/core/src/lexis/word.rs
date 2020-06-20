@@ -1,13 +1,10 @@
-use std::fmt;
-use std::iter::empty;
 pub use crate::lang::Lang;
 pub use super::{Chars, CharPattern};
 pub use super::pos::PartOfSpeech;
 
 
-#[derive(PartialEq)]
-pub struct Word<T: AsRef<[char]>> {
-    pub chars: T,
+#[derive(PartialEq, Debug, Clone)]
+pub struct Word {
     pub place: (usize, usize),
     pub stem:  usize,
     pub pos:   Option<PartOfSpeech>,
@@ -15,12 +12,9 @@ pub struct Word<T: AsRef<[char]>> {
 }
 
 
-impl Word<Vec<char>> {
-    pub fn from_vec(source: Vec<char>) -> Word<Vec<char>> {
-        let len = source.len();
-        let chars = source.clone();
+impl Word {
+    pub fn new(len: usize) -> Self {
         Word {
-            chars,
             place: (0, len),
             stem:  len,
             pos:   None,
@@ -28,54 +22,12 @@ impl Word<Vec<char>> {
         }
     }
 
-    pub fn from_str(source: &str) -> Word<Vec<char>> {
-        let source = source.chars().collect::<Vec<_>>();
-        let chars  = source.clone();
-        let len    = source.len();
-        Word {
-            chars,
-            place: (0, len),
-            stem:  len,
-            pos:   None,
-            fin:   true,
-        }
-    }
-}
-
-
-impl Word<Vec<char>> {
-    pub fn to_ref<'a>(&'a self) -> Word<&'a [char]> {
-        Word {
-            chars: &self.chars,
-            place: self.place,
-            stem:  self.stem,
-            pos:   self.pos,
-            fin:   self.fin,
-        }
-    }
-}
-
-
-impl<'a> Word<&'a [char]> {
-    pub fn to_own(&self) -> Word<Vec<char>> {
-        Word {
-            chars: self.chars.to_vec(),
-            place: self.place,
-            stem:  self.stem,
-            pos:   self.pos,
-            fin:   self.fin,
-        }
-    }
-}
-
-
-impl<T: AsRef<[char]>> Word<T> {
     pub fn len(&self) -> usize {
-        self.chars.as_ref().len()
+        self.place.1 - self.place.0
     }
 
     pub fn is_empty(&self) -> bool {
-        self.chars.as_ref().is_empty()
+        self.place.1 == self.place.0
     }
 
     pub fn is_primary(&self) -> bool {
@@ -87,22 +39,30 @@ impl<T: AsRef<[char]>> Word<T> {
             _ => true,
         }
     }
+
+    pub fn view<'a>(&self, chars: &'a [char]) -> &'a [char] {
+        &chars[self.place.0 .. self.place.1]
+    }
+
+    pub fn view_mut<'a>(&self, chars: &'a mut [char]) -> &'a mut [char] {
+        &mut chars[self.place.0 .. self.place.1]
+    }
 }
 
 
-impl Word<Vec<char>> {
+impl Word {
     pub fn fin(mut self, fin: bool) -> Self {
         self.fin = fin;
         self
     }
 
-    pub fn split<'a, 'b, P: CharPattern>(&'a self, pattern: &'b P) -> WordSplit<'a, 'b, P> {
-        WordSplit { word: self, pattern, offset: 0 }
+    pub fn split<'a, 'b, P: CharPattern>(&'a self, chars: &'a [char], pattern: &'b P) -> WordSplit<'a, 'b, P> {
+        WordSplit { word: self, chars, pattern, offset: 0 }
     }
 
-    pub fn strip<P: CharPattern>(&mut self, pattern: &P) -> &mut Self {
-        let Self { chars, place, .. } = self;
-        let left = chars.iter()
+    pub fn strip<P: CharPattern>(&mut self, chars: &[char], pattern: &P) -> &mut Self {
+        let chars = self.view(chars);
+        let left  = chars.iter()
             .take_while(|&&ch| pattern.matches(ch))
             .count();
         let right = chars.iter()
@@ -110,78 +70,60 @@ impl Word<Vec<char>> {
             .take_while(|&&ch| pattern.matches(ch))
             .take(chars.len() - left)
             .count();
-        if left  > 0 { chars.splice(..left, empty()); }
-        if right > 0 { chars.splice(chars.len() - right .., empty()); }
-        place.0 += left;
-        place.1 -= right;
+        self.place.0 += left;
+        self.place.1 -= right;
         self.fin = self.fin || right != 0;
         self
     }
 
-    pub fn stem(&mut self, lang: &Lang) -> &mut Self {
-        self.stem = lang.stem(&self.chars);
+    pub fn stem(&mut self, chars: &[char], lang: &Lang) -> &mut Self {
+        self.stem = lang.stem(self.view(chars));
         self
     }
 
-    pub fn mark_pos(&mut self, lang: &Lang) -> &mut Self {
-        self.pos = lang.get_pos(&self.chars);
+    pub fn mark_pos(&mut self, chars: &[char], lang: &Lang) -> &mut Self {
+        self.pos = lang.get_pos(self.view(chars));
         self
     }
 
-    pub fn lower(&mut self) -> &mut Self {
-        if self.chars.iter().any(|ch| ch.is_uppercase()) {
-            for ch in &mut self.chars {
-                *ch = ch.to_lowercase().next().unwrap();
+    pub fn lower(&mut self, chars: &mut [char]) -> &mut Self {
+        let chars = self.view_mut(chars);
+        if chars.iter().any(|ch| ch.is_uppercase()) {
+            for ch in chars {
+                *ch = ch.to_lowercase().next().unwrap_or(*ch);
             }
         }
         self
-    }
-}
-
-
-impl<T: AsRef<[char]>> fmt::Debug for Word<T> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Word {{ \"")?;
-        let len  = self.chars.as_ref().len();
-        let stem = self.stem;
-        for (i, ch) in self.chars.as_ref().iter().enumerate() {
-            write!(f, "{}", ch)?;
-            if i == stem - 1 && i != len - 1 {
-                write!(f, "|")?;
-            }
-        }
-        write!(f, "\"")?;
-        if !self.fin { write!(f, "..")?; }
-        write!(f, " }}")?;
-        Ok(())
     }
 }
 
 
 #[derive(Debug)]
 pub struct WordSplit<'b, 'c, P: CharPattern> {
-    word: &'b Word<Vec<char>>,
+    word: &'b Word,
+    chars: &'b [char],
     offset: usize,
     pattern: &'c P,
 }
 
 
 impl<'b, 'c, P: CharPattern> Iterator for WordSplit<'b, 'c, P> {
-    type Item = Word<&'b [char]>;
+    type Item = Word;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let Self { word, offset, pattern } = self;
+        let Self { word, offset, pattern, .. } = self;
+        let chars = word.view(self.chars);
 
         if *offset >= word.len() {
             return None;
         }
 
-        *offset += word.chars[*offset ..]
+        *offset += chars[*offset ..]
             .iter()
             .take_while(|&&ch| pattern.matches(ch))
             .count();
 
-        let len = word.chars[*offset ..]
+        let len = chars[*offset ..]
             .iter()
             .take_while(|&&ch| !pattern.matches(ch))
             .count();
@@ -191,7 +133,6 @@ impl<'b, 'c, P: CharPattern> Iterator for WordSplit<'b, 'c, P> {
         }
 
         let splitted = Word {
-            chars:  &word.chars[*offset .. *offset + len],
             place:  (word.place.0 + *offset, word.place.0 + *offset + len),
             stem:   len,
             pos:    None,
@@ -218,105 +159,87 @@ mod tests {
 
     #[test]
     fn word_split() {
-        let w = Word::from_str(" Foo Bar, Baz; ");
-        let s = w.split(&[Whitespaces, Punctuation]).collect::<Vec<_>>();
-        assert_debug_snapshot!(s);
-    }
-
-    #[test]
-    fn word_split_place() {
-        let mut  w = Word::from_str(" Foo Bar, Baz; ");
-
-        let s = w.split(&[Whitespaces, Punctuation]).collect::<Vec<_>>();
-        assert_eq!(s[0].place, (1, 4));
-        assert_eq!(s[1].place, (5, 8));
-        assert_eq!(s[2].place, (10, 13));
-
-        w.place = (10, 10 + w.len());
-        let s = w.split(&[Whitespaces, Punctuation]).collect::<Vec<_>>();
-        assert_eq!(s[0].place, (11, 14));
-        assert_eq!(s[1].place, (15, 18));
-        assert_eq!(s[2].place, (20, 23));
+        let chars = " Foo Bar, Baz; ".chars().collect::<Vec<_>>();
+        let word  = Word::new(chars.len());
+        let split = word.split(&chars[..], &[Whitespaces, Punctuation]).collect::<Vec<_>>();
+        assert_debug_snapshot!(split);
     }
 
     #[test]
     fn word_split_empty() {
-        let w = Word::from_str(" ,;");
-        let s = w.split(&[Whitespaces, Punctuation]).collect::<Vec<_>>();
-        assert_debug_snapshot!(s);
+        let chars = " ,;".chars().collect::<Vec<_>>();
+        let word  = Word::new(chars.len());
+        let split = word.split(&chars[..], &[Whitespaces, Punctuation]).collect::<Vec<_>>();
+        assert_debug_snapshot!(split);
     }
 
     #[test]
     fn word_split_unfinished() {
-        let w1 = Word::from_str(" Foo Bar, Baz").fin(false);
-        let w2 = Word::from_str(" Foo Bar, Baz; ").fin(false);
-        let s1 = w1.split(&[Whitespaces, Punctuation]).collect::<Vec<_>>();
-        let s2 = w2.split(&[Whitespaces, Punctuation]).collect::<Vec<_>>();
-        assert_eq!(s1.last().unwrap().fin, false);
-        assert_eq!(s2.last().unwrap().fin, true);
+        let chars1 = " Foo Bar, Baz"  .chars().collect::<Vec<_>>();
+        let chars2 = " Foo Bar, Baz; ".chars().collect::<Vec<_>>();
+        let word1  = Word::new(chars1.len()).fin(false);
+        let word2  = Word::new(chars2.len()).fin(false);
+        let split1 = word1.split(&chars1[..], &[Whitespaces, Punctuation]).collect::<Vec<_>>();
+        let split2 = word2.split(&chars2[..], &[Whitespaces, Punctuation]).collect::<Vec<_>>();
+        assert_eq!(split1.last().unwrap().fin, false);
+        assert_eq!(split2.last().unwrap().fin, true);
     }
 
     #[test]
     fn word_strip() {
-        let mut w = Word::from_str(" Foo; ");
-        w.strip(&[Whitespaces, Punctuation]);
-        assert_debug_snapshot!(&w);
-    }
-
-    #[test]
-    fn word_strip_place() {
-        let mut w = Word::from_str(" Foo; ");
-        w.strip(&[Whitespaces, Punctuation]);
-        assert_eq!(w.place, (1, 4));
-
-        let mut w = Word::from_str(" Foo; ");
-        w.place = (10, 16);
-        w.strip(&[Whitespaces, Punctuation]);
-        assert_eq!(w.place, (11, 14));
+        let chars = " Foo; ".chars().collect::<Vec<_>>();
+        let mut word = Word::new(chars.len());
+        word.strip(&chars[..], &[Whitespaces, Punctuation]);
+        assert_debug_snapshot!(&word);
     }
 
     #[test]
     fn word_strip_empty() {
-        let mut w = Word::from_str(" ,;");
-        w.strip(&[Whitespaces, Punctuation]);
-        assert_debug_snapshot!(w);
+        let chars = " ,;".chars().collect::<Vec<_>>();
+        let mut word = Word::new(chars.len());
+        word.strip(&chars[..], &[Whitespaces, Punctuation]);
+        assert_debug_snapshot!(word);
     }
 
     #[test]
     fn word_strip_unfinished() {
-        let mut w1 = Word::from_str(" Foo Bar, Baz");
-        let mut w2 = Word::from_str(" Foo Bar, Baz; ");
-        w1.fin = false;
-        w2.fin = false;
-        w1.strip(&[Whitespaces, Punctuation]);
-        w2.strip(&[Whitespaces, Punctuation]);
-        assert_eq!(w1.fin, false);
-        assert_eq!(w2.fin, true);
+        let chars1 = " Foo Bar, Baz"  .chars().collect::<Vec<_>>();
+        let chars2 = " Foo Bar, Baz; ".chars().collect::<Vec<_>>();
+        let mut word1 = Word::new(chars1.len()).fin(false);
+        let mut word2 = Word::new(chars2.len()).fin(false);
+        word1.strip(&chars1[..], &[Whitespaces, Punctuation]);
+        word2.strip(&chars2[..], &[Whitespaces, Punctuation]);
+        assert_eq!(word1.fin, false);
+        assert_eq!(word2.fin, true);
     }
 
     #[test]
     fn word_stem() {
-        let lang = lang_english();
-        let mut w = Word::from_str("university");
-        w.stem(&lang);
-        assert_eq!(w.stem, 7);
+        let chars = "university".chars().collect::<Vec<_>>();
+        let lang  = lang_english();
+        let mut word = Word::new(chars.len());
+        word.stem(&chars[..], &lang);
+        assert_eq!(word.stem, 7);
     }
 
     #[test]
     fn word_pos() {
-        let lang = lang_english();
-        let mut w1 = Word::from_str("university");
-        let mut w2 = Word::from_str("the");
-        w1.mark_pos(&lang);
-        w2.mark_pos(&lang);
-        assert_eq!(w1.pos, None);
-        assert_eq!(w2.pos, Some(PartOfSpeech::Article));
+        let lang   = lang_english();
+        let chars1 = "university".chars().collect::<Vec<_>>();
+        let chars2 = "the"       .chars().collect::<Vec<_>>();
+        let mut word1 = Word::new(chars1.len());
+        let mut word2 = Word::new(chars2.len());
+        word1.mark_pos(&chars1[..], &lang);
+        word2.mark_pos(&chars2[..], &lang);
+        assert_eq!(word1.pos, None);
+        assert_eq!(word2.pos, Some(PartOfSpeech::Article));
     }
 
     #[test]
     fn word_lower() {
-        let mut w = Word::from_str(" Foo Bar, Baz; ");
-        w.lower();
-        assert_debug_snapshot!(w);
+        let mut chars = " Foo Bar, Baz; ".chars().collect::<Vec<_>>();
+        let mut word  = Word::new(chars.len());
+        word.lower(&mut chars[..]);
+        assert_debug_snapshot!(word);
     }
 }

@@ -7,26 +7,24 @@ use super::Word;
 #[derive(PartialEq)]
 pub struct Text<T: AsRef<[char]>> {
     pub source: T,
-    pub words: Vec<Word<T>>,
+    pub chars: T,
+    pub words: Vec<Word>,
 }
 
 
 impl Text<Vec<char>> {
     pub fn from_vec(source: Vec<char>) -> Text<Vec<char>> {
-        let cloned = source.clone();
+        let len   = source.len();
+        let chars = source.clone();
         Text {
-            source: source,
-            words: vec![Word::from_vec(cloned)],
+            source,
+            chars,
+            words: vec![Word::new(len)],
         }
     }
 
     pub fn from_str(source: &str) -> Text<Vec<char>> {
-        let source = source.chars().collect::<Vec<_>>();
-        let word   = source.clone();
-        Text {
-            source,
-            words: vec![Word::from_vec(word)],
-        }
+        Text::from_vec(source.chars().collect())
     }
 }
 
@@ -35,7 +33,8 @@ impl Text<Vec<char>> {
     pub fn to_ref<'a>(&'a self) -> Text<&'a [char]> {
         Text {
             source: &self.source,
-            words: self.words.iter().map(|w| w.to_ref()).collect()
+            chars:  &self.chars,
+            words:  self.words.clone(),
         }
     }
 }
@@ -45,7 +44,8 @@ impl<'a> Text<&'a [char]> {
     pub fn to_own(&self) -> Text<Vec<char>> {
         Text {
             source: self.source.to_vec(),
-            words:  self.words.iter().map(|w| w.to_own()).collect(),
+            chars:  self.chars.to_vec(),
+            words:  self.words.clone(),
         }
     }
 }
@@ -69,8 +69,8 @@ impl Text<Vec<char>> {
     pub fn split<P: CharPattern>(mut self, pattern: &P) -> Self {
         let mut words = Vec::with_capacity(self.words.len());
         for word in &self.words {
-            for splitted in word.split(pattern) {
-                words.push(splitted.to_own());
+            for splitted in word.split(&self.chars, pattern) {
+                words.push(splitted);
             }
         }
         self.words = words;
@@ -79,7 +79,7 @@ impl Text<Vec<char>> {
 
     pub fn strip<P: CharPattern>(mut self, pattern: &P) -> Self {
         for word in &mut self.words {
-            word.strip(pattern);
+            word.strip(&self.chars, pattern);
         }
         self.words.retain(|w| w.len() > 0);
         self
@@ -87,21 +87,23 @@ impl Text<Vec<char>> {
 
     pub fn stem(mut self, lang: &Lang) -> Self {
         for word in &mut self.words {
-            word.stem(lang);
+            word.stem(&self.chars, lang);
         }
         self
     }
 
     pub fn mark_pos(mut self, lang: &Lang) -> Self {
         for word in &mut self.words {
-            word.mark_pos(lang);
+            word.mark_pos(&self.chars, lang);
         }
         self
     }
 
     pub fn lower(mut self) -> Self {
-        for word in &mut self.words {
-            word.lower();
+        if self.chars.iter().any(|ch| ch.is_uppercase()) {
+            for ch in &mut self.chars {
+                *ch = ch.to_lowercase().next().unwrap_or(*ch);
+            }
         }
         self
     }
@@ -112,12 +114,11 @@ impl<T: AsRef<[char]>> fmt::Debug for Text<T> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Text {{")?;
         for word in &self.words {
-            let len  = word.chars.as_ref().len();
-            let stem = word.stem;
+            let chars = word.view(self.chars.as_ref());
             write!(f, " \"")?;
-            for (i, ch) in word.chars.as_ref().iter().enumerate() {
+            for (i, ch) in chars.iter().enumerate() {
                 write!(f, "{}", ch)?;
-                if i == stem - 1 && i != len - 1 {
+                if i == word.stem - 1 && i != word.len() - 1 {
                     write!(f, "|")?;
                 }
             }
@@ -144,100 +145,114 @@ mod tests {
 
     #[test]
     fn text_split() {
-        let t = Text::from_str(" Foo Bar, Baz; ").split(&[Whitespaces, Punctuation]);
-        assert_debug_snapshot!(t);
+        let text = Text::from_str(" Foo Bar, Baz; ").split(&[Whitespaces, Punctuation]);
+        assert_debug_snapshot!(text);
     }
 
     #[test]
     fn text_split_empty() {
-        let t = Text::from_str(", ").split(&[Whitespaces, Punctuation]);
-        assert_debug_snapshot!(t);
+        let text = Text::from_str(", ").split(&[Whitespaces, Punctuation]);
+        assert_debug_snapshot!(text);
     }
 
     #[test]
     fn text_split_unfinished() {
-        let t1 = Text::from_str(" Foo Bar, Baz"  ).fin(false).split(&[Whitespaces, Punctuation]);
-        let t2 = Text::from_str(" Foo Bar, Baz; ").fin(false).split(&[Whitespaces, Punctuation]);
-        assert_eq!(t1.words.last().unwrap().fin, false);
-        assert_eq!(t2.words.last().unwrap().fin, true);
+        let text1 = Text::from_str(" Foo Bar, Baz"  ).fin(false).split(&[Whitespaces, Punctuation]);
+        let text2 = Text::from_str(" Foo Bar, Baz; ").fin(false).split(&[Whitespaces, Punctuation]);
+        assert_eq!(text1.words.last().unwrap().fin, false);
+        assert_eq!(text2.words.last().unwrap().fin, true);
     }
 
     #[test]
     fn text_strip() {
-        let t = Text {
-                source: vec![],
-                words: vec![
-                    Word::from_str("-Foo-"),
-                    Word::from_str(","),
-                    Word::from_str("Baz; "),
+        let chars = "-Foo- , Baz; ".chars().collect::<Vec<_>>();
+        let text  = Text {
+                source: chars.clone(),
+                chars:  chars.clone(),
+                words:  vec![
+                    Word { place: (0,  5), stem: 5, pos: None, fin: true },  // "-Foo-"
+                    Word { place: (6,  7), stem: 1, pos: None, fin: true },  // ","
+                    Word { place: (8, 13), stem: 5, pos: None, fin: true },  // "Baz; "
                 ],
             }
             .strip(&[Whitespaces, Punctuation]);
-        assert_debug_snapshot!(t);
+        assert_debug_snapshot!(text);
     }
 
     #[test]
     fn text_strip_unfinished() {
-        let t1 = Text {
-                source: vec![],
-                words: vec![
-                    Word::from_str("-Foo-"),
-                    Word::from_str("Baz"),
+        let chars = "-Foo- Baz; ".chars().collect::<Vec<_>>();
+        let text1 = Text {
+                source: chars.clone(),
+                chars:  chars.clone(),
+                words:  vec![
+                    Word { place: (0, 5), stem: 5, pos: None, fin: true },  // "-Foo-"
+                    Word { place: (5, 8), stem: 3, pos: None, fin: true },  // "Baz"
                 ],
             }
             .fin(false)
             .strip(&[Whitespaces, Punctuation]);
-        let t2 = Text {
-                source: vec![],
-                words: vec![
-                    Word::from_str("-Foo-"),
-                    Word::from_str("Baz; "),
+
+        let text2 = Text {
+                source: chars.clone(),
+                chars:  chars.clone(),
+                words:  vec![
+                    Word { place: (0,  5), stem: 5, pos: None, fin: true },  // "-Foo-"
+                    Word { place: (5, 10), stem: 5, pos: None, fin: true },  // "Baz; "
                 ],
             }
             .fin(false)
             .strip(&[Whitespaces, Punctuation]);
-        assert_eq!(t1.words.last().unwrap().fin, false);
-        assert_eq!(t2.words.last().unwrap().fin, true);
+
+        assert_eq!(text1.words.last().unwrap().fin, false);
+        assert_eq!(text2.words.last().unwrap().fin, true);
     }
 
     #[test]
     fn text_lower() {
-        let t  = Text {
-                source: vec![],
-                words: vec![
-                    Word::from_str("Foo,"),
-                    Word::from_str("Bar"),
-                    Word::from_str("Baz"),
+        let chars = "Foo, Bar Baz".chars().collect::<Vec<_>>();
+        let text  = Text {
+                source: chars.clone(),
+                chars:  chars.clone(),
+                words:  vec![
+                    Word { place: (0,  4), stem: 4, pos: None, fin: true }, // "Foo,"
+                    Word { place: (5,  8), stem: 3, pos: None, fin: true }, // "Bar"
+                    Word { place: (9, 12), stem: 3, pos: None, fin: true }, // "Baz"
                 ],
-            }.lower();
-        assert_debug_snapshot!(t);
+            }
+            .lower();
+        assert_debug_snapshot!(text);
     }
 
     #[test]
     fn text_stem() {
-        let lang = lang_english();
-        let t  = Text {
-                source: vec![],
+        let chars = "hello universe".chars().collect::<Vec<_>>();
+        let lang  = lang_english();
+        let text  = Text {
+                source: chars.clone(),
+                chars:  chars.clone(),
                 words: vec![
-                    Word::from_str("hello"),
-                    Word::from_str("universe"),
+                    Word { place: (0,  5), stem: 5, pos: None, fin: true }, // "hello"
+                    Word { place: (6, 14), stem: 8, pos: None, fin: true }, // "universe"
                 ],
             }.stem(&lang);
-        assert_eq!(t.words[0].stem, 5);
-        assert_eq!(t.words[1].stem, 7);
+        assert_eq!(text.words[0].stem, 5);
+        assert_eq!(text.words[1].stem, 7);
     }
 
     #[test]
     fn text_pos() {
-        let lang = lang_english();
-        let t  = Text {
-                source: vec![],
+        let chars = "the universe".chars().collect::<Vec<_>>();
+        let lang  = lang_english();
+        let text  = Text {
+                source: chars.clone(),
+                chars:  chars.clone(),
                 words: vec![
-                    Word::from_str("the"),
-                    Word::from_str("universe"),
+                    Word { place: (0,  3), stem: 3, pos: None, fin: true }, // "hello"
+                    Word { place: (4, 12), stem: 8, pos: None, fin: true }, // "universe"
                 ],
             }.mark_pos(&lang);
-        assert_eq!(t.words[0].pos, Some(PartOfSpeech::Article));
-        assert_eq!(t.words[1].pos, None);
+        assert_eq!(text.words[0].pos, Some(PartOfSpeech::Article));
+        assert_eq!(text.words[1].pos, None);
     }
 }

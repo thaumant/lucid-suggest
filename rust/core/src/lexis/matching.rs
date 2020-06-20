@@ -77,15 +77,16 @@ pub fn text_match(rtext: &Text<&[char]>, qtext: &Text<&[char]>) -> Vec<WordMatch
 
         for (j, rword) in rtext.words.iter().enumerate() {
             if taken.contains(&j) { continue; }
-            if let Some(mut m) = word_match(rword, qword) {
+            if let Some(mut m) = word_match(rword, qword, &rtext.chars, &qtext.chars) {
                 m.query.ix  = i;
                 m.record.ix = j;
+                if found.is_none() && !m.record.primary {
+                    found = Some(m);
+                    continue;
+                }
                 if m.record.primary {
                     found = Some(m);
                     break;
-                }
-                if found.is_none() {
-                    found = Some(m);
                 }
             }
         }
@@ -100,21 +101,23 @@ pub fn text_match(rtext: &Text<&[char]>, qtext: &Text<&[char]>) -> Vec<WordMatch
 }
 
 
-pub fn word_match(rword: &Word<&[char]>, qword: &Word<&[char]>) -> Option<WordMatch> {
+pub fn word_match(rword: &Word, qword: &Word, rchars: &[char], qchars: &[char]) -> Option<WordMatch> {
     if qword.is_empty() || rword.is_empty() {
         return None;
     }
-    if !length_check(qword, rword) {
+    if !length_check(rword, qword) {
         return None;
     }
-    if !jaccard_check(qword, rword) {
+    if !jaccard_check(rword, qword, rchars, qchars) {
         return None;
     }
 
+    let rchars = rword.view(rchars);
+    let qchars = qword.view(qchars);
     let mut best_match = None;
 
     DAMLEV.with(|damlev| {
-        damlev.distance(qword.chars.as_ref(), rword.chars.as_ref());
+        damlev.distance(qchars, rchars);
         let dists  = &*damlev.dists.borrow();
 
         let left  = if qword.fin { max!(qword.stem, rword.stem) } else { qword.stem } - 1;
@@ -170,7 +173,7 @@ pub fn word_match(rword: &Word<&[char]>, qword: &Word<&[char]>) -> Option<WordMa
 }
 
 
-pub fn length_check(qword: &Word<&[char]>, rword: &Word<&[char]>) -> bool {
+pub fn length_check(rword: &Word, qword: &Word) -> bool {
     let qlen  = qword.len();
     let rlen  = if qword.fin { rword.len() } else { min!(qlen, rword.len()) };
 
@@ -186,10 +189,10 @@ pub fn length_check(qword: &Word<&[char]>, rword: &Word<&[char]>) -> bool {
 }
 
 
-pub fn jaccard_check(qword: &Word<&[char]>, rword: &Word<&[char]>) -> bool {
-    let Word { chars: qchars, fin, .. } = qword;
-    let Word { chars: rchars, .. }      = rword;
-    let rslice = if *fin { &rchars } else { &rchars[.. min!(qword.len(), rword.len())] };
+pub fn jaccard_check(rword: &Word, qword: &Word, rchars: &[char], qchars: &[char]) -> bool {
+    let rchars = rword.view(rchars);
+    let qchars = qword.view(qchars);
+    let rslice = if qword.fin { &rchars } else { &rchars[.. min!(qword.len(), rword.len())] };
     let dist   = JACCARD.with(|j| j.rel_dist(&rslice, &qchars));
     dist < JACCARD_THRESHOLD
 }
@@ -213,25 +216,31 @@ mod tests {
 
     #[test]
     fn match_word_empty_both() {
-        let q = Word::from_str("").fin(false);
-        let r = Word::from_str("");
-        assert_eq!(word_match(&r.to_ref(), &q.to_ref()), None);
+        let qchars = "".chars().collect::<Vec<_>>();
+        let rchars = "".chars().collect::<Vec<_>>();
+        let qword  = Word::new(qchars.len()).fin(false);
+        let rword  = Word::new(rchars.len());
+        assert_eq!(word_match(&rword, &qword, &rchars[..], &qchars[..]), None);
     }
 
 
     #[test]
     fn match_word_empty_record() {
-        let q = Word::from_str("mailbox").fin(false);
-        let r = Word::from_str("");
-        assert_eq!(word_match(&r.to_ref(), &q.to_ref()), None);
+        let qchars = "mailbox".chars().collect::<Vec<_>>();
+        let rchars = "".chars().collect::<Vec<_>>();
+        let qword  = Word::new(qchars.len()).fin(false);
+        let rword  = Word::new(rchars.len());
+        assert_eq!(word_match(&rword, &qword, &rchars[..], &qchars[..]), None);
     }
 
 
     #[test]
     fn match_word_empty_query() {
-        let q = Word::from_str("").fin(false);
-        let r = Word::from_str("mailbox");
-        assert_eq!(word_match(&r.to_ref(), &q.to_ref()), None);
+        let qchars = "".chars().collect::<Vec<_>>();
+        let rchars = "mailbox".chars().collect::<Vec<_>>();
+        let qword  = Word::new(qchars.len()).fin(false);
+        let rword  = Word::new(rchars.len());
+        assert_eq!(word_match(&rword, &qword, &rchars[..], &qchars[..]), None);
     }
 
 
@@ -240,57 +249,71 @@ mod tests {
 
     #[test]
     fn match_word_full_strict() {
-        let q = Word::from_str("mailbox").fin(false);
-        let r = Word::from_str("mailbox");
-        assert_debug_snapshot!(word_match(&r.to_ref(), &q.to_ref()));
+        let qchars = "mailbox".chars().collect::<Vec<_>>();
+        let rchars = "mailbox".chars().collect::<Vec<_>>();
+        let qword  = Word::new(qchars.len()).fin(false);
+        let rword  = Word::new(rchars.len());
+        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
     }
 
 
     #[test]
     fn match_word_full_fuzzy_insertion() {
-        let q = Word::from_str("mailybox").fin(false);
-        let r = Word::from_str("mailbox");
-        assert_debug_snapshot!(word_match(&r.to_ref(), &q.to_ref()));
+        let qchars = "mailybox".chars().collect::<Vec<_>>();
+        let rchars = "mailbox".chars().collect::<Vec<_>>();
+        let qword  = Word::new(qchars.len()).fin(false);
+        let rword  = Word::new(rchars.len());
+        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
     }
 
 
     #[test]
     fn match_word_full_fuzzy_deletion() {
-        let q = Word::from_str("mailox").fin(false);
-        let r = Word::from_str("mailbox");
-        assert_debug_snapshot!(word_match(&r.to_ref(), &q.to_ref()));
+        let qchars = "mailox".chars().collect::<Vec<_>>();
+        let rchars = "mailbox".chars().collect::<Vec<_>>();
+        let qword  = Word::new(qchars.len()).fin(false);
+        let rword  = Word::new(rchars.len());
+        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
     }
 
 
     #[test]
     fn match_word_full_fuzzy_transposition() {
-        let q = Word::from_str("maiblox").fin(false);
-        let r = Word::from_str("mailbox");
-        assert_debug_snapshot!(word_match(&r.to_ref(), &q.to_ref()));
+        let qchars = "maiblox".chars().collect::<Vec<_>>();
+        let rchars = "mailbox".chars().collect::<Vec<_>>();
+        let qword  = Word::new(qchars.len()).fin(false);
+        let rword  = Word::new(rchars.len());
+        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
     }
 
 
     #[test]
     fn match_word_full_query_too_long() {
-        let q1 = Word::from_str("mailboxes").fin(true);
-        let q2 = Word::from_str("mailboxes").fin(false);
-        let r  = Word::from_str("mail");
-        assert_debug_snapshot!(word_match(&r.to_ref(), &q1.to_ref()));
-        assert_debug_snapshot!(word_match(&r.to_ref(), &q2.to_ref()));
+        let qchars1 = "mailboxes".chars().collect::<Vec<_>>();
+        let qchars2 = "mailboxes".chars().collect::<Vec<_>>();
+        let rchars  = "mail"     .chars().collect::<Vec<_>>();
+        let qword1  = Word::new(qchars1.len()).fin(true);
+        let qword2  = Word::new(qchars2.len()).fin(false);
+        let rword   = Word::new(rchars.len());
+        assert_debug_snapshot!(word_match(&rword, &qword1, &rchars[..], &qchars1[..]));
+        assert_debug_snapshot!(word_match(&rword, &qword2, &rchars[..], &qchars2[..]));
     }
 
     #[test]
     fn match_word_full_stem() {
-        let mut r  = Word::from_str("universe");
-        let mut q1 = Word::from_str("university");
-        let     q2 = Word::from_str("university");
+        let     rchars  = "universe"  .chars().collect::<Vec<_>>();
+        let     qchars1 = "university".chars().collect::<Vec<_>>();
+        let     qchars2 = "university".chars().collect::<Vec<_>>();
+        let mut rword   = Word::new(rchars.len());
+        let mut qword1  = Word::new(qchars1.len());
+        let     qword2  = Word::new(qchars2.len());
 
         let lang = lang_english();
-        q1.stem(&lang);
-        r.stem(&lang);
+        qword1.stem(&qchars1[..], &lang);
+        rword .stem(&rchars[..],  &lang);
 
-        assert_debug_snapshot!(word_match(&r.to_ref(), &q1.to_ref()));
-        assert_debug_snapshot!(word_match(&r.to_ref(), &q2.to_ref()));
+        assert_debug_snapshot!(word_match(&rword, &qword1, &rchars[..], &qchars1[..]));
+        assert_debug_snapshot!(word_match(&rword, &qword2, &rchars[..], &qchars2[..]));
     }
 
 
@@ -299,33 +322,41 @@ mod tests {
 
     #[test]
     fn match_word_partial_strict() {
-        let q = Word::from_str("mailb").fin(false);
-        let r = Word::from_str("mailbox");
-        assert_debug_snapshot!(word_match(&r.to_ref(), &q.to_ref()));
+        let qchars = "mailb".chars().collect::<Vec<_>>();
+        let rchars = "mailbox".chars().collect::<Vec<_>>();
+        let qword = Word::new(qchars.len()).fin(false);
+        let rword = Word::new(rchars.len());
+        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
     }
 
 
     #[test]
     fn match_word_partial_fuzzy_insertion() {
-        let q = Word::from_str("maiylb").fin(false);
-        let r = Word::from_str("mailbox");
-        assert_debug_snapshot!(word_match(&r.to_ref(), &q.to_ref()));
+        let qchars = "maiylb".chars().collect::<Vec<_>>();
+        let rchars = "mailbox".chars().collect::<Vec<_>>();
+        let qword  = Word::new(qchars.len()).fin(false);
+        let rword  = Word::new(rchars.len());
+        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
     }
 
 
     #[test]
     fn match_word_partial_fuzzy_deletion() {
-        let q = Word::from_str("maib").fin(false);
-        let r = Word::from_str("mailbox");
-        assert_debug_snapshot!(word_match(&r.to_ref(), &q.to_ref()));
+        let qchars = "maib".chars().collect::<Vec<_>>();
+        let rchars = "mailbox".chars().collect::<Vec<_>>();
+        let qword  = Word::new(qchars.len()).fin(false);
+        let rword  = Word::new(rchars.len());
+        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
     }
 
 
     #[test]
     fn match_word_partial_fuzzy_transposition() {
-        let q = Word::from_str("malib").fin(false);
-        let r = Word::from_str("mailbox");
-        assert_debug_snapshot!(word_match(&r.to_ref(), &q.to_ref()));
+        let qchars = "malib".chars().collect::<Vec<_>>();
+        let rchars = "mailbox".chars().collect::<Vec<_>>();
+        let qword  = Word::new(qchars.len()).fin(false);
+        let rword  = Word::new(rchars.len());
+        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
     }
 
 
@@ -334,85 +365,86 @@ mod tests {
 
     #[test]
     fn match_text_empty_both() {
-        let q = text("").fin(false);
-        let r = text("");
-        assert_debug_snapshot!(text_match(&r.to_ref(), &q.to_ref()));
+        let qtext = text("").fin(false);
+        let rtext = text("");
+        assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
 
     #[test]
     fn match_text_empty_one() {
-        let q = text("mailbox").fin(false);
-        let r = text("");
-        assert_debug_snapshot!(text_match(&r.to_ref(), &q.to_ref()));
-        assert_debug_snapshot!(text_match(&q.to_ref(), &r.to_ref()));
+        let qtext = text("mailbox").fin(false);
+        let rtext = text("");
+        assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
+        assert_debug_snapshot!(text_match(&qtext.to_ref(), &rtext.to_ref()));
     }
 
 
     #[test]
     fn match_text_singleton_equality() {
-        let q = text("mailbox").fin(false);
-        let r = text("mailbox");
-        assert_debug_snapshot!(text_match(&r.to_ref(), &q.to_ref()));
+        let qtext = text("mailbox").fin(false);
+        let rtext = text("mailbox");
+        assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
 
     #[test]
     fn match_text_singleton_typos() {
-        let q = text("maiblox").fin(false);
-        let r = text("mailbox");
-        assert_debug_snapshot!(text_match(&r.to_ref(), &q.to_ref()));
+        let qtext = text("maiblox").fin(false);
+        let rtext = text("mailbox");
+        assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
 
     #[test]
     fn match_text_pair_first() {
-        let q = text("yelow").fin(false);
-        let r = text("yellow mailbox");
-        assert_debug_snapshot!(text_match(&r.to_ref(), &q.to_ref()));
+        let qtext = text("yelow").fin(false);
+        let rtext = text("yellow mailbox");
+        assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
 
     #[test]
     fn match_text_pair_second() {
-        let q = text("maiblox").fin(false);
-        let r = text("yellow mailbox");
-        assert_debug_snapshot!(text_match(&r.to_ref(), &q.to_ref()));
+        let qtext = text("maiblox").fin(false);
+        let rtext = text("yellow mailbox");
+        assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
 
     #[test]
     fn match_text_pair_unfinished() {
-        let q = text("maiblox yel").fin(false);
-        let r = text("yellow mailbox");
-        assert_debug_snapshot!(text_match(&r.to_ref(), &q.to_ref()));
+        let qtext = text("maiblox yel").fin(false);
+        let rtext = text("yellow mailbox");
+        assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
 
     #[test]
     fn match_text_intersection() {
-        let q = text("big malibox yelo").fin(false);
-        let r = text("small yellow metal mailbox");
-        assert_debug_snapshot!(text_match(&r.to_ref(), &q.to_ref()));
+        let qtext = text("big malibox yelo").fin(false);
+        let rtext = text("small yellow metal mailbox");
+        assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
 
     #[test]
     fn match_text_best_rword() {
-        let mut q = text("the").fin(false);
-        let mut r = text("the theme");
-        assert_debug_snapshot!(text_match(&r.to_ref(), &q.to_ref()));
+        let mut qtext = text("the").fin(false);
+        let mut rtext = text("the theme");
+        assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
+
         let lang = lang_english();
-        q = q.mark_pos(&lang);
-        r = r.mark_pos(&lang);
-        assert_debug_snapshot!(text_match(&r.to_ref(), &q.to_ref()));
+        qtext = qtext.mark_pos(&lang);
+        rtext = rtext.mark_pos(&lang);
+        assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
 
     #[test]
     fn match_text_regression_best_match() {
-        let q = text("sneak").fin(false);
-        let r = text("sneaky");
-        assert_debug_snapshot!(text_match(&r.to_ref(), &q.to_ref()));
+        let qtext = text("sneak").fin(false);
+        let rtext = text("sneaky");
+        assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 }

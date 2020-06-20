@@ -3,7 +3,31 @@ source: src/lexis/word.rs
 expression: s
 ---
 [
-    Word { "Foo" },
-    Word { "Bar" },
-    Word { "Baz" },
+    Word {
+        place: (
+            1,
+            4,
+        ),
+        stem: 3,
+        pos: None,
+        fin: true,
+    },
+    Word {
+        place: (
+            5,
+            8,
+        ),
+        stem: 3,
+        pos: None,
+        fin: true,
+    },
+    Word {
+        place: (
+            10,
+            13,
+        ),
+        stem: 3,
+        pos: None,
+        fin: true,
+    },
 ]
