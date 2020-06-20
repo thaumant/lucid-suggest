@@ -203,7 +203,7 @@ mod tests {
     use insta::assert_debug_snapshot;
     use crate::lexis::Chars;
     use crate::lang::lang_english;
-    use super::{Word, Text, length_check, word_match, text_match};
+    use super::{Word, Text, length_check, jaccard_check, word_match, text_match};
 
 
     fn text(s: &str) -> Text<Vec<char>> {
@@ -211,7 +211,7 @@ mod tests {
     }
 
     #[test]
-    fn test_length_check_len4() {
+    fn test_length_check_len_4() {
         let sample = [
             (false, "m"),
             (false, "ma"),
@@ -230,7 +230,7 @@ mod tests {
     }
 
     #[test]
-    fn test_length_check_len7() {
+    fn test_length_check_len_7() {
         let sample = [
             (false, "m"),
             (false, "ma"),
@@ -248,6 +248,76 @@ mod tests {
             let qtext  = text(query);
             let result = length_check(&rtext.words[0], &qtext.words[0]);
             assert_eq!(result, expect, "Failed length_check(\"mailbox\", \"{}\") == {}", query, expect);
+        }
+    }
+
+    #[test]
+    fn test_jaccard_check_len_4() {
+        let sample = [
+            (true,  "mail"),
+            (true,  "bail"),
+            (false, "bait"),
+            (false, "balt"),
+            (false, "bolt"),
+        ];
+        for &(expect, query) in sample.iter() {
+            let rtext  = text("mail");
+            let qtext  = text(query);
+            let result = jaccard_check(&rtext.words[0], &qtext.words[0], &rtext.chars, &qtext.chars);
+            assert_eq!(result, expect, "Failed jaccard_check(\"mail\", \"{}\") == {}", query, expect);
+        }
+    }
+
+    #[test]
+    fn test_jaccard_check_len_7() {
+        let sample = [
+            (true,  "mailbox"),
+            (true,  "mailbot"),
+            (false, "railbot"),
+            (false, "raidbot"),
+            (false, "roidbot"),
+        ];
+        for &(expect, query) in sample.iter() {
+            let rtext  = text("mailbox");
+            let qtext  = text(query);
+            let result = jaccard_check(&rtext.words[0], &qtext.words[0], &rtext.chars, &qtext.chars);
+            assert_eq!(result, expect, "Failed jaccard_check(\"mailbox\", \"{}\") == {}", query, expect);
+        }
+    }
+
+    #[test]
+    fn test_jaccard_check_len_7_reduction() {
+        let sample = [
+            (true,  "mailbox"),
+            (true,  "mailbxx"),
+            (true,  "mailxxx"),
+            (false, "maixxxx"),
+            (false, "maxxxxx"),
+        ];
+        for &(expect, query) in sample.iter() {
+            let rtext  = text("mailbox");
+            let qtext  = text(query);
+            let result = jaccard_check(&rtext.words[0], &qtext.words[0], &rtext.chars, &qtext.chars);
+            assert_eq!(result, expect, "Failed jaccard_check(\"mailbox\", \"{}\") == {}", query, expect);
+        }
+    }
+
+    #[test]
+    fn test_jaccard_check_unfinished() {
+        let sample = [
+            (true,  "m"),
+            (true,  "ma"),
+            (true,  "mai"),
+            (true,  "mail"),
+            (true,  "mailb"),
+            (true,  "mailbo"),
+            (false, "mailbox"),
+        ];
+        for &(expect, query) in sample.iter() {
+            let rtext  = text("mail");
+            let qtext  = text(query).fin(false);
+            let result = jaccard_check(&rtext.words[0], &qtext.words[0], &rtext.chars, &qtext.chars);
+            assert_eq!(result, expect, "Failed jaccard_check(\"mail\", \"{}\") == {}", query, expect);
         }
     }
 
