@@ -2,11 +2,11 @@ mod utils;
 
 mod damlev;
 mod jaccard;
-mod lexis;
+pub mod lexis;
 
 mod store;
 mod search;
-mod lang;
+pub mod lang;
 
 use std::cell::RefCell;
 use std::collections::HashMap;
