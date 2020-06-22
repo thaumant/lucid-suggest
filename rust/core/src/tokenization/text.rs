@@ -74,6 +74,9 @@ impl Text<Vec<char>> {
             }
         }
         self.words = words;
+        for (ix, word) in self.words.iter_mut().enumerate() {
+            word.ix = ix;
+        }
         self
     }
 
@@ -82,6 +85,9 @@ impl Text<Vec<char>> {
             word.strip(&self.chars, pattern);
         }
         self.words.retain(|w| w.len() > 0);
+        for (ix, word) in self.words.iter_mut().enumerate() {
+            word.ix = ix;
+        }
         self
     }
 
@@ -170,13 +176,14 @@ mod tests {
                 source: chars.clone(),
                 chars:  chars.clone(),
                 words:  vec![
-                    Word { place: (0,  5), stem: 5, pos: None, fin: true },  // "-Foo-"
-                    Word { place: (6,  7), stem: 1, pos: None, fin: true },  // ","
-                    Word { place: (8, 13), stem: 5, pos: None, fin: true },  // "Baz; "
+                    Word { ix: 0, place: (0,  5), stem: 5, pos: None, fin: true },  // "-Foo-"
+                    Word { ix: 1, place: (6,  7), stem: 1, pos: None, fin: true },  // ","
+                    Word { ix: 2, place: (8, 13), stem: 5, pos: None, fin: true },  // "Baz; "
                 ],
             }
             .strip(&[Whitespaces, Punctuation]);
         assert_debug_snapshot!(text);
+        assert_debug_snapshot!(text.words);
     }
 
     #[test]
@@ -186,8 +193,8 @@ mod tests {
                 source: chars.clone(),
                 chars:  chars.clone(),
                 words:  vec![
-                    Word { place: (0, 5), stem: 5, pos: None, fin: true },  // "-Foo-"
-                    Word { place: (5, 8), stem: 3, pos: None, fin: true },  // "Baz"
+                    Word { ix: 0, place: (0, 5), stem: 5, pos: None, fin: true },  // "-Foo-"
+                    Word { ix: 1, place: (5, 8), stem: 3, pos: None, fin: true },  // "Baz"
                 ],
             }
             .fin(false)
@@ -197,8 +204,8 @@ mod tests {
                 source: chars.clone(),
                 chars:  chars.clone(),
                 words:  vec![
-                    Word { place: (0,  5), stem: 5, pos: None, fin: true },  // "-Foo-"
-                    Word { place: (5, 10), stem: 5, pos: None, fin: true },  // "Baz; "
+                    Word { ix: 0, place: (0,  5), stem: 5, pos: None, fin: true },  // "-Foo-"
+                    Word { ix: 1, place: (5, 10), stem: 5, pos: None, fin: true },  // "Baz; "
                 ],
             }
             .fin(false)
@@ -215,9 +222,9 @@ mod tests {
                 source: chars.clone(),
                 chars:  chars.clone(),
                 words:  vec![
-                    Word { place: (0,  4), stem: 4, pos: None, fin: true }, // "Foo,"
-                    Word { place: (5,  8), stem: 3, pos: None, fin: true }, // "Bar"
-                    Word { place: (9, 12), stem: 3, pos: None, fin: true }, // "Baz"
+                    Word { ix: 0, place: (0,  4), stem: 4, pos: None, fin: true }, // "Foo,"
+                    Word { ix: 1, place: (5,  8), stem: 3, pos: None, fin: true }, // "Bar"
+                    Word { ix: 2, place: (9, 12), stem: 3, pos: None, fin: true }, // "Baz"
                 ],
             }
             .lower();
@@ -232,8 +239,8 @@ mod tests {
                 source: chars.clone(),
                 chars:  chars.clone(),
                 words: vec![
-                    Word { place: (0,  5), stem: 5, pos: None, fin: true }, // "hello"
-                    Word { place: (6, 14), stem: 8, pos: None, fin: true }, // "universe"
+                    Word { ix: 0, place: (0,  5), stem: 5, pos: None, fin: true }, // "hello"
+                    Word { ix: 1, place: (6, 14), stem: 8, pos: None, fin: true }, // "universe"
                 ],
             }.stem(&lang);
         assert_eq!(text.words[0].stem, 5);
@@ -248,8 +255,8 @@ mod tests {
                 source: chars.clone(),
                 chars:  chars.clone(),
                 words: vec![
-                    Word { place: (0,  3), stem: 3, pos: None, fin: true }, // "hello"
-                    Word { place: (4, 12), stem: 8, pos: None, fin: true }, // "universe"
+                    Word { ix: 0, place: (0,  3), stem: 3, pos: None, fin: true }, // "hello"
+                    Word { ix: 1, place: (4, 12), stem: 8, pos: None, fin: true }, // "universe"
                 ],
             }.mark_pos(&lang);
         assert_eq!(text.words[0].pos, Some(PartOfSpeech::Article));

@@ -3,6 +3,7 @@ source: src/tokenization/word.rs
 expression: "&word"
 ---
 Word {
+    ix: 0,
     place: (
         1,
         4,

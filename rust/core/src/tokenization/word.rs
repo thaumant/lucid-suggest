@@ -5,6 +5,7 @@ pub use super::pos::PartOfSpeech;
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct Word {
+    pub ix:    usize,
     pub place: (usize, usize),
     pub stem:  usize,
     pub pos:   Option<PartOfSpeech>,
@@ -15,6 +16,7 @@ pub struct Word {
 impl Word {
     pub fn new(len: usize) -> Self {
         Word {
+            ix:    0,
             place: (0, len),
             stem:  len,
             pos:   None,
@@ -57,7 +59,7 @@ impl Word {
     }
 
     pub fn split<'a, 'b, P: CharPattern>(&'a self, chars: &'a [char], pattern: &'b P) -> WordSplit<'a, 'b, P> {
-        WordSplit { word: self, chars, pattern, offset: 0 }
+        WordSplit { word: self, chars, pattern, ix: self.ix, offset: 0 }
     }
 
     pub fn strip<P: CharPattern>(&mut self, chars: &[char], pattern: &P) -> &mut Self {
@@ -99,19 +101,20 @@ impl Word {
 
 
 #[derive(Debug)]
-pub struct WordSplit<'b, 'c, P: CharPattern> {
-    word: &'b Word,
-    chars: &'b [char],
-    offset: usize,
-    pattern: &'c P,
+pub struct WordSplit<'a, 'b, P: CharPattern> {
+    word:    &'a Word,
+    chars:   &'a [char],
+    pattern: &'b P,
+    ix:      usize,
+    offset:  usize,
 }
 
 
-impl<'b, 'c, P: CharPattern> Iterator for WordSplit<'b, 'c, P> {
+impl<'a, 'b, P: CharPattern> Iterator for WordSplit<'a, 'b, P> {
     type Item = Word;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let Self { word, offset, pattern, .. } = self;
+        let Self { word, ix, offset, pattern, .. } = self;
         let chars = word.view(self.chars);
 
         if *offset >= word.len() {
@@ -133,6 +136,7 @@ impl<'b, 'c, P: CharPattern> Iterator for WordSplit<'b, 'c, P> {
         }
 
         let splitted = Word {
+            ix:     *ix,
             place:  (word.place.0 + *offset, word.place.0 + *offset + len),
             stem:   len,
             pos:    None,
@@ -140,6 +144,7 @@ impl<'b, 'c, P: CharPattern> Iterator for WordSplit<'b, 'c, P> {
         };
 
         *offset += splitted.len();
+        *ix     += 1;
 
         Some(splitted)
     }

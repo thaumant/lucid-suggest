@@ -1,6 +1,6 @@
 ---
-source: src/tokenization/word.rs
-expression: split
+source: src/tokenization/text.rs
+expression: text.words
 ---
 [
     Word {
@@ -9,27 +9,17 @@ expression: split
             1,
             4,
         ),
-        stem: 3,
+        stem: 5,
         pos: None,
         fin: true,
     },
     Word {
         ix: 1,
         place: (
-            5,
             8,
+            11,
         ),
-        stem: 3,
-        pos: None,
-        fin: true,
-    },
-    Word {
-        ix: 2,
-        place: (
-            10,
-            13,
-        ),
-        stem: 3,
+        stem: 5,
         pos: None,
         fin: true,
     },

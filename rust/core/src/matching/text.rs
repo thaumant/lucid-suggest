@@ -8,14 +8,14 @@ pub fn text_match(rtext: &Text<&[char]>, qtext: &Text<&[char]>) -> Vec<WordMatch
     let mut taken: HashSet<usize> = HashSet::with_capacity(capacity);
     let mut matches: Vec<WordMatch> = Vec::with_capacity(capacity);
 
-    for (i, qword) in qtext.words.iter().enumerate() {
+    for qword in qtext.words.iter() {
         let mut found: Option<WordMatch> = None;
 
-        for (j, rword) in rtext.words.iter().enumerate() {
-            if taken.contains(&j) { continue; }
+        for rword in rtext.words.iter() {
+            if taken.contains(&rword.ix) { continue; }
             if let Some(mut m) = word_match(rword, qword, &rtext.chars, &qtext.chars) {
-                m.query.ix  = i;
-                m.record.ix = j;
+                m.query.ix  = qword.ix;
+                m.record.ix = rword.ix;
                 if found.is_none() && !m.record.primary {
                     found = Some(m);
                     continue;
