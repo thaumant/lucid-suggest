@@ -13,7 +13,7 @@ pub use lang_russian::lang_russian;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use rust_stemmers::Stemmer;
-use crate::lexis::PartOfSpeech;
+use crate::tokenization::PartOfSpeech;
 
 
 pub struct Lang {

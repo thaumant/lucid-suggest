@@ -5,7 +5,8 @@ mod highlight;
 
 use std::default::Default;
 use crate::utils::LimitSortIterator;
-use crate::lexis::{Text, WordMatch};
+use crate::tokenization::Text;
+use crate::matching::WordMatch;
 use crate::store::{Store, Record};
 
 
@@ -118,7 +119,7 @@ pub fn search<'a>(
 #[cfg(test)]
 mod tests {
     use insta::assert_debug_snapshot;
-    use crate::lexis::tokenize_query;
+    use crate::tokenization::tokenize_query;
     use crate::lang::{Lang, lang_english};
     use crate::store::{Store, Record};
     use super::search;

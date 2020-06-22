@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 use rust_stemmers::{Algorithm, Stemmer};
 use super::Lang;
-use crate::lexis::PartOfSpeech;
+use crate::tokenization::PartOfSpeech;
 
 
 const ARTICLES: [&'static str; 12] = [
@@ -118,7 +118,7 @@ pub fn lang_german() -> Lang {
 
 #[cfg(test)]
 mod tests {
-    use crate::lexis::PartOfSpeech;
+    use crate::tokenization::PartOfSpeech;
     use super::lang_german;
 
     #[test]

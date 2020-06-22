@@ -1,7 +1,0 @@
----
-source: src/lexis/matching.rs
-expression: "word_match(&r.to_ref(), &q.to_ref())"
----
-Some(
-    WordMatch { [rrrrr]rr /1/ [qqqq].. },
-)

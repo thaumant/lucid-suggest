@@ -1,5 +1,5 @@
 use criterion::{criterion_group, criterion_main, Criterion};
-use lucid_suggest_core::{Store, Record, search, lang, lexis};
+use lucid_suggest_core::{Store, Record, search, lang, tokenization};
 
 fn text_match_benchmark(criterion: &mut Criterion) {
     criterion.bench_function("search", |bench| {
@@ -10,7 +10,7 @@ fn text_match_benchmark(criterion: &mut Criterion) {
         store.add(Record::new(30, "Electric Toothbrush",                    30, &store.lang));
         store.add(Record::new(40, "Vacuum Compression Storage Bags",        40, &store.lang));
 
-        let query = lexis::tokenize_query("compressing bag for clothes", &store.lang);
+        let query = tokenization::tokenize_query("compressing bag for clothes", &store.lang);
         let query = query.to_ref();
 
         bench.iter(|| {

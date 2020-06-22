@@ -1,0 +1,5 @@
+---
+source: src/tokenization/text.rs
+expression: text
+---
+Text { "foo," "bar" "baz" }

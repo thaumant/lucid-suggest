@@ -1,4 +1,4 @@
-use crate::lexis::{Text, tokenize_record};
+use crate::tokenization::{Text, tokenize_record};
 use crate::lang::Lang;
 
 

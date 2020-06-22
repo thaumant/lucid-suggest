@@ -1,4 +1,4 @@
-use crate::lexis::Text;
+use crate::tokenization::Text;
 use crate::search::Hit;
 
 pub fn hit_matches(query: &Text<&[char]>, hit: &Hit) -> bool {

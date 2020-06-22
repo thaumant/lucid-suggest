@@ -1,0 +1,5 @@
+---
+source: src/matching/word.rs
+expression: "word_match(&rword, &qword1, &rchars[..], &qchars1[..])"
+---
+None

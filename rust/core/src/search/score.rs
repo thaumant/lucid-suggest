@@ -1,4 +1,5 @@
-use crate::lexis::{Text, text_match};
+use crate::tokenization::Text;
+use crate::matching::text_match;
 use crate::search::{Hit, ScoreType};
 
 
@@ -91,7 +92,7 @@ pub fn score_char_len_down(hit: &Hit) -> isize {
 
 #[cfg(test)]
 mod tests {
-    use crate::lexis::tokenize_query;
+    use crate::tokenization::tokenize_query;
     use crate::store::Record;
     use crate::search::{Hit, ScoreType};
     use super::score;

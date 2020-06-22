@@ -1,0 +1,8 @@
+---
+source: src/matching/text.rs
+expression: "text_match(&rtext.to_ref(), &qtext.to_ref())"
+---
+[
+    WordMatch { [rrrrrrr] /1/ [qqqqqqq] },
+    WordMatch { [rrr]rrr /0/ [qqq].. },
+]

@@ -1,5 +1,0 @@
----
-source: src/lexis/tokenizing.rs
-expression: w
----
-Word { "" }

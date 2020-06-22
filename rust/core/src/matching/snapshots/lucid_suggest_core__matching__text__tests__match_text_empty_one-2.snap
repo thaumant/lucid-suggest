@@ -1,0 +1,5 @@
+---
+source: src/matching/text.rs
+expression: "text_match(&qtext.to_ref(), &rtext.to_ref())"
+---
+[]

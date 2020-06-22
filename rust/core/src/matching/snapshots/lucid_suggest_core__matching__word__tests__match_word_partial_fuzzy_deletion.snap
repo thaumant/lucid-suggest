@@ -1,0 +1,7 @@
+---
+source: src/matching/word.rs
+expression: "word_match(&rword, &qword, &rchars[..], &qchars[..])"
+---
+Some(
+    WordMatch { [rrrrr]rr /1/ [qqqq].. },
+)

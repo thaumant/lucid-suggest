@@ -1,5 +1,0 @@
----
-source: src/lexis/matching.rs
-expression: "word_match(&r.to_ref(), &q.to_ref())"
----
-None

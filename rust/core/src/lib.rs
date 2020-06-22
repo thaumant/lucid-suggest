@@ -1,8 +1,7 @@
 mod utils;
 
-mod damlev;
-mod jaccard;
-pub mod lexis;
+mod matching;
+pub mod tokenization;
 
 mod store;
 mod search;
@@ -11,7 +10,7 @@ pub mod lang;
 use std::cell::RefCell;
 use std::collections::HashMap;
 
-pub use lexis::{Word, Text, tokenize_query};
+pub use tokenization::{Word, Text, tokenize_query};
 pub use store::{Record, Store, DEFAULT_LIMIT};
 pub use search::{search, SearchResult};
 

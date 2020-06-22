@@ -1,0 +1,13 @@
+---
+source: src/tokenization/word.rs
+expression: "&word"
+---
+Word {
+    place: (
+        1,
+        4,
+    ),
+    stem: 6,
+    pos: None,
+    fin: true,
+}

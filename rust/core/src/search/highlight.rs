@@ -1,4 +1,5 @@
-use crate::lexis::{Text, WordMatch};
+use crate::tokenization::Text;
+use crate::matching::WordMatch;
 use crate::search::Hit;
 
 
@@ -42,7 +43,7 @@ pub fn highlight(hit: &Hit, dividers: (&[char], &[char])) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::lexis::{WordMatch, MatchSide};
+    use crate::matching::{WordMatch, MatchSide};
     use crate::store::Record;
     use crate::search::Hit;
     use super::highlight;

@@ -1,7 +1,0 @@
----
-source: src/lexis/matching.rs
-expression: r.matches(&q)
----
-[
-    WordMatch { [rrrrrr] /1/ [qqqqq] },
-]

@@ -1,9 +1,0 @@
----
-source: src/lexis/tokenizing.rs
-expression: s
----
-[
-    Word { "Foo" },
-    Word { "Bar" },
-    Word { "Baz" },
-]
