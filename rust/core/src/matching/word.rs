@@ -1,5 +1,5 @@
 use crate::tokenization::Word;
-use super::{WordMatch, MatchSide};
+use super::WordMatch;
 use super::damlev::DamerauLevenshtein;
 use super::jaccard::Jaccard;
 
@@ -27,11 +27,11 @@ pub fn word_match(rword: &Word, qword: &Word, rchars: &[char], qchars: &[char]) 
 
     let rchars = rword.view(rchars);
     let qchars = qword.view(qchars);
-    let mut best_match = None;
+    let mut best_match: Option<WordMatch> = None;
 
     DAMLEV.with(|damlev| {
         damlev.distance(qchars, rchars);
-        let dists  = &*damlev.dists.borrow();
+        let dists = &*damlev.dists.borrow();
 
         let left  = if qword.fin { max!(qword.stem, rword.stem) } else { qword.stem } - 1;
         let right = max!(qword.len(), rword.len()) + 1;
@@ -58,22 +58,16 @@ pub fn word_match(rword: &Word, qword: &Word, rchars: &[char], qchars: &[char]) 
 
                 if rel > DAMLEV_THRESHOLD { continue; }
 
-                match best_match {
-                    None => {
-                        best_match = Some(WordMatch {
-                            query:  MatchSide::new(qlen,        (0, qlen), qword.is_primary()),
-                            record: MatchSide::new(rword.len(), (0, rlen), rword.is_primary()),
-                            typos:  dist,
-                            fin:    qword.fin || rword.len() == rlen,
-                        });
-                    },
-                    Some(ref mut m) => {
-                        if m.typos <= dist { continue; }
-                        m.record.slice = (0, rlen);
-                        m.typos        = dist;
-                        m.fin          = qword.fin || rword.len() == rlen;
-                    },
-                }
+                best_match = best_match
+                    .take()
+                    .filter(|m| m.typos <= dist)
+                    .or_else(|| Some(WordMatch::new(
+                        qword,
+                        rword,
+                        qlen,
+                        rlen,
+                        dist,
+                    )));
 
                 if dist == 0 {
                     break;

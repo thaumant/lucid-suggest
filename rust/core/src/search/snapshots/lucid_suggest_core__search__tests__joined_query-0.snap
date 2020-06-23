@@ -1,0 +1,10 @@
+---
+source: src/search/mod.rs
+expression: results
+---
+[
+    SearchResult {
+        id: 50,
+        title: "[wi]-[fi] router",
+    },
+]

@@ -1,0 +1,14 @@
+---
+source: src/search/mod.rs
+expression: results
+---
+[
+    SearchResult {
+        id: 40,
+        title: "[thesaurus]",
+    },
+    SearchResult {
+        id: 20,
+        title: "[the] metal detector",
+    },
+]

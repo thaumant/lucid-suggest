@@ -4,6 +4,10 @@ expression: results
 ---
 [
     SearchResult {
+        id: 50,
+        title: "wi-fi router",
+    },
+    SearchResult {
         id: 40,
         title: "thesaurus",
     },

@@ -49,6 +49,16 @@ impl Word {
     pub fn view_mut<'a>(&self, chars: &'a mut [char]) -> &'a mut [char] {
         &mut chars[self.place.0 .. self.place.1]
     }
+
+    pub fn join(&self, other: &Self) -> Self {
+        Word {
+            ix:    self.ix,
+            place: (self.place.0, other.place.1),
+            stem:  other.place.0 - self.place.0 + other.stem,
+            pos:   None,
+            fin:   other.fin,
+        }
+    }
 }
 
 
@@ -161,6 +171,18 @@ mod tests {
         Whitespaces,
         Punctuation,
     };
+
+
+    // #[test]
+    // fn word_join() {
+    //     let mut qtext = text("foo bar baz").fin(false);
+    //     qtext.words[1].stem = 2;
+    //     qtext.words[2].pos = Some(PartOfSpeech::Article);
+    //     let joined1 = join_words(&qtext.words[0], &qtext.words[1]);
+    //     let joined2 = join_words(&qtext.words[1], &qtext.words[2]);
+    //     assert_debug_snapshot!(joined1);
+    //     assert_debug_snapshot!(joined2);
+    // }
 
     #[test]
     fn word_split() {

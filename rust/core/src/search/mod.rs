@@ -131,6 +131,7 @@ mod tests {
         store.add(Record::new(20, "the metal detector",   20, &store.lang));
         store.add(Record::new(30, "yellow metal mailbox", 30, &store.lang));
         store.add(Record::new(40, "thesaurus",            40, &store.lang));
+        store.add(Record::new(50, "wi-fi router",         50, &store.lang));
 
         for (i, query) in queries.iter().enumerate() {
             let query   = tokenize_query(query, &store.lang);
@@ -209,6 +210,17 @@ mod tests {
 
         check("particles", Some(lang_english()), &[
             "the",
+        ]);
+    }
+
+    #[test]
+    fn search_joined() {
+        check("joined_query", None, &[
+            "wifi",
+        ]);
+
+        check("joined_record", None, &[
+            "the saurus",
         ]);
     }
 }
