@@ -14,15 +14,6 @@ thread_local! {
 }
 
 
-pub fn build_matrix(rword: &Word, qword: &Word, rchars: &[char], qchars: &[char]) {
-    let rchars = rword.view(rchars);
-    let qchars = qword.view(qchars);
-    DAMLEV.with(|damlev| {
-        damlev.distance(qchars, rchars);
-    });
-}
-
-
 pub fn word_match(rword: &Word, qword: &Word, rchars: &[char], qchars: &[char], reuse_matrix: bool) -> Option<WordMatch> {
     if qword.is_empty() || rword.is_empty() {
         return None;
