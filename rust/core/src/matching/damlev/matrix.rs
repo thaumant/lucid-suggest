@@ -1,3 +1,5 @@
+use std::fmt;
+
 
 pub struct DistMatrix {
     size: usize,
@@ -50,5 +52,24 @@ impl DistMatrix {
     #[inline]
     pub fn get(&self, i: usize, j: usize) -> usize {
         self.raw[i * self.size + j]
+    }
+}
+
+
+impl fmt::Debug for DistMatrix {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut imax = self.size;
+        let mut jmax = self.size;
+        while imax > 0 && self.get(imax - 1, 2) == 0 { imax -= 1; }
+        while jmax > 0 && self.get(2, jmax - 1) == 0 { jmax -= 1; }
+
+        write!(f, "DistMatrix:\n")?;
+        for i in 2 .. imax {
+            for j in 2 .. jmax {
+                write!(f, "{:2} ", self.get(i, j))?;
+            }
+            write!(f, "\n")?;
+        }
+        Ok(())
     }
 }
