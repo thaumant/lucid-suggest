@@ -14,7 +14,16 @@ thread_local! {
 }
 
 
-pub fn word_match(rword: &Word, qword: &Word, rchars: &[char], qchars: &[char]) -> Option<WordMatch> {
+pub fn build_matrix(rword: &Word, qword: &Word, rchars: &[char], qchars: &[char]) {
+    let rchars = rword.view(rchars);
+    let qchars = qword.view(qchars);
+    DAMLEV.with(|damlev| {
+        damlev.distance(qchars, rchars);
+    });
+}
+
+
+pub fn word_match(rword: &Word, qword: &Word, rchars: &[char], qchars: &[char], reuse_matrix: bool) -> Option<WordMatch> {
     if qword.is_empty() || rword.is_empty() {
         return None;
     }
@@ -30,7 +39,7 @@ pub fn word_match(rword: &Word, qword: &Word, rchars: &[char], qchars: &[char]) 
     let mut best_match: Option<WordMatch> = None;
 
     DAMLEV.with(|damlev| {
-        damlev.distance(qchars, rchars);
+        if !reuse_matrix { damlev.distance(qchars, rchars); }
         let dists = &*damlev.dists.borrow();
 
         let left  = if qword.fin { max!(qword.stem, rword.stem) } else { qword.stem } - 1;
@@ -46,7 +55,7 @@ pub fn word_match(rword: &Word, qword: &Word, rchars: &[char], qchars: &[char]) 
                 if qlen > qword.len() { continue; }
                 if rlen > rword.len() { continue; }
                 // Left margin is for insertion/deletion, not for both prefixes at the same time.
-                if rlen == left  && qlen == left  { continue; }
+                if rlen == left && qlen == left  { continue; }
                 // Compare full words only if query is finished.
                 if qword.fin && rlen < rword.stem { break; }
                 if qword.fin && qlen < qword.stem { break; }
@@ -256,7 +265,7 @@ mod tests {
         let rchars = "".chars().collect::<Vec<_>>();
         let qword  = Word::new(qchars.len()).fin(false);
         let rword  = Word::new(rchars.len());
-        assert_eq!(word_match(&rword, &qword, &rchars[..], &qchars[..]), None);
+        assert_eq!(word_match(&rword, &qword, &rchars[..], &qchars[..], false), None);
     }
 
 
@@ -266,7 +275,7 @@ mod tests {
         let rchars = "".chars().collect::<Vec<_>>();
         let qword  = Word::new(qchars.len()).fin(false);
         let rword  = Word::new(rchars.len());
-        assert_eq!(word_match(&rword, &qword, &rchars[..], &qchars[..]), None);
+        assert_eq!(word_match(&rword, &qword, &rchars[..], &qchars[..], false), None);
     }
 
 
@@ -276,7 +285,7 @@ mod tests {
         let rchars = "mailbox".chars().collect::<Vec<_>>();
         let qword  = Word::new(qchars.len()).fin(false);
         let rword  = Word::new(rchars.len());
-        assert_eq!(word_match(&rword, &qword, &rchars[..], &qchars[..]), None);
+        assert_eq!(word_match(&rword, &qword, &rchars[..], &qchars[..], false), None);
     }
 
 
@@ -289,7 +298,7 @@ mod tests {
         let rchars = "mailbox".chars().collect::<Vec<_>>();
         let qword  = Word::new(qchars.len()).fin(false);
         let rword  = Word::new(rchars.len());
-        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
+        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..], false));
     }
 
 
@@ -299,7 +308,7 @@ mod tests {
         let rchars = "mailbox".chars().collect::<Vec<_>>();
         let qword  = Word::new(qchars.len()).fin(false);
         let rword  = Word::new(rchars.len());
-        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
+        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..], false));
     }
 
 
@@ -309,7 +318,7 @@ mod tests {
         let rchars = "mailbox".chars().collect::<Vec<_>>();
         let qword  = Word::new(qchars.len()).fin(false);
         let rword  = Word::new(rchars.len());
-        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
+        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..], false));
     }
 
 
@@ -319,7 +328,7 @@ mod tests {
         let rchars = "mailbox".chars().collect::<Vec<_>>();
         let qword  = Word::new(qchars.len()).fin(false);
         let rword  = Word::new(rchars.len());
-        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
+        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..], false));
     }
 
 
@@ -331,8 +340,8 @@ mod tests {
         let qword1  = Word::new(qchars1.len()).fin(true);
         let qword2  = Word::new(qchars2.len()).fin(false);
         let rword   = Word::new(rchars.len());
-        assert_debug_snapshot!(word_match(&rword, &qword1, &rchars[..], &qchars1[..]));
-        assert_debug_snapshot!(word_match(&rword, &qword2, &rchars[..], &qchars2[..]));
+        assert_debug_snapshot!(word_match(&rword, &qword1, &rchars[..], &qchars1[..], false));
+        assert_debug_snapshot!(word_match(&rword, &qword2, &rchars[..], &qchars2[..], false));
     }
 
     #[test]
@@ -348,8 +357,8 @@ mod tests {
         qword1.stem(&qchars1[..], &lang);
         rword .stem(&rchars[..],  &lang);
 
-        assert_debug_snapshot!(word_match(&rword, &qword1, &rchars[..], &qchars1[..]));
-        assert_debug_snapshot!(word_match(&rword, &qword2, &rchars[..], &qchars2[..]));
+        assert_debug_snapshot!(word_match(&rword, &qword1, &rchars[..], &qchars1[..], false));
+        assert_debug_snapshot!(word_match(&rword, &qword2, &rchars[..], &qchars2[..], false));
     }
 
 
@@ -362,7 +371,7 @@ mod tests {
         let rchars = "mailbox".chars().collect::<Vec<_>>();
         let qword = Word::new(qchars.len()).fin(false);
         let rword = Word::new(rchars.len());
-        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
+        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..], false));
     }
 
 
@@ -372,7 +381,7 @@ mod tests {
         let rchars = "mailbox".chars().collect::<Vec<_>>();
         let qword  = Word::new(qchars.len()).fin(false);
         let rword  = Word::new(rchars.len());
-        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
+        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..], false));
     }
 
 
@@ -382,7 +391,7 @@ mod tests {
         let rchars = "mailbox".chars().collect::<Vec<_>>();
         let qword  = Word::new(qchars.len()).fin(false);
         let rword  = Word::new(rchars.len());
-        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
+        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..], false));
     }
 
 
@@ -392,6 +401,6 @@ mod tests {
         let rchars = "mailbox".chars().collect::<Vec<_>>();
         let qword  = Word::new(qchars.len()).fin(false);
         let rword  = Word::new(rchars.len());
-        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
+        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..], false));
     }
 }

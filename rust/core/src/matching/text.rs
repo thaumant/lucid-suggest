@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use crate::tokenization::{Word, Text};
-use super::{WordMatch, word_match};
+use super::WordMatch;
+use super::word::{word_match, build_matrix};
 
 
 pub fn text_match(rtext: &Text<&[char]>, qtext: &Text<&[char]>) -> Vec<WordMatch> {
@@ -29,14 +30,21 @@ pub fn text_match(rtext: &Text<&[char]>, qtext: &Text<&[char]>) -> Vec<WordMatch
 
             let rpair = rnext.map(|w| join_words(rword, w));
 
+            build_matrix(
+                &rpair.clone().unwrap_or(rword.clone()),
+                &qpair.clone().unwrap_or(qword.clone()),
+                &rtext.chars,
+                &qtext.chars
+            );
+
             let joined_matches = None
                 .or_else(|| {
-                    let m = word_match(&rpair?, qword, &rtext.chars, &qtext.chars)?;
+                    let m = word_match(&rpair?, qword, &rtext.chars, &qtext.chars, true)?;
                     if !m.fin { return None; }
                     Some(m.split_record(rword, rnext?))
                 })
                 .or_else(|| {
-                    let m = word_match(rword, &qpair.clone()?, &rtext.chars, &qtext.chars)?;
+                    let m = word_match(rword, &qpair.clone()?, &rtext.chars, &qtext.chars, true)?;
                     Some(m.split_query(qword, qnext?))
                 });
 
@@ -51,7 +59,7 @@ pub fn text_match(rtext: &Text<&[char]>, qtext: &Text<&[char]>) -> Vec<WordMatch
                 break;
             }
 
-            if let Some(m) = word_match(rword, qword, &rtext.chars, &qtext.chars) {
+            if let Some(m) = word_match(rword, qword, &rtext.chars, &qtext.chars, true) {
                 if found.is_none() && !m.record.primary {
                     found = Some(m);
                     continue;
