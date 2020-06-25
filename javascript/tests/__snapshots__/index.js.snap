@@ -30,6 +30,16 @@ Array [
 ]
 `;
 
+exports[`Suggest Joined words 1`] = `
+Array [
+  Object {
+    "id": 20,
+    "rating": 2,
+    "title": "[Foo] [bar]",
+  },
+]
+`;
+
 exports[`Suggest Prefix 1`] = `
 Array [
   Object {
@@ -66,6 +76,16 @@ Array [
 `;
 
 exports[`Suggest Typos 1`] = `
+Array [
+  Object {
+    "id": 10,
+    "rating": 3,
+    "title": "[Hello] world!",
+  },
+]
+`;
+
+exports[`Suggest Typos 2`] = `
 Array [
   Object {
     "id": 10,

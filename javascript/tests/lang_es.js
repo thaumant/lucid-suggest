@@ -31,4 +31,9 @@ describe('Spanish language', () => {
         const hits = await suggest.search('de')
         expect(hits).toMatchSnapshot()
     })
+
+    test('Normalization', async () => {
+        const hits = await suggest.search('electric porta')
+        expect(hits).toMatchSnapshot()
+    })
 })

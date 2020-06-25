@@ -1,8 +1,10 @@
 #![macro_use]
 
 mod limitsort;
+mod fading_windows;
 
 pub use limitsort::{LimitSortIterator, LimitSort};
+pub use fading_windows::FadingWindows;
 
 
 macro_rules! min {

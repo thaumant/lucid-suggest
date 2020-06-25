@@ -11,33 +11,23 @@ pub use pattern::{Chars, CharPattern};
 
 
 pub fn tokenize_query(source: &str, lang: &Option<Lang>) -> Text<Vec<char>> {
-    let mut text = Text::from_str(source)
+    Text::from_str(source)
+        .normalize(lang)
         .fin(false)
         .split(&[Chars::Whitespaces, Chars::Control, Chars::Punctuation])
         .strip(&[Chars::NotAlphaNum])
-        .lower();
-
-    if let Some(lang) = lang {
-        text = text
-            .mark_pos(lang)
-            .stem(lang);
-    }
-
-    text
+        .lower()
+        .mark_pos(lang)
+        .stem(lang)
 }
 
 
 pub fn tokenize_record(source: &str, lang: &Option<Lang>) -> Text<Vec<char>> {
-    let mut text = Text::from_str(source)
+     Text::from_str(source)
+        .normalize(lang)
         .split(&[Chars::Whitespaces, Chars::Control, Chars::Punctuation])
         .strip(&[Chars::NotAlphaNum])
-        .lower();
-
-    if let Some(lang) = lang {
-        text = text
-            .mark_pos(lang)
-            .stem(lang);
-    }
-
-    text
+        .lower()
+        .mark_pos(lang)
+        .stem(lang)
 }

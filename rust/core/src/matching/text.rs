@@ -170,7 +170,7 @@ mod tests {
         let mut rtext = text("the theme");
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
 
-        let lang = lang_english();
+        let lang = Some(lang_english());
         qtext = qtext.mark_pos(&lang);
         rtext = rtext.mark_pos(&lang);
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));

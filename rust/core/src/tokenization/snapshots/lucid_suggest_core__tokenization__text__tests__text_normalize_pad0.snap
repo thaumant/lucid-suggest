@@ -1,0 +1,34 @@
+---
+source: src/tokenization/text.rs
+expression: "(&text.source, &text.chars, &text.words[0])"
+---
+(
+    [
+        's',
+        't',
+        'r',
+        'a',
+        'ß',
+        '\u{0}',
+        'e',
+    ],
+    [
+        's',
+        't',
+        'r',
+        'a',
+        's',
+        's',
+        'e',
+    ],
+    Word {
+        ix: 0,
+        place: (
+            0,
+            7,
+        ),
+        stem: 6,
+        pos: None,
+        fin: true,
+    },
+)

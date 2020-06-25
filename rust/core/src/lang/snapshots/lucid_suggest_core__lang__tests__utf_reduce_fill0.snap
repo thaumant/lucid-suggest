@@ -1,0 +1,26 @@
+---
+source: src/lang/mod.rs
+expression: output
+---
+Some(
+    (
+        [
+            's',
+            't',
+            'r',
+            'a',
+            'ß',
+            '\u{0}',
+            'e',
+        ],
+        [
+            's',
+            't',
+            'r',
+            'a',
+            's',
+            's',
+            'e',
+        ],
+    ),
+)

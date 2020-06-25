@@ -2,8 +2,9 @@
 
 use std::collections::HashMap;
 use rust_stemmers::{Algorithm, Stemmer};
-use super::Lang;
 use crate::tokenization::PartOfSpeech;
+use super::Lang;
+use super::utils::compile_utf_map;
 
 
 const ARTICLES: [&'static str; 3] = [
@@ -122,9 +123,16 @@ const PARTICLES: [&'static str; 6] = [
     "oh",
 ];
 
+const UTF_COMPOSE_MAP: [(&'static str, &'static str); 0] = [];
+
+const UTF_REDUCE_MAP: [(&'static str, &'static str); 0] = [];
+
 
 pub fn lang_english() -> Lang {
     let stemmer = Stemmer::create(Algorithm::English);
+
+    let compose_map = compile_utf_map(&UTF_COMPOSE_MAP[..]);
+    let reduce_map  = compile_utf_map(&UTF_REDUCE_MAP[..]);
 
     let mut pos_map = HashMap::new();
     for w in &ARTICLES[..]     { pos_map.insert(w.chars().collect(), PartOfSpeech::Article); }
@@ -132,28 +140,60 @@ pub fn lang_english() -> Lang {
     for w in &CONJUNCTIONS[..] { pos_map.insert(w.chars().collect(), PartOfSpeech::Conjunction); }
     for w in &PARTICLES[..]    { pos_map.insert(w.chars().collect(), PartOfSpeech::Particle); }
 
-    Lang::new(pos_map, stemmer)
+    Lang::new(pos_map, compose_map, reduce_map, stemmer)
 }
 
 
 #[cfg(test)]
 mod tests {
     use crate::tokenization::PartOfSpeech;
-    use super::lang_english;
+    use super::{lang_english, UTF_COMPOSE_MAP, UTF_REDUCE_MAP};
 
     #[test]
-    pub fn stem() {
+    fn stem() {
         let lang = lang_english();
         let w = "universe".chars().collect::<Vec<_>>();
         assert_eq!(lang.stem(&w), 7);
     }
 
     #[test]
-    pub fn get_pos() {
+    fn get_pos() {
         let lang = lang_english();
         let w1 = "universe".chars().collect::<Vec<_>>();
         let w2 = "the"     .chars().collect::<Vec<_>>();
         assert_eq!(lang.get_pos(&w1), None);
         assert_eq!(lang.get_pos(&w2), Some(PartOfSpeech::Article));
+    }
+
+    #[test]
+    fn utf_compose() {
+        let lang   = lang_english();
+        let source = "universe";
+        let norm   = lang.utf_compose(&source.chars().collect::<Vec<_>>());
+        assert_eq!(norm, None);
+    }
+
+    #[test]
+    fn utf_reduce() {
+        let lang   = lang_english();
+        let source = "universe";
+        let norm   = lang.utf_reduce(&source.chars().collect::<Vec<_>>());
+        assert_eq!(norm, None);
+    }
+
+    #[test]
+    fn utf_compose_map_dimenstions() {
+        for &(nfd, nfc) in &UTF_COMPOSE_MAP {
+            assert_eq!(nfd.chars().count(), 2);
+            assert_eq!(nfc.chars().count(), 1);
+        }
+    }
+
+    #[test]
+    fn utf_reduce_map_dimenstions() {
+        for &(normal, reduced) in &UTF_REDUCE_MAP {
+            assert_eq!(normal .chars().count(), 1, "UTF_REDUCE_MAP['{}'] != 1", normal);
+            assert_eq!(reduced.chars().count(), 1, "UTF_REDUCE_MAP['{}'].len() != 1", reduced);
+        }
     }
 }

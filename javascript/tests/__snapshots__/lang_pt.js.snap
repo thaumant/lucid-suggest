@@ -40,6 +40,16 @@ Array [
 ]
 `;
 
+exports[`Portuguese language Normalization 1`] = `
+Array [
+  Object {
+    "id": 30,
+    "rating": 2,
+    "title": "Escova de dentes [elétric]a",
+  },
+]
+`;
+
 exports[`Portuguese language Partiles 1`] = `
 Array [
   Object {

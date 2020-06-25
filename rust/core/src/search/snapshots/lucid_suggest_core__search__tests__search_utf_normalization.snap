@@ -1,0 +1,10 @@
+---
+source: src/search/mod.rs
+expression: result
+---
+[
+    SearchResult {
+        id: 10,
+        title: "[Mitteltö]ner",
+    },
+]

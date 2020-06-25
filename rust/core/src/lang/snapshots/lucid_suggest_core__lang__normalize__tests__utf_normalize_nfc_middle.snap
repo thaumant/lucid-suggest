@@ -1,0 +1,22 @@
+---
+source: src/lang/normalize.rs
+expression: output
+---
+(
+    [
+        "f",
+        "o",
+        "ó",
+        "b",
+        "a",
+        "r",
+    ],
+    [
+        "f",
+        "o",
+        "o",
+        "b",
+        "a",
+        "r",
+    ],
+)

@@ -35,6 +35,16 @@ Array [
 ]
 `;
 
+exports[`Russian language Normalization 1`] = `
+Array [
+  Object {
+    "id": 30,
+    "rating": 2,
+    "title": "Электрическая зубная [щё]тка",
+  },
+]
+`;
+
 exports[`Russian language Partiles 1`] = `
 Array [
   Object {

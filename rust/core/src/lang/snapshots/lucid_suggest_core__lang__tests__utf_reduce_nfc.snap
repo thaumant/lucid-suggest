@@ -1,0 +1,24 @@
+---
+source: src/lang/mod.rs
+expression: output
+---
+Some(
+    (
+        [
+            'f',
+            'o',
+            'ó',
+            'b',
+            'a',
+            'r',
+        ],
+        [
+            'f',
+            'o',
+            'o',
+            'b',
+            'a',
+            'r',
+        ],
+    ),
+)

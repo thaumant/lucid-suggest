@@ -120,7 +120,7 @@ pub fn search<'a>(
 mod tests {
     use insta::assert_debug_snapshot;
     use crate::tokenization::tokenize_query;
-    use crate::lang::{Lang, lang_english};
+    use crate::lang::{Lang, lang_english, lang_german};
     use crate::store::{Store, Record};
     use super::search;
 
@@ -222,5 +222,28 @@ mod tests {
         check("joined_record", None, &[
             "the saurus",
         ]);
+    }
+
+
+    #[test]
+    fn search_utf_normalization() {
+        let mut store = Store::new();
+        store.lang = Some(lang_german());
+        store.add(Record::new(10, "Mitteltöner", 10, &store.lang));
+        store.add(Record::new(20, "Passstraße",  20, &store.lang));
+
+        let queries = [
+            "mitteltö",
+            "mitteltö", // ö in nfd!
+            "mittelto",
+            "passstras",
+        ];
+
+        for query in &queries {
+            let query  = tokenize_query(query, &store.lang);
+            let query  = query.to_ref();
+            let result = search(&store, &query).collect::<Vec<_>>();
+            assert_debug_snapshot!(result);
+        }
     }
 }

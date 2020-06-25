@@ -35,6 +35,36 @@ Array [
 ]
 `;
 
+exports[`German language Normalization 1`] = `
+Array [
+  Object {
+    "id": 40,
+    "rating": 1,
+    "title": "Hi-Fi-[Mitteltö]ner, Speaker für die Mittelton-Wiedergabe",
+  },
+]
+`;
+
+exports[`German language Normalization 2`] = `
+Array [
+  Object {
+    "id": 40,
+    "rating": 1,
+    "title": "Hi-Fi-[Mitteltö]ner, Speaker für die Mittelton-Wiedergabe",
+  },
+]
+`;
+
+exports[`German language Normalization 3`] = `
+Array [
+  Object {
+    "id": 40,
+    "rating": 1,
+    "title": "Hi-Fi-[Mitteltö]ner, Speaker für die Mittelton-Wiedergabe",
+  },
+]
+`;
+
 exports[`German language Partiles 1`] = `
 Array [
   Object {

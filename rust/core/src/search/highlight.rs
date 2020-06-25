@@ -36,6 +36,7 @@ pub fn highlight(hit: &Hit, dividers: (&[char], &[char])) -> String {
         offset = word.place.1;
     }
     highlighted.extend(&source[offset .. ]);
+    highlighted.retain(|ch| ch != '\0');
 
     highlighted
 }
@@ -46,46 +47,85 @@ mod tests {
     use crate::matching::{WordMatch, MatchSide};
     use crate::store::Record;
     use crate::search::Hit;
+    use crate::lang::{lang_german, lang_portuguese};
     use super::highlight;
 
+    const L: &[char] = &['['];
+    const R: &[char] = &[']'];
+
+    fn mock_match(ix: usize, size: usize) -> WordMatch {
+        WordMatch {
+            query:  MatchSide { ix:  0, len: size, slice: (0, size), primary: true },
+            record: MatchSide { ix: ix, len: size, slice: (0, size), primary: true },
+            typos:  0,
+            fin:    false,
+        }
+    }
+
     #[test]
-    fn test_highlight() {
+    fn highlight_basic() {
         let record = Record::new(10, "metal detector", 0, &None);
 
         let mut hit = Hit::from_record(&record);
-        hit.matches.push(WordMatch {
-            query:  MatchSide { ix: 0, len: 0, slice: (0, 0), primary: true },
-            record: MatchSide { ix: 1, len: 6, slice: (0, 6), primary: true },
-            typos:  0,
-            fin:    false,
-        });
-
-        let div_left:  Vec<char> = "[".chars().collect();
-        let div_right: Vec<char> = "]".chars().collect();
+        hit.matches.push(mock_match(1, 6));
 
         let expected = "metal [detect]or";
-        let received: String = highlight(&hit, (&div_left, &div_right));
+        let received = highlight(&hit, (L, R));
 
         assert_eq!(&received, expected);
     }
 
     #[test]
-    fn test_highlight_stripped() {
+    fn highlight_stripped() {
         let record = Record::new(10, "'metal' mailbox!", 0, &None);
 
         let mut hit = Hit::from_record(&record);
-        hit.matches.push(WordMatch {
-            query:  MatchSide { ix: 0, len: 0, slice: (0, 0), primary: true },
-            record: MatchSide { ix: 0, len: 5, slice: (0, 5), primary: true },
-            typos:  0,
-            fin:    false,
-        });
+        hit.matches.push(mock_match(0, 5));
 
-        let left:  Vec<char> = "{{".chars().collect();
-        let right: Vec<char> = "}}".chars().collect();
+        let expected = "'[metal]' mailbox!";
+        let received = highlight(&hit, (L, R));
 
-        let expected = "'{{metal}}' mailbox!";
-        let received: String = highlight(&hit, (&left, &right));
+        assert_eq!(&received, expected);
+    }
+
+    #[test]
+    fn highlight_multichar_dividers() {
+        let record = Record::new(10, "metal detector", 0, &None);
+
+        let mut hit = Hit::from_record(&record);
+        hit.matches.push(mock_match(1, 6));
+
+        let l: &[char] = &['{', '{'];
+        let r: &[char] = &['}', '}'];
+
+        let expected = "metal {{detect}}or";
+        let received = highlight(&hit, (l, r));
+
+        assert_eq!(&received, expected);
+    }
+
+    #[test]
+    fn highlight_utf_padded() {
+        let record = Record::new(10, "Passstraße", 0, &Some(lang_german()));
+
+        let mut hit = Hit::from_record(&record);
+        hit.matches.push(mock_match(0, 9));
+
+        let expected = "[Passstraß]e";
+        let received = highlight(&hit, (L, R));
+
+        assert_eq!(&received, expected);
+    }
+
+    #[test]
+    fn highlight_utf_nfd() {
+        let record = Record::new(10, "Passstraße", 0, &Some(lang_portuguese()));
+
+        let mut hit = Hit::from_record(&record);
+        hit.matches.push(mock_match(0, 9));
+
+        let expected = "[Passstraß]e";
+        let received = highlight(&hit, (L, R));
 
         assert_eq!(&received, expected);
     }

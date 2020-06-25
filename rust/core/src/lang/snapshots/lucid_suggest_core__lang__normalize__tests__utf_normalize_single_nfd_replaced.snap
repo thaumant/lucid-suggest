@@ -1,0 +1,12 @@
+---
+source: src/lang/normalize.rs
+expression: output
+---
+(
+    [
+        "o\u{301}",
+    ],
+    [
+        "o",
+    ],
+)

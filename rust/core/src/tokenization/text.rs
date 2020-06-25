@@ -66,6 +66,30 @@ impl<T: AsRef<[char]>> Text<T> {
 
 
 impl Text<Vec<char>> {
+    pub fn normalize(mut self, lang: &Option<Lang>) -> Self {
+        if let Some(lang) = lang {
+            if self.words.len() == 0 {
+                return self;
+            }
+            if self.words.len() > 1 {
+                panic!("Normalization should always be the first step");
+            }
+
+            if let Some(nfc) = lang.utf_compose(&self.source) {
+                self.source           = nfc.clone();
+                self.chars            = nfc;
+                self.words[0].place.1 = self.chars.len();
+            }
+
+            if let Some((source, chars)) = lang.utf_reduce(&self.chars) {
+                self.source           = source;
+                self.chars            = chars;
+                self.words[0].place.1 = self.chars.len();
+            }
+        }
+        self
+    }
+
     pub fn split<P: CharPattern>(mut self, pattern: &P) -> Self {
         let mut words = Vec::with_capacity(self.words.len());
         for word in &self.words {
@@ -91,16 +115,20 @@ impl Text<Vec<char>> {
         self
     }
 
-    pub fn stem(mut self, lang: &Lang) -> Self {
-        for word in &mut self.words {
-            word.stem(&self.chars, lang);
+    pub fn stem(mut self, lang: &Option<Lang>) -> Self {
+        if let Some(lang) = lang {
+            for word in &mut self.words {
+                word.stem(&self.chars, lang);
+            }
         }
         self
     }
 
-    pub fn mark_pos(mut self, lang: &Lang) -> Self {
-        for word in &mut self.words {
-            word.mark_pos(&self.chars, lang);
+    pub fn mark_pos(mut self, lang: &Option<Lang>) -> Self {
+        if let Some(lang) = lang {
+            for word in &mut self.words {
+                word.mark_pos(&self.chars, lang);
+            }
         }
         self
     }
@@ -140,7 +168,7 @@ impl<T: AsRef<[char]>> fmt::Debug for Text<T> {
 #[cfg(test)]
 mod tests {
     use insta::assert_debug_snapshot;
-    use crate::lang::lang_english;
+    use crate::lang::{lang_english, lang_portuguese, lang_german};
     use super::{Word, Text};
     use super::super::{Chars, PartOfSpeech};
 
@@ -148,6 +176,18 @@ mod tests {
         Whitespaces,
         Punctuation,
     };
+
+    #[test]
+    fn text_normalize_nfd() {
+        let text = Text::from_str("Conceição").normalize(&Some(lang_portuguese()));
+        assert_debug_snapshot!((&text.source, &text.chars, &text.words[0]));
+    }
+
+    #[test]
+    fn text_normalize_pad0() {
+        let text = Text::from_str("straße").normalize(&Some(lang_german()));
+        assert_debug_snapshot!((&text.source, &text.chars, &text.words[0]));
+    }
 
     #[test]
     fn text_split() {
@@ -242,7 +282,7 @@ mod tests {
                     Word { ix: 0, place: (0,  5), stem: 5, pos: None, fin: true }, // "hello"
                     Word { ix: 1, place: (6, 14), stem: 8, pos: None, fin: true }, // "universe"
                 ],
-            }.stem(&lang);
+            }.stem(&Some(lang));
         assert_eq!(text.words[0].stem, 5);
         assert_eq!(text.words[1].stem, 7);
     }
@@ -258,7 +298,7 @@ mod tests {
                     Word { ix: 0, place: (0,  3), stem: 3, pos: None, fin: true }, // "hello"
                     Word { ix: 1, place: (4, 12), stem: 8, pos: None, fin: true }, // "universe"
                 ],
-            }.mark_pos(&lang);
+            }.mark_pos(&Some(lang));
         assert_eq!(text.words[0].pos, Some(PartOfSpeech::Article));
         assert_eq!(text.words[1].pos, None);
     }

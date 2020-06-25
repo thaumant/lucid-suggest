@@ -59,6 +59,16 @@ describe('Suggest', () => {
         expect(hits).toMatchSnapshot()
     })
 
+    test('Typos', async () => {
+        const hits = await suggest.search('helo')
+        expect(hits).toMatchSnapshot()
+    })
+
+    test('Joined words', async () => {
+        const hits = await suggest.search('foobar')
+        expect(hits).toMatchSnapshot()
+    })
+
     test('Limit', async () => {
         const hits1 = await suggest.search('b')
         expect(hits1).toHaveLength(2)
