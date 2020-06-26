@@ -27,8 +27,18 @@ impl WordMatch {
         typos: usize
     ) -> Self {
         Self {
-            query:  MatchSide { ix: qword.ix, len: qword.len(), slice: (0, qlen), primary: qword.is_primary() },
-            record: MatchSide { ix: rword.ix, len: rword.len(), slice: (0, rlen), primary: rword.is_primary() },
+            query: MatchSide {
+                ix:      qword.ix,
+                len:     qword.len(),
+                slice:   (0, qlen),
+                primary: qword.is_primary(),
+            },
+            record: MatchSide {
+                ix:      rword.ix,
+                len:     rword.len(),
+                slice:   (0, rlen),
+                primary: rword.is_primary(),
+            },
             typos,
             fin: qword.fin || rword.len() == rlen,
         }
@@ -38,20 +48,38 @@ impl WordMatch {
         let (query1, query2) = self.query.split(w1, w2);
         let typos2 = self.typos / 2;
         let typos1 = self.typos - typos2;
-        (
-            Self { query: query1, record: self.record.clone(), typos: typos1, fin: true},
-            Self { query: query2, record: self.record.clone(), typos: typos2, fin: self.fin},
-        )
+        let part1  = Self {
+            query:  query1,
+            record: self.record.clone(),
+            typos:  typos1,
+            fin:    true,
+        };
+        let part2 = Self {
+            query:  query2,
+            record: self.record.clone(),
+            typos:  typos2,
+            fin:    self.fin,
+        };
+        (part1, part2)
     }
 
     pub fn split_record(&self, w1: &Word, w2: &Word) -> (Self, Self) {
         let (record1, record2) = self.record.split(w1, w2);
         let typos2 = self.typos / 2;
         let typos1 = self.typos - typos2;
-        (
-            Self { record: record1, query: self.query.clone(), typos: typos1, fin: true},
-            Self { record: record2, query: self.query.clone(), typos: typos2, fin: self.fin},
-        )
+        let part1  = Self {
+            query:  self.query.clone(),
+            record: record1,
+            typos:  typos1,
+            fin:    true,
+        };
+        let part2 = Self {
+            query:  self.query.clone(),
+            record: record2,
+            typos:  typos2,
+            fin:    self.fin,
+        };
+        (part1, part2)
     }
 }
 
@@ -66,12 +94,19 @@ pub struct MatchSide {
 
 impl MatchSide {
     pub fn split(&self, w1: &Word, w2: &Word) -> (Self, Self) {
-        let slice1 = (0, w1.len());
-        let slice2 = (0, self.slice.1 - (w2.place.0 - w1.place.0));
-        (
-            Self { ix: w1.ix, len: w1.len(), slice: slice1, primary: w1.is_primary() },
-            Self { ix: w2.ix, len: w2.len(), slice: slice2, primary: w2.is_primary() },
-        )
+        let part1  = Self {
+            ix:      w1.ix,
+            len:     w1.len(),
+            slice:   (0, w1.len()),
+            primary: w1.is_primary(),
+        };
+        let part2 = Self {
+            ix:      w2.ix,
+            len:     w2.len(),
+            slice:   (0, self.slice.1 - (w2.place.0 - w1.place.0)),
+            primary: w2.is_primary(),
+        };
+        (part1, part2)
     }
 }
 
