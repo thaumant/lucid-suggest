@@ -6,7 +6,7 @@ use super::jaccard::Jaccard;
 
 const LENGTH_THRESHOLD:  f64 = 0.26;
 const JACCARD_THRESHOLD: f64 = 0.41;
-const DAMLEV_THRESHOLD:  f64 = 0.21;
+const DAMLEV_THRESHOLD:  f64 = 0.26;
 
 thread_local! {
     static DAMLEV:  DamerauLevenshtein<char> = DamerauLevenshtein::new();
