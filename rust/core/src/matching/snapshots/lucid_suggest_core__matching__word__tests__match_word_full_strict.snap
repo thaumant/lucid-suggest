@@ -1,7 +1,28 @@
 ---
 source: src/matching/word.rs
-expression: "word_match(&rword, &qword, &rchars[..], &qchars[..])"
+expression: "word_match(&rword, &qword, &rchars[..], &qchars[..], false)"
 ---
 Some(
-    WordMatch { [rrrrrrr] /0/ [qqqqqqq] },
+    WordMatch {
+        query: MatchSide {
+            ix: 0,
+            len: 7,
+            slice: (
+                0,
+                7,
+            ),
+            primary: true,
+        },
+        record: MatchSide {
+            ix: 0,
+            len: 7,
+            slice: (
+                0,
+                7,
+            ),
+            primary: true,
+        },
+        typos: 0,
+        fin: true,
+    },
 )

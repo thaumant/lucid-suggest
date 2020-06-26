@@ -9,7 +9,7 @@ pub use word::word_match;
 pub use text::text_match;
 
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct WordMatch {
     pub query:  MatchSide,
     pub record: MatchSide,
@@ -76,7 +76,7 @@ impl MatchSide {
 }
 
 
-impl fmt::Debug for WordMatch {
+impl fmt::Display for WordMatch {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "WordMatch {{ ")?;
 

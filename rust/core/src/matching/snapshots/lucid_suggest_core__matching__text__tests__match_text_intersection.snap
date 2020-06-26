@@ -3,6 +3,48 @@ source: src/matching/text.rs
 expression: "text_match(&rtext.to_ref(), &qtext.to_ref())"
 ---
 [
-    WordMatch { [rrrrrrr] /1/ [qqqqqqq] },
-    WordMatch { [rrrrr]r /1/ [qqqq].. },
+    WordMatch {
+        query: MatchSide {
+            ix: 1,
+            len: 7,
+            slice: (
+                0,
+                7,
+            ),
+            primary: true,
+        },
+        record: MatchSide {
+            ix: 3,
+            len: 7,
+            slice: (
+                0,
+                7,
+            ),
+            primary: true,
+        },
+        typos: 1,
+        fin: true,
+    },
+    WordMatch {
+        query: MatchSide {
+            ix: 2,
+            len: 4,
+            slice: (
+                0,
+                4,
+            ),
+            primary: true,
+        },
+        record: MatchSide {
+            ix: 1,
+            len: 6,
+            slice: (
+                0,
+                5,
+            ),
+            primary: true,
+        },
+        typos: 1,
+        fin: false,
+    },
 ]

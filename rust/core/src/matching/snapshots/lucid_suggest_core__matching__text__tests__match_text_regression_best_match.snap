@@ -3,5 +3,26 @@ source: src/matching/text.rs
 expression: "text_match(&rtext.to_ref(), &qtext.to_ref())"
 ---
 [
-    WordMatch { [rrrrr]r /0/ [qqqqq].. },
+    WordMatch {
+        query: MatchSide {
+            ix: 0,
+            len: 5,
+            slice: (
+                0,
+                5,
+            ),
+            primary: true,
+        },
+        record: MatchSide {
+            ix: 0,
+            len: 6,
+            slice: (
+                0,
+                5,
+            ),
+            primary: true,
+        },
+        typos: 0,
+        fin: false,
+    },
 ]
