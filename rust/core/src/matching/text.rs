@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+// use crate::utils::guard;
 use crate::tokenization::{Word, Text};
 use super::WordMatch;
 use super::word::word_match;
@@ -32,11 +33,12 @@ pub fn text_match(rtext: &Text<&[char]>, qtext: &Text<&[char]>) -> Vec<WordMatch
 
             let joined_matches = None
                 .or_else(|| {
+                    guard!(qword.len() > rword.len() + 1);
                     let m = word_match(&rpair?, qword, &rtext.chars, &qtext.chars, false)?;
-                    if !m.fin { return None; }
                     Some(m.split_record(rword, rnext?))
                 })
                 .or_else(|| {
+                    guard!(rword.len() > qword.len() + 1);
                     let m = word_match(rword, &qpair.clone()?, &rtext.chars, &qtext.chars, false)?;
                     Some(m.split_query(qword, qnext?))
                 });
@@ -192,9 +194,23 @@ mod tests {
     }
 
     #[test]
+    fn match_text_joined_query_unfihished() {
+        let qtext = text("micro bio").fin(false);
+        let rtext = text("microbiology");
+        assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
+    }
+
+    #[test]
     fn match_text_joined_record() {
         let qtext = text("wifi router").fin(false);
         let rtext = text("wi fi router");
+        assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
+    }
+
+    #[test]
+    fn match_text_joined_record_unfinished() {
+        let qtext = text("microbio").fin(false);
+        let rtext = text("micro biology");
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 }
