@@ -43,10 +43,6 @@ impl<'a> Iterator for Normalize<'a> {
 
         Some((&window[..1], &window[..1]))
     }
-
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        self.windows.size_hint()
-    }
 }
 
 

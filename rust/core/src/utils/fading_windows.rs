@@ -32,9 +32,12 @@ impl<'a, T> Iterator for FadingWindows<'a, T> {
 
     #[inline]
     fn size_hint(&self) -> (usize, Option<usize>) {
-        (self.v.len(), Some(self.v.len()))
+        let len = self.v.len();
+        (len, Some(len))
     }
 }
+
+impl<'a, T> ExactSizeIterator for FadingWindows<'a, T> { }
 
 
 #[cfg(test)]
