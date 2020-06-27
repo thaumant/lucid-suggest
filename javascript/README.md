@@ -2,6 +2,8 @@
 
 Embeddable search and autocomplete that works out of the box. Fast, simple, runs in browsers and NodeJS. Built with Rust and WebAssembly.
 
+This package hasn't been battle-tested in production. For data restrictions see [Performance section](#performance) below.
+
 ## Getting started
 
 Install:
@@ -9,7 +11,7 @@ Install:
 npm install lucid-suggest
 ```
 
-Import and initialize, in JavaScript:
+Initialize:
 ```javascript
 import {LucidSuggest} from 'lucid-suggest/en'
 
@@ -19,12 +21,6 @@ suggest.setRecords([
     {id: 2, title: "Lightning to USB-C Cable"},
     {id: 3, title: "AA Alkaline Batteries"},
 ])
-```
-
-When using TypeScript you have to import empty root module, otherwise TypeScript compiler will not read `typings.d.ts` containing submodule declarations.
-```
-import 'lucid-suggest'
-import {LucidSuggest} from 'lucid-suggest/en'
 ```
 
 Search:
@@ -65,6 +61,14 @@ await suggest.search("alcaline bateries")
 ]
 ```
 
+```javascript
+await suggest.search("tooth brush")
+// returns:
+[
+ {id: 1, title: "Electric [Toothbrush]"},
+]
+```
+
 Stemming is used to handle different word endings:
 ```javascript
 await suggest.search("battery")
@@ -74,7 +78,7 @@ await suggest.search("battery")
 ]
 ```
 
-Particles receive special treatment, so they don't pop up every time you start typing a word:
+Function words (articles, prepositions, etc.) receive special treatment, so they don't pop up every time you start typing a word:
 ```javascript
 await suggest.search("to")
 // returns:
@@ -102,9 +106,9 @@ await suggest.search("battery")
 
 ## Rating
 
-Optional `rating` field can be used to define an order of records that match a query equally well: records with greater rating will go higher in the result. Put data like priority, product popularity, or term frequency there to improve overall scoring.
+Optional `rating` field can be used as a tie breaker: records with greater `rating` are ranked higher. Use priority, product popularity, or term frequency as `rating` to improve overall scoring.
 
-For example, let's use state population as a rating:
+For example, let's use state population as `rating`:
 ```javascript
 suggest.setRecords([
     {id: 1, rating:  3000, title: "Nevada"},
@@ -135,27 +139,38 @@ await suggest.search("ne")
 | Russian    | `lucid-suggest/ru` |
 
 
+## TypeScript
+
+When using TypeScript you have to import the empty root module, otherwise TypeScript compiler will not read `typings.d.ts` containing submodule declarations.
+```
+import 'lucid-suggest'
+import {LucidSuggest} from 'lucid-suggest/en'
+```
+
+
 ## Bundle sizes
 
 | lang | size | gzipped |
 | :--- | ---: | ------: |
-| de   | 137K |     57K |
-| en   | 143K |     59K |
-| es   | 142K |     58K |
-| pt   | 141K |     58K |
-| ru   | 139K |     57K |
+| de   | 148K |     60K |
+| en   | 149K |     61K |
+| es   | 153K |     62K |
+| pt   | 153K |     62K |
+| ru   | 149K |     61K |
 
 
 ## Performance
 
-If you target 60 fps in a browser, a search through 100 sentences will take 2-5% of a single frame or less, so you can expect negligible cost, even when calling it at every keystroke, without throttling/debouncing.
+At the moment LucidSuggest works best with shorter sentences, like shopping items or book titles. Using longer texts, like articles or movie descriptions, may lead to poor experience.
 
-Full-fledged indexing is not implemented yet, so searching a larger number of records containing long texts can take too long at the moment.
+Also, full-fledged indexing is not implemented yet, so searching a large number of records can also take too long.
 
-Below are the detailed search performance measurements for record sets with different dimensions. Measured using Node.js 13.8, Intel Core i7 (I7-9750H) 2.6 GHz.
+For example, for 1000 records, each containing 4-8 common English words you can expect a search to take up to 7ms, as illustrated in the table below. That's less than a half of a frame if you target 60 FPS. You can call it at every keystroke, without using throttling or Web Workers.
+
+Below are the detailed performance measurements, obtained using Node.js 14.3, Intel Core i7 (I7-9750H) 2.6 GHz.
 
 |              | 1-2 words | 4-8 words |
 | -----------: | --------: | --------: |
-|   10 records |     15 μs |     45 μs |
-|  100 records |    140 μs |    440 μs |
-| 1000 records |   1300 μs |   4300 μs |
+|   10 records |   0.02 ms |   0.07 ms |
+|  100 records |   0.13 ms |   0.78 ms |
+| 1000 records |   1.20 ms |   7.10 ms |
