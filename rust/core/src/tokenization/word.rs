@@ -172,17 +172,67 @@ mod tests {
         Punctuation,
     };
 
+    #[test]
+    fn word_join_basic() {
+        let mut w1 = Word::new(7);
+        let mut w2 = Word::new(5);
+        w1.place = (0, w1.len());
+        w2.place = (w1.place.1 + 1, w1.place.1 + 1 + w2.len());
+        assert_debug_snapshot!(w1.join(&w2));
+    }
 
-    // #[test]
-    // fn word_join() {
-    //     let mut qtext = text("foo bar baz").fin(false);
-    //     qtext.words[1].stem = 2;
-    //     qtext.words[2].pos = Some(PartOfSpeech::Article);
-    //     let joined1 = join_words(&qtext.words[0], &qtext.words[1]);
-    //     let joined2 = join_words(&qtext.words[1], &qtext.words[2]);
-    //     assert_debug_snapshot!(joined1);
-    //     assert_debug_snapshot!(joined2);
-    // }
+    #[test]
+    fn word_join_offset() {
+        let mut w1 = Word::new(7);
+        let mut w2 = Word::new(5);
+        w1.place = (3, 3 + w1.len());
+        w2.place = (w1.place.1 + 1, w1.place.1 + 1 + w2.len());
+        assert_debug_snapshot!(w1.join(&w2));
+    }
+
+    #[test]
+    fn word_join_unfinished_first() {
+        let mut w1 = Word::new(7);
+        let mut w2 = Word::new(5);
+        w1.place = (0, w1.len());
+        w2.place = (w1.place.1 + 1, w1.place.1 + 1 + w2.len());
+        w1.fin   = false;
+        w2.fin   = true;
+        assert_debug_snapshot!(w1.join(&w2));
+    }
+
+    #[test]
+    fn word_join_unfinished_last() {
+        let mut w1 = Word::new(7);
+        let mut w2 = Word::new(5);
+        w1.place = (0, w1.len());
+        w2.place = (w1.place.1 + 1, w1.place.1 + 1 + w2.len());
+        w1.fin   = true;
+        w2.fin   = false;
+        assert_debug_snapshot!(w1.join(&w2));
+    }
+
+    #[test]
+    fn word_join_pos_first() {
+        let mut w1 = Word::new(7);
+        let mut w2 = Word::new(5);
+        w1.place = (0, w1.len());
+        w2.place = (w1.place.1 + 1, w1.place.1 + 1 + w2.len());
+        w1.pos   = Some(PartOfSpeech::Article);
+        w2.pos   = None;
+        assert_debug_snapshot!(w1.join(&w2));
+    }
+
+    #[test]
+    fn word_join_pos_last() {
+        let mut w1 = Word::new(7);
+        let mut w2 = Word::new(5);
+        w1.place = (0, w1.len());
+        w2.place = (w1.place.1 + 1, w1.place.1 + 1 + w2.len());
+        w1.pos   = None;
+        w2.pos   = Some(PartOfSpeech::Article);
+        assert_debug_snapshot!(w1.join(&w2));
+    }
 
     #[test]
     fn word_split() {

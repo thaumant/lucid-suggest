@@ -1,90 +1,72 @@
 use std::collections::HashSet;
-// use crate::utils::guard;
-use crate::tokenization::{Word, Text};
+use crate::tokenization::Text;
 use super::WordMatch;
 use super::word::word_match;
 
 
 pub fn text_match(rtext: &Text<&[char]>, qtext: &Text<&[char]>) -> Vec<WordMatch> {
+    let rchars   = &rtext.chars;
+    let qchars   = &qtext.chars;
     let capacity = min!(rtext.words.len(), qtext.words.len());
     let mut rtaken: HashSet<usize>  = HashSet::with_capacity(capacity);
     let mut qtaken: HashSet<usize>  = HashSet::with_capacity(capacity);
     let mut matches: Vec<WordMatch> = Vec::with_capacity(capacity);
 
     for qword in qtext.words.iter() {
-        let mut found: Option<WordMatch> = None;
-
         if qtaken.contains(&qword.ix) { continue; }
 
-        let qnext = Some(())
-            .filter(|_| !qtaken.contains(&(qword.ix + 1)))
-            .and_then(|_| qtext.words.get(qword.ix + 1));
-
-        let qpair = qnext.map(|w| join_words(qword, w));
+        let mut candidate: Option<(WordMatch, Option<WordMatch>)> = None;
 
         for rword in rtext.words.iter() {
             if rtaken.contains(&rword.ix) { continue; }
 
-            let rnext = Some(())
-                .filter(|_| !rtaken.contains(&(rword.ix + 1)))
-                .and_then(|_| rtext.words.get(rword.ix + 1));
-
-            let rpair = rnext.map(|w| join_words(rword, w));
-
-            let joined_matches = None
+            let new_candidate = None
                 .or_else(|| {
-                    guard!(qword.len() > rword.len() + 1);
-                    let m = word_match(&rpair?, qword, &rtext.chars, &qtext.chars, false)?;
-                    Some(m.split_record(rword, rnext?))
+                    if qword.len() <= rword.len() + 1   { return None; }
+                    if rtaken.contains(&(rword.ix + 1)) { return None; }
+                    let rnext    = rtext.words.get(rword.ix + 1)?;
+                    let m        = word_match(&rword.join(rnext), qword, rchars, qchars)?;
+                    let (m1, m2) = m.split_record(rword, rnext);
+                    Some((m1, Some(m2)))
                 })
                 .or_else(|| {
-                    guard!(rword.len() > qword.len() + 1);
-                    let m = word_match(rword, &qpair.clone()?, &rtext.chars, &qtext.chars, false)?;
-                    Some(m.split_query(qword, qnext?))
+                    if rword.len() <= qword.len() + 1   { return None; }
+                    if qtaken.contains(&(qword.ix + 1)) { return None; }
+                    let qnext    = qtext.words.get(qword.ix + 1)?;
+                    let m        = word_match(rword, &qword.join(qnext), rchars, qchars)?;
+                    let (m1, m2) = m.split_query(qword, qnext);
+                    Some((m1, Some(m2)))
+                })
+                .or_else(|| {
+                    let m = word_match(rword, qword, rchars, qchars)?;
+                    Some((m, None))
                 });
 
-            if let Some((m1, m2)) = joined_matches {
-                found.take();
-                qtaken.insert(m1.query.ix);
-                qtaken.insert(m2.query.ix);
-                rtaken.insert(m1.record.ix);
-                rtaken.insert(m2.record.ix);
-                matches.push(m1);
-                matches.push(m2);
-                break;
-            }
-
-            if let Some(m) = word_match(rword, qword, &rtext.chars, &qtext.chars, false) {
-                if found.is_none() && !m.record.primary {
-                    found = Some(m);
-                    continue;
-                }
-                if m.record.primary {
-                    found = Some(m);
+            if let Some(new_candidate) = new_candidate {
+                if new_candidate.0.record.primary || new_candidate.1.is_some() {
+                    candidate = Some(new_candidate);
                     break;
+                }
+                if !candidate.is_some() {
+                    candidate = Some(new_candidate);
+                    continue;
                 }
             }
         }
 
-        if let Some(m) = found {
-            rtaken.insert(m.record.ix);
-            qtaken.insert(m.query.ix);
-            matches.push(m);
+        if let Some((m1, m2)) = candidate {
+            qtaken.insert(m1.query.ix);
+            rtaken.insert(m1.record.ix);
+            matches.push(m1);
+            if let Some(m2) = m2 {
+                qtaken.insert(m2.query.ix);
+                rtaken.insert(m2.record.ix);
+                matches.push(m2);
+            }
         }
     }
 
     matches
-}
-
-
-pub fn join_words(w1: &Word, w2: &Word) -> Word {
-    Word {
-        ix:    w1.ix,
-        place: (w1.place.0, w2.place.1),
-        stem:  w2.place.0 - w1.place.0 + w2.stem,
-        pos:   None,
-        fin:   w2.fin,
-    }
 }
 
 

@@ -1,0 +1,14 @@
+---
+source: src/tokenization/word.rs
+expression: w1.join(&w2)
+---
+Word {
+    ix: 0,
+    place: (
+        0,
+        13,
+    ),
+    stem: 13,
+    pos: None,
+    fin: false,
+}
