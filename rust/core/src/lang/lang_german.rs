@@ -2,6 +2,7 @@
 
 use std::collections::HashMap;
 use rust_stemmers::{Algorithm, Stemmer};
+use crate::utils::to_vec;
 use crate::tokenization::PartOfSpeech;
 use super::Lang;
 use super::utils::compile_utf_map;
@@ -131,10 +132,10 @@ pub fn lang_german() -> Lang {
     let reduce_map  = compile_utf_map(&UTF_REDUCE_MAP[..]);
 
     let mut pos_map = HashMap::new();
-    for w in &ARTICLES[..]     { pos_map.insert(w.chars().collect(), PartOfSpeech::Article); }
-    for w in &PREPOSITIONS[..] { pos_map.insert(w.chars().collect(), PartOfSpeech::Preposition); }
-    for w in &CONJUNCTIONS[..] { pos_map.insert(w.chars().collect(), PartOfSpeech::Conjunction); }
-    for w in &PARTICLES[..]    { pos_map.insert(w.chars().collect(), PartOfSpeech::Particle); }
+    for w in &ARTICLES[..]     { pos_map.insert(to_vec(w), PartOfSpeech::Article); }
+    for w in &PREPOSITIONS[..] { pos_map.insert(to_vec(w), PartOfSpeech::Preposition); }
+    for w in &CONJUNCTIONS[..] { pos_map.insert(to_vec(w), PartOfSpeech::Conjunction); }
+    for w in &PARTICLES[..]    { pos_map.insert(to_vec(w), PartOfSpeech::Particle); }
 
     Lang::new(pos_map, compose_map, reduce_map, stemmer)
 }
@@ -142,60 +143,53 @@ pub fn lang_german() -> Lang {
 
 #[cfg(test)]
 mod tests {
+    use crate::utils::{to_vec, to_str};
     use crate::tokenization::PartOfSpeech;
     use super::{lang_german, UTF_COMPOSE_MAP, UTF_REDUCE_MAP};
 
     #[test]
     pub fn stem() {
         let lang = lang_german();
-        let w = "singen".chars().collect::<Vec<_>>();
+        let w    = to_vec("singen");
         assert_eq!(lang.stem(&w), 4);
     }
 
     #[test]
     pub fn get_pos() {
         let lang = lang_german();
-        let w1 = "singen".chars().collect::<Vec<_>>();
-        let w2 = "das"   .chars().collect::<Vec<_>>();
+        let w1   = to_vec("singen");
+        let w2   = to_vec("das");
         assert_eq!(lang.get_pos(&w1), None);
         assert_eq!(lang.get_pos(&w2), Some(PartOfSpeech::Article));
     }
 
     #[test]
     fn utf_compose() {
-        let lang = lang_german();
+        let lang    = lang_german();
 
-        let source1 = "singen";
-        let norm1   = lang.utf_compose(&source1.chars().collect::<Vec<_>>());
+        let source1 = to_vec("singen");
+        let norm1   = lang.utf_compose(&source1);
         assert_eq!(norm1, None);
 
-        let source2 = "mädchen";
-        let norm2   = lang
-            .utf_compose(&source2.chars().collect::<Vec<_>>())
-            .unwrap()
-            .iter()
-            .collect::<String>();
-        assert_eq!(norm2, "mädchen");
-        assert_eq!(norm2.chars().count(), source2.chars().count() - 1);
+        let source2 = to_vec("mädchen");
+        let norm2   = lang.utf_compose(&source2).unwrap();
+        assert_eq!(to_str(&norm2), "mädchen");
+        assert_eq!(norm2.len(), source2.len() - 1);
     }
 
     #[test]
     fn utf_reduce() {
         let lang = lang_german();
 
-        let source1 = "singen";
-        let norm1   = lang.utf_reduce(&source1.chars().collect::<Vec<_>>());
+        let source1 = to_vec("singen");
+        let norm1   = lang.utf_reduce(&source1);
         assert_eq!(norm1, None);
 
-        let source2 = "mädchen";
-        let (padded2, norm2) = lang
-            .utf_reduce(&source2.chars().collect::<Vec<_>>())
-            .unwrap();
-        let padded2 = padded2.iter().collect::<String>();
-        let norm2   = norm2  .iter().collect::<String>();
-        assert_eq!(padded2, source2);
-        assert_eq!(norm2, "madchen");
-        assert_eq!(norm2.chars().count(), source2.chars().count());
+        let source2 = to_vec("mädchen");
+        let (padded2, norm2) = lang.utf_reduce(&source2).unwrap();
+        assert_eq!(to_str(&padded2), to_str(&source2));
+        assert_eq!(to_str(&norm2), "madchen");
+        assert_eq!(norm2.len(), source2.len());
     }
 
     #[test]

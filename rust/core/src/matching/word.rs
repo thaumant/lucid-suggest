@@ -108,6 +108,7 @@ pub fn jaccard_check(rword: &Word, qword: &Word, rchars: &[char], qchars: &[char
 #[cfg(test)]
 mod tests {
     use insta::assert_debug_snapshot;
+    use crate::utils::to_vec;
     use crate::tokenization::{Chars, Word, Text};
     use crate::lang::lang_english;
     use super::{length_check, jaccard_check, word_match};
@@ -252,8 +253,8 @@ mod tests {
 
     #[test]
     fn match_word_empty_both() {
-        let qchars = "".chars().collect::<Vec<_>>();
-        let rchars = "".chars().collect::<Vec<_>>();
+        let qchars = to_vec("");
+        let rchars = to_vec("");
         let qword  = Word::new(qchars.len()).fin(false);
         let rword  = Word::new(rchars.len());
         assert_eq!(word_match(&rword, &qword, &rchars[..], &qchars[..]), None);
@@ -262,8 +263,8 @@ mod tests {
 
     #[test]
     fn match_word_empty_record() {
-        let qchars = "mailbox".chars().collect::<Vec<_>>();
-        let rchars = "".chars().collect::<Vec<_>>();
+        let qchars = to_vec("mailbox");
+        let rchars = to_vec("");
         let qword  = Word::new(qchars.len()).fin(false);
         let rword  = Word::new(rchars.len());
         assert_eq!(word_match(&rword, &qword, &rchars[..], &qchars[..]), None);
@@ -272,8 +273,8 @@ mod tests {
 
     #[test]
     fn match_word_empty_query() {
-        let qchars = "".chars().collect::<Vec<_>>();
-        let rchars = "mailbox".chars().collect::<Vec<_>>();
+        let qchars = to_vec("");
+        let rchars = to_vec("mailbox");
         let qword  = Word::new(qchars.len()).fin(false);
         let rword  = Word::new(rchars.len());
         assert_eq!(word_match(&rword, &qword, &rchars[..], &qchars[..]), None);
@@ -285,8 +286,8 @@ mod tests {
 
     #[test]
     fn match_word_full_strict() {
-        let qchars = "mailbox".chars().collect::<Vec<_>>();
-        let rchars = "mailbox".chars().collect::<Vec<_>>();
+        let qchars = to_vec("mailbox");
+        let rchars = to_vec("mailbox");
         let qword  = Word::new(qchars.len()).fin(false);
         let rword  = Word::new(rchars.len());
         assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
@@ -295,8 +296,8 @@ mod tests {
 
     #[test]
     fn match_word_full_fuzzy_insertion() {
-        let qchars = "mailybox".chars().collect::<Vec<_>>();
-        let rchars = "mailbox".chars().collect::<Vec<_>>();
+        let qchars = to_vec("mailybox");
+        let rchars = to_vec("mailbox");
         let qword  = Word::new(qchars.len()).fin(false);
         let rword  = Word::new(rchars.len());
         assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
@@ -305,8 +306,8 @@ mod tests {
 
     #[test]
     fn match_word_full_fuzzy_deletion() {
-        let qchars = "mailox".chars().collect::<Vec<_>>();
-        let rchars = "mailbox".chars().collect::<Vec<_>>();
+        let qchars = to_vec("mailox");
+        let rchars = to_vec("mailbox");
         let qword  = Word::new(qchars.len()).fin(false);
         let rword  = Word::new(rchars.len());
         assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
@@ -315,8 +316,8 @@ mod tests {
 
     #[test]
     fn match_word_full_fuzzy_transposition() {
-        let qchars = "maiblox".chars().collect::<Vec<_>>();
-        let rchars = "mailbox".chars().collect::<Vec<_>>();
+        let qchars = to_vec("maiblox");
+        let rchars = to_vec("mailbox");
         let qword  = Word::new(qchars.len()).fin(false);
         let rword  = Word::new(rchars.len());
         assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
@@ -325,9 +326,9 @@ mod tests {
 
     #[test]
     fn match_word_full_query_too_long() {
-        let qchars1 = "mailboxes".chars().collect::<Vec<_>>();
-        let qchars2 = "mailboxes".chars().collect::<Vec<_>>();
-        let rchars  = "mail"     .chars().collect::<Vec<_>>();
+        let qchars1 = to_vec("mailboxes");
+        let qchars2 = to_vec("mailboxes");
+        let rchars  = to_vec("mail");
         let qword1  = Word::new(qchars1.len()).fin(true);
         let qword2  = Word::new(qchars2.len()).fin(false);
         let rword   = Word::new(rchars.len());
@@ -337,9 +338,9 @@ mod tests {
 
     #[test]
     fn match_word_full_stem() {
-        let     rchars  = "universe"  .chars().collect::<Vec<_>>();
-        let     qchars1 = "university".chars().collect::<Vec<_>>();
-        let     qchars2 = "university".chars().collect::<Vec<_>>();
+        let     rchars  = to_vec("universe");
+        let     qchars1 = to_vec("university");
+        let     qchars2 = to_vec("university");
         let mut rword   = Word::new(rchars.len());
         let mut qword1  = Word::new(qchars1.len());
         let     qword2  = Word::new(qchars2.len());
@@ -358,8 +359,8 @@ mod tests {
 
     #[test]
     fn match_word_partial_strict() {
-        let qchars = "mailb".chars().collect::<Vec<_>>();
-        let rchars = "mailbox".chars().collect::<Vec<_>>();
+        let qchars = to_vec("mailb");
+        let rchars = to_vec("mailbox");
         let qword = Word::new(qchars.len()).fin(false);
         let rword = Word::new(rchars.len());
         assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
@@ -368,8 +369,8 @@ mod tests {
 
     #[test]
     fn match_word_partial_fuzzy_insertion() {
-        let qchars = "maiylb".chars().collect::<Vec<_>>();
-        let rchars = "mailbox".chars().collect::<Vec<_>>();
+        let qchars = to_vec("maiylb");
+        let rchars = to_vec("mailbox");
         let qword  = Word::new(qchars.len()).fin(false);
         let rword  = Word::new(rchars.len());
         assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
@@ -378,8 +379,8 @@ mod tests {
 
     #[test]
     fn match_word_partial_fuzzy_deletion() {
-        let qchars = "maib".chars().collect::<Vec<_>>();
-        let rchars = "mailbox".chars().collect::<Vec<_>>();
+        let qchars = to_vec("maib");
+        let rchars = to_vec("mailbox");
         let qword  = Word::new(qchars.len()).fin(false);
         let rword  = Word::new(rchars.len());
         assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
@@ -388,8 +389,8 @@ mod tests {
 
     #[test]
     fn match_word_partial_fuzzy_transposition() {
-        let qchars = "malib".chars().collect::<Vec<_>>();
-        let rchars = "mailbox".chars().collect::<Vec<_>>();
+        let qchars = to_vec("malib");
+        let rchars = to_vec("mailbox");
         let qword  = Word::new(qchars.len()).fin(false);
         let rword  = Word::new(rchars.len());
         assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));

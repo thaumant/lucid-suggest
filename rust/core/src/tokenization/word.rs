@@ -164,6 +164,7 @@ impl<'a, 'b, P: CharPattern> Iterator for WordSplit<'a, 'b, P> {
 #[cfg(test)]
 mod tests {
     use insta::assert_debug_snapshot;
+    use crate::utils::to_vec;
     use crate::lang::lang_english;
     use super::{Word, Chars, PartOfSpeech};
 
@@ -236,7 +237,7 @@ mod tests {
 
     #[test]
     fn word_split() {
-        let chars = " Foo Bar, Baz; ".chars().collect::<Vec<_>>();
+        let chars = to_vec(" Foo Bar, Baz; ");
         let word  = Word::new(chars.len());
         let split = word.split(&chars[..], &[Whitespaces, Punctuation]).collect::<Vec<_>>();
         assert_debug_snapshot!(split);
@@ -244,7 +245,7 @@ mod tests {
 
     #[test]
     fn word_split_empty() {
-        let chars = " ,;".chars().collect::<Vec<_>>();
+        let chars = to_vec(" ,;");
         let word  = Word::new(chars.len());
         let split = word.split(&chars[..], &[Whitespaces, Punctuation]).collect::<Vec<_>>();
         assert_debug_snapshot!(split);
@@ -252,8 +253,8 @@ mod tests {
 
     #[test]
     fn word_split_unfinished() {
-        let chars1 = " Foo Bar, Baz"  .chars().collect::<Vec<_>>();
-        let chars2 = " Foo Bar, Baz; ".chars().collect::<Vec<_>>();
+        let chars1 = to_vec(" Foo Bar, Baz");
+        let chars2 = to_vec(" Foo Bar, Baz; ");
         let word1  = Word::new(chars1.len()).fin(false);
         let word2  = Word::new(chars2.len()).fin(false);
         let split1 = word1.split(&chars1[..], &[Whitespaces, Punctuation]).collect::<Vec<_>>();
@@ -264,7 +265,7 @@ mod tests {
 
     #[test]
     fn word_strip() {
-        let chars = " Foo; ".chars().collect::<Vec<_>>();
+        let chars = to_vec(" Foo; ");
         let mut word = Word::new(chars.len());
         word.strip(&chars[..], &[Whitespaces, Punctuation]);
         assert_debug_snapshot!(&word);
@@ -272,7 +273,7 @@ mod tests {
 
     #[test]
     fn word_strip_empty() {
-        let chars = " ,;".chars().collect::<Vec<_>>();
+        let chars = to_vec(" ,;");
         let mut word = Word::new(chars.len());
         word.strip(&chars[..], &[Whitespaces, Punctuation]);
         assert_debug_snapshot!(word);
@@ -280,8 +281,8 @@ mod tests {
 
     #[test]
     fn word_strip_unfinished() {
-        let chars1 = " Foo Bar, Baz"  .chars().collect::<Vec<_>>();
-        let chars2 = " Foo Bar, Baz; ".chars().collect::<Vec<_>>();
+        let chars1 = to_vec(" Foo Bar, Baz");
+        let chars2 = to_vec(" Foo Bar, Baz; ");
         let mut word1 = Word::new(chars1.len()).fin(false);
         let mut word2 = Word::new(chars2.len()).fin(false);
         word1.strip(&chars1[..], &[Whitespaces, Punctuation]);
@@ -292,7 +293,7 @@ mod tests {
 
     #[test]
     fn word_stem() {
-        let chars = "university".chars().collect::<Vec<_>>();
+        let chars = to_vec("university");
         let lang  = lang_english();
         let mut word = Word::new(chars.len());
         word.stem(&chars[..], &lang);
@@ -302,8 +303,8 @@ mod tests {
     #[test]
     fn word_pos() {
         let lang   = lang_english();
-        let chars1 = "university".chars().collect::<Vec<_>>();
-        let chars2 = "the"       .chars().collect::<Vec<_>>();
+        let chars1 = to_vec("university");
+        let chars2 = to_vec("the");
         let mut word1 = Word::new(chars1.len());
         let mut word2 = Word::new(chars2.len());
         word1.mark_pos(&chars1[..], &lang);
@@ -314,7 +315,7 @@ mod tests {
 
     #[test]
     fn word_lower() {
-        let mut chars = " Foo Bar, Baz; ".chars().collect::<Vec<_>>();
+        let mut chars = to_vec(" Foo Bar, Baz; ");
         let mut word  = Word::new(chars.len());
         word.lower(&mut chars[..]);
         assert_debug_snapshot!(word);

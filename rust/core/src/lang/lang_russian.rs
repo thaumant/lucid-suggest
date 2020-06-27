@@ -2,6 +2,7 @@
 
 use std::collections::HashMap;
 use rust_stemmers::{Algorithm, Stemmer};
+use crate::utils::to_vec;
 use crate::tokenization::PartOfSpeech;
 use super::Lang;
 use super::utils::compile_utf_map;
@@ -248,10 +249,10 @@ pub fn lang_russian() -> Lang {
     let reduce_map  = compile_utf_map(&UTF_REDUCE_MAP[..]);
 
     let mut pos_map = HashMap::new();
-    for w in &ARTICLES[..]     { pos_map.insert(w.chars().collect(), PartOfSpeech::Article); }
-    for w in &PREPOSITIONS[..] { pos_map.insert(w.chars().collect(), PartOfSpeech::Preposition); }
-    for w in &CONJUNCTIONS[..] { pos_map.insert(w.chars().collect(), PartOfSpeech::Conjunction); }
-    for w in &PARTICLES[..]    { pos_map.insert(w.chars().collect(), PartOfSpeech::Particle); }
+    for w in &ARTICLES[..]     { pos_map.insert(to_vec(w), PartOfSpeech::Article); }
+    for w in &PREPOSITIONS[..] { pos_map.insert(to_vec(w), PartOfSpeech::Preposition); }
+    for w in &CONJUNCTIONS[..] { pos_map.insert(to_vec(w), PartOfSpeech::Conjunction); }
+    for w in &PARTICLES[..]    { pos_map.insert(to_vec(w), PartOfSpeech::Particle); }
 
     Lang::new(pos_map, compose_map, reduce_map, stemmer)
 }
@@ -259,21 +260,22 @@ pub fn lang_russian() -> Lang {
 
 #[cfg(test)]
 mod tests {
+    use crate::utils::{to_vec, to_str};
     use crate::tokenization::PartOfSpeech;
     use super::{lang_russian, UTF_COMPOSE_MAP, UTF_REDUCE_MAP};
 
     #[test]
     pub fn stem() {
         let lang = lang_russian();
-        let w = "важный".chars().collect::<Vec<_>>();
+        let w    = to_vec("важный");
         assert_eq!(lang.stem(&w), 4);
     }
 
     #[test]
     pub fn get_pos() {
         let lang = lang_russian();
-        let w1 = "важный".chars().collect::<Vec<_>>();
-        let w2 = "ведь"  .chars().collect::<Vec<_>>();
+        let w1   = to_vec("важный");
+        let w2   = to_vec("ведь");
         assert_eq!(lang.get_pos(&w1), None);
         assert_eq!(lang.get_pos(&w2), Some(PartOfSpeech::Particle));
     }
@@ -282,37 +284,29 @@ mod tests {
     fn utf_compose() {
         let lang = lang_russian();
 
-        let source1 = "важный";
-        let norm1   = lang.utf_compose(&source1.chars().collect::<Vec<_>>());
+        let source1 = to_vec("важный");
+        let norm1   = lang.utf_compose(&source1);
         assert_eq!(norm1, None);
 
-        let source2 = "Ёлка";
-        let norm2   = lang
-            .utf_compose(&source2.chars().collect::<Vec<_>>())
-            .unwrap()
-            .iter()
-            .collect::<String>();
-        assert_eq!(norm2, "Ёлка");
-        assert_eq!(norm2.chars().count(), source2.chars().count() - 1);
+        let source2 = to_vec("Ёлка");
+        let norm2   = lang.utf_compose(&source2).unwrap();
+        assert_eq!(to_str(&norm2), "Ёлка");
+        assert_eq!(norm2.len(), source2.len() - 1);
     }
 
     #[test]
     fn utf_reduce() {
         let lang = lang_russian();
 
-        let source1 = "важный";
-        let norm1   = lang.utf_reduce(&source1.chars().collect::<Vec<_>>());
+        let source1 = to_vec("важный");
+        let norm1   = lang.utf_reduce(&source1);
         assert_eq!(norm1, None);
 
-        let source2 = "Ёлка";
-        let (padded2, norm2) = lang
-            .utf_reduce(&source2.chars().collect::<Vec<_>>())
-            .unwrap();
-        let padded2 = padded2.iter().collect::<String>();
-        let norm2   = norm2  .iter().collect::<String>();
-        assert_eq!(padded2, source2);
-        assert_eq!(norm2, "Елка");
-        assert_eq!(norm2.chars().count(), source2.chars().count());
+        let source2 = to_vec("Ёлка");
+        let (padded2, norm2) = lang.utf_reduce(&source2).unwrap();
+        assert_eq!(to_str(&padded2), to_str(&source2));
+        assert_eq!(to_str(&norm2), "Елка");
+        assert_eq!(norm2.len(), source2.len());
     }
 
     #[test]

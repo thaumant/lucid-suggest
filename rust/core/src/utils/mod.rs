@@ -17,3 +17,14 @@ macro_rules! max {
     ($x: expr) => ($x);
     ($x: expr, $($z: expr),+) => (::std::cmp::max($x, max!($($z),*)));
 }
+
+
+pub fn to_vec<T: AsRef<str>>(chars: T) -> Vec<char> {
+    chars.as_ref().chars().collect()
+}
+
+
+#[cfg(test)]
+pub fn to_str<T: AsRef<[char]>>(chars: T) -> String {
+    chars.as_ref().iter().collect()
+}

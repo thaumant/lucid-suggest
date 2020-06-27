@@ -53,6 +53,7 @@ impl<'a> Iterator for Normalize<'a> {
 #[cfg(test)]
 mod tests {
     use insta::assert_debug_snapshot;
+    use crate::utils::{to_vec, to_str};
     use super::super::utils::compile_utf_map;
     use super::Normalize;
 
@@ -64,85 +65,85 @@ mod tests {
         let mut source = Vec::new();
         let mut norm   = Vec::new();
         for (chunk1, chunk2) in Normalize::new(word, &norm_map) {
-            source.push(chunk1.iter().collect::<String>());
-            norm  .push(chunk2.iter().collect::<String>());
+            source.push(to_str(chunk1));
+            norm  .push(to_str(chunk2));
         }
         (source, norm)
     }
 
     #[test]
     fn utf_normalize_empty() {
-        let input  = "".chars().collect::<Vec<_>>();
+        let input  = to_vec("");
         let output = normalize(&input[..]);
         assert_debug_snapshot!(output);
     }
 
     #[test]
     fn utf_normalize_singleton_normal() {
-        let input  = "f".chars().collect::<Vec<_>>();
+        let input  = to_vec("f");
         let output = normalize(&input[..]);
         assert_debug_snapshot!(output);
     }
 
     #[test]
     fn utf_normalize_singleton_replaced() {
-        let input  = "ó".chars().collect::<Vec<_>>();
+        let input  = to_vec("ó");
         let output = normalize(&input[..]);
         assert_debug_snapshot!(output);
     }
 
     #[test]
     fn utf_normalize_single_nfd_replaced() {
-        let input  = "ó".chars().collect::<Vec<_>>();
+        let input  = to_vec("ó");
         let output = normalize(&input[..]);
         assert_debug_snapshot!(output);
     }
 
     #[test]
     fn utf_normalize_normal() {
-        let input  = "foobar".chars().collect::<Vec<_>>();
+        let input  = to_vec("foobar");
         let output = normalize(&input[..]);
         assert_debug_snapshot!(output);
     }
 
     #[test]
     fn utf_normalize_nfc_beginning() {
-        let input  = "óoobar".chars().collect::<Vec<_>>();
+        let input  = to_vec("óoobar");
         let output = normalize(&input[..]);
         assert_debug_snapshot!(output);
     }
 
     #[test]
     fn utf_normalize_nfd_beginning() {
-        let input  = "óoobar".chars().collect::<Vec<_>>();
+        let input  = to_vec("óoobar");
         let output = normalize(&input[..]);
         assert_debug_snapshot!(output);
     }
 
     #[test]
     fn utf_normalize_nfc_middle() {
-        let input  = "foóbar".chars().collect::<Vec<_>>();
+        let input  = to_vec("foóbar");
         let output = normalize(&input[..]);
         assert_debug_snapshot!(output);
     }
 
     #[test]
     fn utf_normalize_nfd_middle() {
-        let input  = "foóbar".chars().collect::<Vec<_>>();
+        let input  = to_vec("foóbar");
         let output = normalize(&input[..]);
         assert_debug_snapshot!(output);
     }
 
     #[test]
     fn utf_normalize_nfc_end() {
-        let input  = "foobaó".chars().collect::<Vec<_>>();
+        let input  = to_vec("foobaó");
         let output = normalize(&input[..]);
         assert_debug_snapshot!(output);
     }
 
     #[test]
     fn utf_normalize_nfd_end() {
-        let input  = "foobaó".chars().collect::<Vec<_>>();
+        let input  = to_vec("foobaó");
         let output = normalize(&input[..]);
         assert_debug_snapshot!(output);
     }

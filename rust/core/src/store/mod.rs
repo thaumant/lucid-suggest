@@ -1,3 +1,4 @@
+use crate::utils::to_vec;
 use crate::tokenization::{Text, tokenize_record};
 use crate::lang::Lang;
 
@@ -51,8 +52,8 @@ impl Store {
     }
 
     pub fn highlight_with(&mut self, dividers: (&str, &str)) {
-        let left:  Vec<char> = dividers.0.chars().collect();
-        let right: Vec<char> = dividers.1.chars().collect();
+        let left:  Vec<char> = to_vec(dividers.0);
+        let right: Vec<char> = to_vec(dividers.1);
         self.dividers = (left, right);
     }
 

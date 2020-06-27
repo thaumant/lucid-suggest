@@ -2,6 +2,7 @@
 
 use std::collections::HashMap;
 use rust_stemmers::{Algorithm, Stemmer};
+use crate::utils::to_vec;
 use crate::tokenization::PartOfSpeech;
 use super::Lang;
 use super::utils::compile_utf_map;
@@ -135,10 +136,10 @@ pub fn lang_english() -> Lang {
     let reduce_map  = compile_utf_map(&UTF_REDUCE_MAP[..]);
 
     let mut pos_map = HashMap::new();
-    for w in &ARTICLES[..]     { pos_map.insert(w.chars().collect(), PartOfSpeech::Article); }
-    for w in &PREPOSITIONS[..] { pos_map.insert(w.chars().collect(), PartOfSpeech::Preposition); }
-    for w in &CONJUNCTIONS[..] { pos_map.insert(w.chars().collect(), PartOfSpeech::Conjunction); }
-    for w in &PARTICLES[..]    { pos_map.insert(w.chars().collect(), PartOfSpeech::Particle); }
+    for w in &ARTICLES[..]     { pos_map.insert(to_vec(w), PartOfSpeech::Article); }
+    for w in &PREPOSITIONS[..] { pos_map.insert(to_vec(w), PartOfSpeech::Preposition); }
+    for w in &CONJUNCTIONS[..] { pos_map.insert(to_vec(w), PartOfSpeech::Conjunction); }
+    for w in &PARTICLES[..]    { pos_map.insert(to_vec(w), PartOfSpeech::Particle); }
 
     Lang::new(pos_map, compose_map, reduce_map, stemmer)
 }
@@ -146,21 +147,22 @@ pub fn lang_english() -> Lang {
 
 #[cfg(test)]
 mod tests {
+    use crate::utils::to_vec;
     use crate::tokenization::PartOfSpeech;
     use super::{lang_english, UTF_COMPOSE_MAP, UTF_REDUCE_MAP};
 
     #[test]
     fn stem() {
         let lang = lang_english();
-        let w = "universe".chars().collect::<Vec<_>>();
+        let w    = to_vec("universe");
         assert_eq!(lang.stem(&w), 7);
     }
 
     #[test]
     fn get_pos() {
         let lang = lang_english();
-        let w1 = "universe".chars().collect::<Vec<_>>();
-        let w2 = "the"     .chars().collect::<Vec<_>>();
+        let w1   = to_vec("universe");
+        let w2   = to_vec("the");
         assert_eq!(lang.get_pos(&w1), None);
         assert_eq!(lang.get_pos(&w2), Some(PartOfSpeech::Article));
     }
@@ -168,16 +170,16 @@ mod tests {
     #[test]
     fn utf_compose() {
         let lang   = lang_english();
-        let source = "universe";
-        let norm   = lang.utf_compose(&source.chars().collect::<Vec<_>>());
+        let source = to_vec("universe");
+        let norm   = lang.utf_compose(&source);
         assert_eq!(norm, None);
     }
 
     #[test]
     fn utf_reduce() {
         let lang   = lang_english();
-        let source = "universe";
-        let norm   = lang.utf_reduce(&source.chars().collect::<Vec<_>>());
+        let source = to_vec("universe");
+        let norm   = lang.utf_reduce(&source);
         assert_eq!(norm, None);
     }
 

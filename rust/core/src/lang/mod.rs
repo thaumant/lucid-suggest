@@ -101,6 +101,7 @@ mod tests {
     use std::collections::HashMap;
     use rust_stemmers::{Stemmer, Algorithm};
     use insta::assert_debug_snapshot;
+    use crate::utils::to_vec;
     use super::Lang;
     use super::utils::compile_utf_map;
 
@@ -117,35 +118,35 @@ mod tests {
 
     #[test]
     fn utf_compose_nfc() {
-        let input  = "foóbar".chars().collect::<Vec<_>>();
+        let input  = to_vec("foóbar");
         let output = get_lang().utf_compose(&input[..]);
         assert_debug_snapshot!(output);
     }
 
     #[test]
     fn utf_compose_nfd() {
-        let input  = "foóbar".chars().collect::<Vec<_>>();
+        let input  = to_vec("foóbar");
         let output = get_lang().utf_compose(&input[..]);
         assert_debug_snapshot!(output);
     }
 
     #[test]
     fn utf_reduce_reduced() {
-        let input  = "foobar".chars().collect::<Vec<_>>();
+        let input  = to_vec("foobar");
         let output = get_lang().utf_reduce(&input[..]);
         assert_debug_snapshot!(output);
     }
 
     #[test]
     fn utf_reduce_nfc() {
-        let input  = "foóbar".chars().collect::<Vec<_>>();
+        let input  = to_vec("foóbar");
         let output = get_lang().utf_reduce(&input[..]);
         assert_debug_snapshot!(output);
     }
 
     #[test]
     fn utf_reduce_fill0() {
-        let input  = "straße".chars().collect::<Vec<_>>();
+        let input  = to_vec("straße");
         let output = get_lang().utf_reduce(&input[..]);
         assert_debug_snapshot!(output);
     }

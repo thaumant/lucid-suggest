@@ -1,4 +1,5 @@
 use std::fmt;
+use crate::utils::to_vec;
 use crate::lang::Lang;
 use super::CharPattern;
 use super::Word;
@@ -24,7 +25,7 @@ impl Text<Vec<char>> {
     }
 
     pub fn from_str(source: &str) -> Text<Vec<char>> {
-        Text::from_vec(source.chars().collect())
+        Text::from_vec(to_vec(source))
     }
 }
 
@@ -168,6 +169,7 @@ impl<T: AsRef<[char]>> fmt::Debug for Text<T> {
 #[cfg(test)]
 mod tests {
     use insta::assert_debug_snapshot;
+    use crate::utils::to_vec;
     use crate::lang::{lang_english, lang_portuguese, lang_german};
     use super::{Word, Text};
     use super::super::{Chars, PartOfSpeech};
@@ -211,7 +213,7 @@ mod tests {
 
     #[test]
     fn text_strip() {
-        let chars = "-Foo- , Baz; ".chars().collect::<Vec<_>>();
+        let chars = to_vec("-Foo- , Baz; ");
         let text  = Text {
                 source: chars.clone(),
                 chars:  chars.clone(),
@@ -228,7 +230,7 @@ mod tests {
 
     #[test]
     fn text_strip_unfinished() {
-        let chars = "-Foo- Baz; ".chars().collect::<Vec<_>>();
+        let chars = to_vec("-Foo- Baz; ");
         let text1 = Text {
                 source: chars.clone(),
                 chars:  chars.clone(),
@@ -257,7 +259,7 @@ mod tests {
 
     #[test]
     fn text_lower() {
-        let chars = "Foo, Bar Baz".chars().collect::<Vec<_>>();
+        let chars = to_vec("Foo, Bar Baz");
         let text  = Text {
                 source: chars.clone(),
                 chars:  chars.clone(),
@@ -273,7 +275,7 @@ mod tests {
 
     #[test]
     fn text_stem() {
-        let chars = "hello universe".chars().collect::<Vec<_>>();
+        let chars = to_vec("hello universe");
         let lang  = lang_english();
         let text  = Text {
                 source: chars.clone(),
@@ -289,7 +291,7 @@ mod tests {
 
     #[test]
     fn text_pos() {
-        let chars = "the universe".chars().collect::<Vec<_>>();
+        let chars = to_vec("the universe");
         let lang  = lang_english();
         let text  = Text {
                 source: chars.clone(),
