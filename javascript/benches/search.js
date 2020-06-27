@@ -1,15 +1,20 @@
 const {Suite} = require('benchmark')
 const {LucidSuggest} = require('../dist/en')
-const {
-    STATES,
-    QUERIES_SINGLE_CHAR,
-    QUERIES_PARTIAL,
-    QUERIES_FULL,
-} = require('./constants')
+const {generateRecords, generateQueries} = require('./dataset')
 
 
-const suggest = new LucidSuggest()
-suggest.setRecords(STATES)
+const SAMPLE_SIZE     = 100
+const MIN_WORDS       = 3
+const MAX_WORDS       = 5
+const RECORDS         = generateRecords(SAMPLE_SIZE, MIN_WORDS, MAX_WORDS)
+const QUERIES_1CHAR   = generateQueries(1000, RECORDS, 0, 0)
+const QUERIES_PARTIAL = generateQueries(1000, RECORDS, 0, 1)
+const QUERIES_FULL    = generateQueries(1000, RECORDS, 1, 1)
+
+
+const SUGGEST = new LucidSuggest()
+SUGGEST.setRecords(RECORDS)
+
 
 let offset1 = 0
 let offset2 = 0
@@ -20,8 +25,8 @@ new Suite()
         name: 'queries_single_char',
         defer: true,
         async fn(deferred) {
-            const query = QUERIES_SINGLE_CHAR[offset1++ % QUERIES_SINGLE_CHAR.length]
-            await suggest.search(query)
+            const query = QUERIES_1CHAR[offset1++ % QUERIES_1CHAR.length]
+            await SUGGEST.search(query)
             deferred.resolve()
         },
     })
@@ -30,7 +35,7 @@ new Suite()
         defer: true,
         async fn(deferred) {
             const query = QUERIES_PARTIAL[offset2++ % QUERIES_PARTIAL.length]
-            await suggest.search(query)
+            await SUGGEST.search(query)
             deferred.resolve()
         },
     })
@@ -39,7 +44,7 @@ new Suite()
         defer: true,
         async fn(deferred) {
             const query = QUERIES_FULL[offset3++ % QUERIES_FULL.length]
-            await suggest.search(query)
+            await SUGGEST.search(query)
             deferred.resolve()
         },
     })
@@ -53,4 +58,3 @@ new Suite()
         console.table(results)
     })
     .run()
-
