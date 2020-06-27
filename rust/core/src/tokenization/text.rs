@@ -76,13 +76,13 @@ impl Text<Vec<char>> {
                 panic!("Normalization should always be the first step");
             }
 
-            if let Some(nfc) = lang.utf_compose(&self.source) {
+            if let Some(nfc) = lang.unicode_compose(&self.source) {
                 self.source           = nfc.clone();
                 self.chars            = nfc;
                 self.words[0].place.1 = self.chars.len();
             }
 
-            if let Some((source, chars)) = lang.utf_reduce(&self.chars) {
+            if let Some((source, chars)) = lang.unicode_reduce(&self.chars) {
                 self.source           = source;
                 self.chars            = chars;
                 self.words[0].place.1 = self.chars.len();

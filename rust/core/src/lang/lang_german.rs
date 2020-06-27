@@ -1,14 +1,11 @@
 #![allow(dead_code)]
 
-use std::collections::HashMap;
 use rust_stemmers::{Algorithm, Stemmer};
-use crate::utils::to_vec;
 use crate::tokenization::PartOfSpeech;
 use super::Lang;
-use super::utils::compile_utf_map;
 
 
-const ARTICLES: [&'static str; 12] = [
+const ARTICLES: &[&'static str] = &[
     "das",
     "dem",
     "den",
@@ -23,7 +20,7 @@ const ARTICLES: [&'static str; 12] = [
     "eines",
 ];
 
-const PREPOSITIONS: [&'static str; 19] = [
+const PREPOSITIONS: &[&'static str] = &[
     "an",
     "auf",
     "aus",
@@ -45,7 +42,7 @@ const PREPOSITIONS: [&'static str; 19] = [
     "zu",
 ];
 
-const CONJUNCTIONS: [&'static str; 36] = [
+const CONJUNCTIONS: &[&'static str] = &[
     "aber",
     "als",
     "als",
@@ -84,7 +81,7 @@ const CONJUNCTIONS: [&'static str; 36] = [
     "zu",
 ];
 
-const PARTICLES: [&'static str; 17] = [
+const PARTICLES: &[&'static str] = &[
     "schon",
     "ja",
     "halt",
@@ -104,7 +101,7 @@ const PARTICLES: [&'static str; 17] = [
     "soweiso",
 ];
 
-const UTF_COMPOSE_MAP: [(&'static str, &'static str); 6] = [
+const UTF_COMPOSE_MAP: &[(&'static str, &'static str)] = &[
     ("Ä", "Ä"),
     ("Ö", "Ö"),
     ("Ü", "Ü"),
@@ -113,7 +110,7 @@ const UTF_COMPOSE_MAP: [(&'static str, &'static str); 6] = [
     ("ü", "ü"),
 ];
 
-const UTF_REDUCE_MAP: [(&'static str, &'static str); 8] = [
+const UTF_REDUCE_MAP: &[(&'static str, &'static str)] = &[
     ("ẞ", "SS"), // eszett
     ("ß", "ss"),
     ("Ä", "A"), // umlauts
@@ -126,18 +123,19 @@ const UTF_REDUCE_MAP: [(&'static str, &'static str); 8] = [
 
 
 pub fn lang_german() -> Lang {
-    let stemmer = Stemmer::create(Algorithm::German);
+    let mut lang = Lang::new();
 
-    let compose_map = compile_utf_map(&UTF_COMPOSE_MAP[..]);
-    let reduce_map  = compile_utf_map(&UTF_REDUCE_MAP[..]);
+    lang.set_stemmer(Some(Stemmer::create(Algorithm::German)));
 
-    let mut pos_map = HashMap::new();
-    for w in &ARTICLES[..]     { pos_map.insert(to_vec(w), PartOfSpeech::Article); }
-    for w in &PREPOSITIONS[..] { pos_map.insert(to_vec(w), PartOfSpeech::Preposition); }
-    for w in &CONJUNCTIONS[..] { pos_map.insert(to_vec(w), PartOfSpeech::Conjunction); }
-    for w in &PARTICLES[..]    { pos_map.insert(to_vec(w), PartOfSpeech::Particle); }
+    for (from, to) in UTF_COMPOSE_MAP { lang.add_unicode_composition(from, to); }
+    for (from, to) in UTF_REDUCE_MAP  { lang.add_unicode_reduction(from, to); }
 
-    Lang::new(pos_map, compose_map, reduce_map, stemmer)
+    for word in ARTICLES     { lang.add_pos(word, PartOfSpeech::Article); }
+    for word in PREPOSITIONS { lang.add_pos(word, PartOfSpeech::Preposition); }
+    for word in CONJUNCTIONS { lang.add_pos(word, PartOfSpeech::Conjunction); }
+    for word in PARTICLES    { lang.add_pos(word, PartOfSpeech::Particle); }
+
+    lang
 }
 
 
@@ -164,45 +162,45 @@ mod tests {
     }
 
     #[test]
-    fn utf_compose() {
+    fn unicode_compose() {
         let lang    = lang_german();
 
         let source1 = to_vec("singen");
-        let norm1   = lang.utf_compose(&source1);
+        let norm1   = lang.unicode_compose(&source1);
         assert_eq!(norm1, None);
 
         let source2 = to_vec("mädchen");
-        let norm2   = lang.utf_compose(&source2).unwrap();
+        let norm2   = lang.unicode_compose(&source2).unwrap();
         assert_eq!(to_str(&norm2), "mädchen");
         assert_eq!(norm2.len(), source2.len() - 1);
     }
 
     #[test]
-    fn utf_reduce() {
+    fn unicode_reduce() {
         let lang = lang_german();
 
         let source1 = to_vec("singen");
-        let norm1   = lang.utf_reduce(&source1);
+        let norm1   = lang.unicode_reduce(&source1);
         assert_eq!(norm1, None);
 
         let source2 = to_vec("mädchen");
-        let (padded2, norm2) = lang.utf_reduce(&source2).unwrap();
+        let (padded2, norm2) = lang.unicode_reduce(&source2).unwrap();
         assert_eq!(to_str(&padded2), to_str(&source2));
         assert_eq!(to_str(&norm2), "madchen");
         assert_eq!(norm2.len(), source2.len());
     }
 
     #[test]
-    fn utf_compose_map_dimenstions() {
-        for &(nfd, nfc) in &UTF_COMPOSE_MAP {
+    fn unicode_compose_map_dimenstions() {
+        for &(nfd, nfc) in UTF_COMPOSE_MAP {
             assert_eq!(nfd.chars().count(), 2);
             assert_eq!(nfc.chars().count(), 1);
         }
     }
 
     #[test]
-    fn utf_reduce_map_dimenstions() {
-        for &(normal, reduced) in &UTF_REDUCE_MAP {
+    fn unicode_reduce_map_dimenstions() {
+        for &(normal, reduced) in UTF_REDUCE_MAP {
             if normal == "ẞ" { continue; }
             if normal == "ß" { continue; }
             assert_eq!(normal .chars().count(), 1, "UTF_REDUCE_MAP['{}'] != 1", normal);

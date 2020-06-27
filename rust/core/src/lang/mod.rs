@@ -1,4 +1,3 @@
-mod utils;
 mod normalize;
 mod lang_english;
 mod lang_german;
@@ -15,50 +14,71 @@ pub use lang_russian::lang_russian;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use rust_stemmers::Stemmer;
+use crate::utils::to_vec;
 use crate::tokenization::PartOfSpeech;
 use normalize::Normalize;
 
 
-const BUFFER_CAPACITY: usize = 2;
+const BUFFER_CAPACITY: usize = 20;
 
 
 pub struct Lang {
-    stem_buffer:  RefCell<String>,
-    norm_buffer1: RefCell<Vec<char>>,
-    norm_buffer2: RefCell<Vec<char>>,
+    stemmer:      Option<Stemmer>,
     pos_map:      HashMap<Vec<char>, PartOfSpeech>,
     compose_map:  HashMap<Vec<char>, Vec<char>>,
     reduce_map:   HashMap<Vec<char>, Vec<char>>,
-    stemmer:      Stemmer,
+    stem_buffer:  RefCell<String>,
+    norm_buffer1: RefCell<Vec<char>>,
+    norm_buffer2: RefCell<Vec<char>>,
 }
 
 
 impl Lang {
-    pub fn new(
-        pos_map:     HashMap<Vec<char>, PartOfSpeech>,
-        compose_map: HashMap<Vec<char>, Vec<char>>,
-        reduce_map:  HashMap<Vec<char>, Vec<char>>,
-        stemmer:     Stemmer
-    ) -> Self {
-        let stem_buffer  = RefCell::new(String::with_capacity(BUFFER_CAPACITY));
-        let norm_buffer1 = RefCell::new(Vec::with_capacity(BUFFER_CAPACITY));
-        let norm_buffer2 = RefCell::new(Vec::with_capacity(BUFFER_CAPACITY));
-        Self { stem_buffer, norm_buffer1, norm_buffer2, pos_map, compose_map, reduce_map, stemmer }
+    pub fn new() -> Self {
+        Self {
+            stemmer:      None,
+            pos_map:      HashMap::new(),
+            compose_map:  HashMap::new(),
+            reduce_map:   HashMap::new(),
+            stem_buffer:  RefCell::new(String::with_capacity(BUFFER_CAPACITY)),
+            norm_buffer1: RefCell::new(Vec::with_capacity(BUFFER_CAPACITY)),
+            norm_buffer2: RefCell::new(Vec::with_capacity(BUFFER_CAPACITY)),
+        }
+    }
+
+    pub fn set_stemmer(&mut self, stemmer: Option<Stemmer>) {
+        self.stemmer = stemmer;
+    }
+
+    pub fn add_pos(&mut self, word: &str, pos: PartOfSpeech) {
+        self.pos_map.insert(to_vec(word), pos);
+    }
+
+    pub fn add_unicode_composition(&mut self, from: &str, to: &str) {
+        self.compose_map.insert(to_vec(from), to_vec(to));
+    }
+
+    pub fn add_unicode_reduction(&mut self, from: &str, to: &str) {
+        self.reduce_map.insert(to_vec(from), to_vec(to));
     }
 
     pub fn stem(&self, word: &[char]) -> usize {
-        let buffer = &mut *self.stem_buffer.borrow_mut();
-        buffer.clear();
-        buffer.extend(word.iter());
-        let stem = self.stemmer.stem(&buffer);
-        stem.chars().count()
+        if let Some(stemmer) = &self.stemmer {
+            let buffer = &mut *self.stem_buffer.borrow_mut();
+            buffer.clear();
+            buffer.extend(word.iter());
+            let stem = stemmer.stem(&buffer);
+            stem.chars().count()
+        } else {
+            word.len()
+        }
     }
 
     pub fn get_pos(&self, word: &[char]) -> Option<PartOfSpeech> {
         self.pos_map.get(word).cloned()
     }
 
-    pub fn utf_compose(&self, word: &[char]) -> Option<Vec<char>> {
+    pub fn unicode_compose(&self, word: &[char]) -> Option<Vec<char>> {
         let buffer = &mut *self.norm_buffer1.borrow_mut();
         buffer.clear();
 
@@ -73,7 +93,7 @@ impl Lang {
         }
     }
 
-    pub fn utf_reduce(&self, word: &[char]) -> Option<(Vec<char>, Vec<char>)> {
+    pub fn unicode_reduce(&self, word: &[char]) -> Option<(Vec<char>, Vec<char>)> {
         let buffer1 = &mut *self.norm_buffer1.borrow_mut();
         let buffer2 = &mut *self.norm_buffer2.borrow_mut();
         buffer1.clear();
@@ -98,56 +118,50 @@ impl Lang {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
-    use rust_stemmers::{Stemmer, Algorithm};
     use insta::assert_debug_snapshot;
     use crate::utils::to_vec;
     use super::Lang;
-    use super::utils::compile_utf_map;
 
     fn get_lang() -> Lang {
-        let stemmer  = Stemmer::create(Algorithm::English);
-        let compose_map = compile_utf_map(&[("ó", "ó")]);
-        let reduce_map  = compile_utf_map(&[
-            ("ó", "o"),
-            ("ß", "ss"),
-        ]);
-        let lang = Lang::new(HashMap::new(), compose_map, reduce_map, stemmer);
+        let mut lang = Lang::new();
+        lang.add_unicode_composition("ó", "ó");
+        lang.add_unicode_reduction("ó", "o");
+        lang.add_unicode_reduction("ß", "ss");
         lang
     }
 
     #[test]
-    fn utf_compose_nfc() {
+    fn unicode_compose_nfc() {
         let input  = to_vec("foóbar");
-        let output = get_lang().utf_compose(&input[..]);
+        let output = get_lang().unicode_compose(&input[..]);
         assert_debug_snapshot!(output);
     }
 
     #[test]
-    fn utf_compose_nfd() {
+    fn unicode_compose_nfd() {
         let input  = to_vec("foóbar");
-        let output = get_lang().utf_compose(&input[..]);
+        let output = get_lang().unicode_compose(&input[..]);
         assert_debug_snapshot!(output);
     }
 
     #[test]
-    fn utf_reduce_reduced() {
+    fn unicode_reduce_reduced() {
         let input  = to_vec("foobar");
-        let output = get_lang().utf_reduce(&input[..]);
+        let output = get_lang().unicode_reduce(&input[..]);
         assert_debug_snapshot!(output);
     }
 
     #[test]
-    fn utf_reduce_nfc() {
+    fn unicode_reduce_nfc() {
         let input  = to_vec("foóbar");
-        let output = get_lang().utf_reduce(&input[..]);
+        let output = get_lang().unicode_reduce(&input[..]);
         assert_debug_snapshot!(output);
     }
 
     #[test]
-    fn utf_reduce_fill0() {
+    fn unicode_reduce_fill0() {
         let input  = to_vec("straße");
-        let output = get_lang().utf_reduce(&input[..]);
+        let output = get_lang().unicode_reduce(&input[..]);
         assert_debug_snapshot!(output);
     }
 }
