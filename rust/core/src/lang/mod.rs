@@ -51,7 +51,15 @@ impl Lang {
     }
 
     pub fn add_pos(&mut self, word: &str, pos: PartOfSpeech) {
-        self.pos_map.insert(to_vec(word), pos);
+        let source   = to_vec(word);
+        let composed = self.unicode_compose(&source).unwrap_or(source);
+        let reduced  = self.unicode_reduce(&composed);
+
+        self.pos_map.insert(composed, pos);
+
+        if let Some((_, reduced)) = reduced {
+            self.pos_map.insert(reduced, pos);
+        }
     }
 
     pub fn add_unicode_composition(&mut self, from: &str, to: &str) {
@@ -120,13 +128,15 @@ impl Lang {
 mod tests {
     use insta::assert_debug_snapshot;
     use crate::utils::to_vec;
+    use crate::tokenization::PartOfSpeech;
     use super::Lang;
 
     fn get_lang() -> Lang {
         let mut lang = Lang::new();
         lang.add_unicode_composition("ó", "ó");
         lang.add_unicode_reduction("ó", "o");
-        lang.add_unicode_reduction("ß", "ss");
+        lang.add_unicode_reduction("õ", "oo");
+        lang.add_pos("fóo", PartOfSpeech::Particle);
         lang
     }
 
@@ -160,8 +170,29 @@ mod tests {
 
     #[test]
     fn unicode_reduce_fill0() {
-        let input  = to_vec("straße");
+        let input  = to_vec("fõbar");
         let output = get_lang().unicode_reduce(&input[..]);
         assert_debug_snapshot!(output);
+    }
+
+    #[test]
+    fn get_pos_source() {
+        let input = to_vec("fóo");
+        let pos   = get_lang().get_pos(&input);
+        assert_eq!(pos, Some(PartOfSpeech::Particle));
+    }
+
+    #[test]
+    fn get_pos_reduced() {
+        let input = to_vec("foo");
+        let pos   = get_lang().get_pos(&input);
+        assert_eq!(pos, Some(PartOfSpeech::Particle));
+    }
+
+    #[test]
+    fn get_pos_unknown() {
+        let input = to_vec("bar");
+        let pos   = get_lang().get_pos(&input);
+        assert_eq!(pos, None);
     }
 }
