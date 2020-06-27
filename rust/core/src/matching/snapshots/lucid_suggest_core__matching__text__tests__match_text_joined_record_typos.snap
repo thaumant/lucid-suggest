@@ -6,10 +6,10 @@ expression: "text_match(&rtext.to_ref(), &qtext.to_ref())"
     WordMatch {
         query: MatchSide {
             ix: 0,
-            len: 8,
+            len: 11,
             slice: (
                 0,
-                8,
+                11,
             ),
             primary: true,
         },
@@ -22,16 +22,16 @@ expression: "text_match(&rtext.to_ref(), &qtext.to_ref())"
             ),
             primary: true,
         },
-        typos: 0,
+        typos: 1,
         fin: true,
     },
     WordMatch {
         query: MatchSide {
             ix: 0,
-            len: 8,
+            len: 11,
             slice: (
                 0,
-                8,
+                11,
             ),
             primary: true,
         },
@@ -40,11 +40,11 @@ expression: "text_match(&rtext.to_ref(), &qtext.to_ref())"
             len: 7,
             slice: (
                 0,
-                3,
+                6,
             ),
             primary: true,
         },
-        typos: 1,
+        typos: 2,
         fin: false,
     },
 ]

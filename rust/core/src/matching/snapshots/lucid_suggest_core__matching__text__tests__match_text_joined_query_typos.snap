@@ -6,45 +6,45 @@ expression: "text_match(&rtext.to_ref(), &qtext.to_ref())"
     WordMatch {
         query: MatchSide {
             ix: 0,
-            len: 8,
+            len: 4,
             slice: (
                 0,
-                8,
+                4,
             ),
             primary: true,
         },
         record: MatchSide {
             ix: 0,
-            len: 5,
+            len: 12,
             slice: (
                 0,
-                5,
-            ),
-            primary: true,
-        },
-        typos: 0,
-        fin: true,
-    },
-    WordMatch {
-        query: MatchSide {
-            ix: 0,
-            len: 8,
-            slice: (
-                0,
-                8,
-            ),
-            primary: true,
-        },
-        record: MatchSide {
-            ix: 1,
-            len: 7,
-            slice: (
-                0,
-                3,
+                12,
             ),
             primary: true,
         },
         typos: 1,
-        fin: false,
+        fin: true,
+    },
+    WordMatch {
+        query: MatchSide {
+            ix: 1,
+            len: 7,
+            slice: (
+                0,
+                7,
+            ),
+            primary: true,
+        },
+        record: MatchSide {
+            ix: 0,
+            len: 12,
+            slice: (
+                0,
+                12,
+            ),
+            primary: true,
+        },
+        typos: 2,
+        fin: true,
     },
 ]

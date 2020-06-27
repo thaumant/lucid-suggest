@@ -201,9 +201,24 @@ mod tests {
     }
 
     #[test]
+    fn match_text_joined_query_typos() {
+        let qtext = text("mcro byology").fin(false);
+        let rtext = text("microbiology");
+        assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
+    }
+
+    #[test]
     fn match_text_joined_record() {
         let qtext = text("wifi router").fin(false);
         let rtext = text("wi fi router");
+        assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
+    }
+
+    #[test]
+    fn match_text_joined_record_typos() {
+        let qtext = text("mcrobiology").fin(false);
+        let rtext = text("micro biology");
+        dbg!(text_match(&rtext.to_ref(), &qtext.to_ref()));
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
