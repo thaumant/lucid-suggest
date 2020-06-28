@@ -1,1 +1,0 @@
-../../javascript/build/bundle.js
