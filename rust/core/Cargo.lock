@@ -273,7 +273,7 @@ dependencies = [
 
 [[package]]
 name = "lucid-suggest-core"
-version = "0.6.0"
+version = "0.6.1"
 dependencies = [
  "criterion 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "insta 0.16.0 (registry+https://github.com/rust-lang/crates.io-index)",
