@@ -32,6 +32,11 @@ await suggest.search("batteries")
 ]
 ```
 
+## Code examples
+
+- [Browser and plain JavaScript](https://github.com/thaumant/lucid-suggest/tree/master/examples/browser-plain)
+- [NodeJS and TypeScript](https://github.com/thaumant/lucid-suggest/tree/master/examples/node-ts)
+
 ## Fulltext search features
 
 When an exact match is unavailable, the best possible partial matches are returned:
