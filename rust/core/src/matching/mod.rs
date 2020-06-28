@@ -28,16 +28,16 @@ impl WordMatch {
     ) -> Self {
         Self {
             query: MatchSide {
-                ix:      qword.ix,
-                len:     qword.len(),
-                slice:   (0, qlen),
-                primary: qword.is_primary(),
+                ix:       qword.ix,
+                len:      qword.len(),
+                slice:    (0, qlen),
+                function: qword.is_function(),
             },
             record: MatchSide {
-                ix:      rword.ix,
-                len:     rword.len(),
-                slice:   (0, rlen),
-                primary: rword.is_primary(),
+                ix:       rword.ix,
+                len:      rword.len(),
+                slice:    (0, rlen),
+                function: rword.is_function(),
             },
             typos,
             fin: qword.fin || rword.len() == rlen,
@@ -96,7 +96,7 @@ pub struct MatchSide {
     pub ix:      usize,
     pub len:     usize,
     pub slice:   (usize, usize),
-    pub primary: bool,
+    pub function: bool,
 }
 
 impl MatchSide {
@@ -105,13 +105,13 @@ impl MatchSide {
             ix:      w1.ix,
             len:     w1.len(),
             slice:   (0, w1.len()),
-            primary: w1.is_primary(),
+            function: w1.is_function(),
         };
         let part2 = Self {
             ix:      w2.ix,
             len:     w2.len(),
             slice:   (0, self.slice.1 - (w2.place.0 - w1.place.0)),
-            primary: w2.is_primary(),
+            function: w2.is_function(),
         };
         (part1, part2)
     }

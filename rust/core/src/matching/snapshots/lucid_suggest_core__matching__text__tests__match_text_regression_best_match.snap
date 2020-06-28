@@ -11,7 +11,7 @@ expression: "text_match(&rtext.to_ref(), &qtext.to_ref())"
                 0,
                 5,
             ),
-            primary: true,
+            function: false,
         },
         record: MatchSide {
             ix: 0,
@@ -20,7 +20,7 @@ expression: "text_match(&rtext.to_ref(), &qtext.to_ref())"
                 0,
                 5,
             ),
-            primary: true,
+            function: false,
         },
         typos: 0,
         fin: false,

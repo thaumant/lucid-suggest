@@ -1,6 +1,6 @@
 ---
 source: src/matching/word.rs
-expression: "word_match(&rword, &qword, &rchars[..], &qchars[..], false)"
+expression: "word_match(&rword, &qword, &rchars[..], &qchars[..])"
 ---
 Some(
     WordMatch {
@@ -11,7 +11,7 @@ Some(
                 0,
                 5,
             ),
-            primary: true,
+            function: false,
         },
         record: MatchSide {
             ix: 0,
@@ -20,7 +20,7 @@ Some(
                 0,
                 5,
             ),
-            primary: true,
+            function: false,
         },
         typos: 1,
         fin: false,

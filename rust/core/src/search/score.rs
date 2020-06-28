@@ -7,7 +7,7 @@ pub fn score(query: &Text<&[char]>, hit: &mut Hit) {
     hit.matches = text_match(&hit.title, &query);
 
     hit.scores[ScoreType::SameWords]   = score_words_up(hit);
-    hit.scores[ScoreType::SamePrimary] = score_primary_up(hit);
+    hit.scores[ScoreType::SameNonFunc] = score_nonfunction_up(hit);
     hit.scores[ScoreType::Typos]       = score_typos_down(hit);
     hit.scores[ScoreType::Trans]       = score_trans_down(hit);
     hit.scores[ScoreType::Fin]         = score_fin_up(hit);
@@ -23,9 +23,9 @@ pub fn score_words_up(hit: &Hit) -> isize {
 }
 
 
-pub fn score_primary_up(hit: &Hit) -> isize {
+pub fn score_nonfunction_up(hit: &Hit) -> isize {
     hit.matches.iter()
-        .filter(|m| m.record.primary)
+        .filter(|m| !m.record.function)
         .count() as isize
 }
 

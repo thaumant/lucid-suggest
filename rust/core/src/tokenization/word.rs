@@ -32,13 +32,13 @@ impl Word {
         self.place.1 == self.place.0
     }
 
-    pub fn is_primary(&self) -> bool {
+    pub fn is_function(&self) -> bool {
         match self.pos {
-            Some(PartOfSpeech::Article)     => false,
-            Some(PartOfSpeech::Preposition) => false,
-            Some(PartOfSpeech::Conjunction) => false,
-            Some(PartOfSpeech::Particle)    => false,
-            _ => true,
+            Some(PartOfSpeech::Article)     => true,
+            Some(PartOfSpeech::Preposition) => true,
+            Some(PartOfSpeech::Conjunction) => true,
+            Some(PartOfSpeech::Particle)    => true,
+            _ => false,
         }
     }
 

@@ -38,7 +38,7 @@ const SCORES_SIZE: usize = 9;
 
 pub enum ScoreType {
     SameWords   = 0,
-    SamePrimary = 1,
+    SameNonFunc = 1,
     Typos       = 2,
     Trans       = 3,
     Fin         = 4,

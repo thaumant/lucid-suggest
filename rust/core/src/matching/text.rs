@@ -43,7 +43,7 @@ pub fn text_match(rtext: &Text<&[char]>, qtext: &Text<&[char]>) -> Vec<WordMatch
                 });
 
             if let Some(new_candidate) = new_candidate {
-                if new_candidate.0.record.primary || new_candidate.1.is_some() {
+                if !new_candidate.0.record.function || new_candidate.1.is_some() {
                     candidate = Some(new_candidate);
                     break;
                 }

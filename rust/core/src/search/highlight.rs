@@ -55,8 +55,8 @@ mod tests {
 
     fn mock_match(ix: usize, size: usize) -> WordMatch {
         WordMatch {
-            query:  MatchSide { ix:  0, len: size, slice: (0, size), primary: true },
-            record: MatchSide { ix: ix, len: size, slice: (0, size), primary: true },
+            query:  MatchSide { ix:  0, len: size, slice: (0, size), function: false },
+            record: MatchSide { ix: ix, len: size, slice: (0, size), function: false },
             typos:  0,
             fin:    false,
         }
