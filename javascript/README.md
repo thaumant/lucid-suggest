@@ -2,7 +2,7 @@
 
 Embeddable search and autocomplete that works out of the box. Fast, simple, runs in browsers and NodeJS. Built with Rust and WebAssembly.
 
-This package hasn't been battle-tested in production. For data restrictions see [Performance section](#performance) below.
+Note: this package hasn't been battle-tested in production.
 
 ## Getting started
 
@@ -159,14 +159,12 @@ await suggest.search("ne")
 
 At the moment LucidSuggest works best with shorter sentences, like shopping items or book titles. Using longer texts, like articles or movie descriptions, may lead to poor experience.
 
-Also, full-fledged indexing is not implemented yet, so searching a large number of records can also take too long.
-
-For example, for 1000 records, each containing 4-8 common English words you can expect a search to take up to 7ms, as illustrated in the table below. That's less than a half of a frame if you target 60 FPS. You can call it at every keystroke, without using throttling or Web Workers.
+For example, for 10000 records, each containing 4-8 common English words you can expect a search to take up to 2ms, as illustrated in the table below. That's about 12% of a single frame if you target 60 FPS. You can call it at every keystroke, without throttling or Web Workers.
 
 Below are the detailed performance measurements, obtained using Node.js 14.3, Intel Core i7 (I7-9750H) 2.6 GHz.
 
-|              | 1-2 words | 4-8 words |
-| -----------: | --------: | --------: |
-|   10 records |   0.02 ms |   0.07 ms |
-|  100 records |   0.13 ms |   0.78 ms |
-| 1000 records |   1.20 ms |   7.10 ms |
+|               | 2-4 words | 4-8 words |
+| ------------: | --------: | --------: |
+|   100 records |   0.10 ms |   0.40 ms |
+|  1000 records |   0.20 ms |   0.60 ms |
+| 10000 records |   0.90 ms |   1.90 ms |
