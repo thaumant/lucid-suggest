@@ -5,17 +5,16 @@ build:
 	make compile
 
 cleanup:
-	rm -rf dist
-	rm -rf pkg
+	rm -rf ./*.js
+	rm -rf ./*.d.ts
 
 compile:
-	mkdir ./dist
-	touch ./dist/index.js
 	for LANG in ${LANGS}; do \
 		cd ../rust/wasm ; \
 		RUSTFLAGS="--cfg lang=\"$$LANG\"" wasm-pack build --target bundler --out-dir ../../javascript/pkg; \
 		cd ../../javascript ; \
 		RUSTFLAGS="--cfg lang=\"$$LANG\"" ./node_modules/.bin/rollup -c rollup/config.js; \
+		cp src/index.d.ts ./$$LANG.d.ts; \
 	done;
 
 test:

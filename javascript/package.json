@@ -3,15 +3,10 @@
   "version": "0.4.1",
   "description": "Fulltext search and autocomplete engine that works out of the box.",
   "files": [
-    "dist/*",
-    "typings.d.ts"
+    "*.js",
+    "*.d.ts"
   ],
-  "main": "./dist/index.js",
-  "exports": {
-    ".": "./dist/index.js",
-    "./": "./dist/"
-  },
-  "typings": "./typings.d.ts",
+  "main": "./en.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/thaumant/lucid-suggest/tree/master/javascript"
@@ -31,5 +26,8 @@
     "benchmark": "^2.1.4",
     "jest": "^25.5.4",
     "rollup": "^2.16.1"
+  },
+  "jest": {
+    "testMatch": ["<rootDir>/tests/*.js"]
   }
 }

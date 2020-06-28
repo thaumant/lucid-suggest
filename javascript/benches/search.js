@@ -1,5 +1,5 @@
 const {Suite} = require('benchmark')
-const {LucidSuggest} = require('../dist/en')
+const {LucidSuggest} = require('../en')
 const {generateRecords, generateQueries} = require('./dataset')
 
 

@@ -139,15 +139,6 @@ await suggest.search("ne")
 | Russian    | `lucid-suggest/ru` |
 
 
-## TypeScript
-
-When using TypeScript you have to import the empty root module, otherwise TypeScript compiler will not read `typings.d.ts` containing submodule declarations.
-```
-import 'lucid-suggest'
-import {LucidSuggest} from 'lucid-suggest/en'
-```
-
-
 ## Bundle sizes
 
 | lang | size | gzipped |
