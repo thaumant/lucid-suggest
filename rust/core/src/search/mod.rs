@@ -23,11 +23,11 @@ pub struct Hit<'a> {
 impl<'a> Hit<'a> {
     pub fn from_record(record: &'a Record) -> Hit<'a> {
         Hit {
-            id:      record.id,
-            title:   record.title.to_ref(),
-            rating:  record.rating,
-            scores:  Default::default(),
-            matches: Vec::new(),
+            id:       record.id,
+            title:    record.title.to_ref(),
+            rating:   record.rating,
+            scores:   Default::default(),
+            matches:  Vec::new(),
         }
     }
 }
@@ -90,29 +90,39 @@ pub struct SearchResult {
 }
 
 
-pub fn search<'a>(
-    store:   &'a Store,
-    query:   &'a Text<&'a [char]>,
-) -> std::iter::Map<impl Iterator<Item=Hit<'a>>, impl (FnMut(Hit<'a>) -> SearchResult)> {
-    let dividers = store.dividers();
-    store.records.iter()
-        .map(|record| {
-            Hit::from_record(record)
-        })
-        .map(move |mut hit| {
-            score::score(query, &mut hit);
-            hit
-        })
-        .filter(move |hit| {
-            filter::hit_matches(query, hit)
-        })
-        .limit_sort(store.limit, sort::compare_hits)
-        .map(move |hit| {
-            SearchResult {
-                id:    hit.id,
-                title: highlight::highlight(&hit, dividers),
-            }
-        })
+impl Store {
+    pub fn search<'a>(
+        &'a self,
+        query: &'a Text<&'a [char]>,
+    ) -> Vec<SearchResult> {
+        let dividers = self.dividers();
+
+        let index = &mut *self.index.borrow_mut();
+        index.prepare(&query, self.limit * 3);
+
+        self.records.iter()
+            .filter(|record| {
+                query.words.len() == 0 || index.matches(&record)
+            })
+            .map(|record| {
+                Hit::from_record(record)
+            })
+            .map(move |mut hit| {
+                score::score(query, &mut hit);
+                hit
+            })
+            .filter(move |hit| {
+                filter::hit_matches(query, hit)
+            })
+            .limit_sort(self.limit, sort::compare_hits)
+            .map(move |hit| {
+                SearchResult {
+                    id:    hit.id,
+                    title: highlight::highlight(&hit, dividers),
+                }
+            })
+            .collect()
+    }
 }
 
 
@@ -122,7 +132,6 @@ mod tests {
     use crate::tokenization::tokenize_query;
     use crate::lang::{Lang, lang_english, lang_german};
     use crate::store::{Store, Record};
-    use super::search;
 
     fn check(name: &str, lang: Option<Lang>, queries: &[&str]) {
         let mut store = Store::new();
@@ -136,7 +145,7 @@ mod tests {
         for (i, query) in queries.iter().enumerate() {
             let query   = tokenize_query(query, &store.lang);
             let query   = query.to_ref();
-            let results = search(&store, &query).collect::<Vec<_>>();
+            let results = store.search(&query);
             assert_debug_snapshot!(format!("{}-{}", name, i), results);
         }
     }
@@ -195,8 +204,8 @@ mod tests {
         let query2   = tokenize_query("university", &store.lang);
         let query1   = query1.to_ref();
         let query2   = query2.to_ref();
-        let results1 = search(&store, &query1).collect::<Vec<_>>();
-        let results2 = search(&store, &query2).collect::<Vec<_>>();
+        let results1 = store.search(&query1);
+        let results2 = store.search(&query2);
 
         assert_debug_snapshot!(results1);
         assert_debug_snapshot!(results2);
@@ -242,7 +251,7 @@ mod tests {
         for query in &queries {
             let query  = tokenize_query(query, &store.lang);
             let query  = query.to_ref();
-            let result = search(&store, &query).collect::<Vec<_>>();
+            let result = store.search(&query);
             assert_debug_snapshot!(result);
         }
     }

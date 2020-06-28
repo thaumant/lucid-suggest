@@ -12,7 +12,7 @@ use std::collections::HashMap;
 
 pub use tokenization::{Word, Text, tokenize_query};
 pub use store::{Record, Store, DEFAULT_LIMIT};
-pub use search::{search, SearchResult};
+pub use search::{SearchResult};
 pub use lang::Lang;
 pub use lang::{
     lang_german,
@@ -104,7 +104,7 @@ pub fn run_search(store_id: usize, query: &str) {
         let query = tokenize_query(query, &None);
         let query = query.to_ref();
         buffer.clear();
-        for result in search(&store, &query) {
+        for result in store.search(&query) {
             buffer.push(result);
         }
     }); });

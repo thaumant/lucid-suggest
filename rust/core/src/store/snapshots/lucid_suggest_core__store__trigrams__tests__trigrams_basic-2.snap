@@ -1,0 +1,11 @@
+---
+source: src/store/trigrams.rs
+expression: output
+---
+[
+    [
+        'f',
+        '\u{0}',
+        '\u{0}',
+    ],
+]

@@ -1,5 +1,5 @@
 use criterion::{criterion_group, criterion_main, Criterion};
-use lucid_suggest_core::{Store, Record, search, lang, tokenization};
+use lucid_suggest_core::{Store, Record, lang, tokenization};
 
 fn text_match_benchmark(criterion: &mut Criterion) {
     criterion.bench_function("search", |bench| {
@@ -14,7 +14,7 @@ fn text_match_benchmark(criterion: &mut Criterion) {
         let query = query.to_ref();
 
         bench.iter(|| {
-            search(&store, &query).collect::<Vec<_>>()
+            store.search(&query)
         })
     });
 }

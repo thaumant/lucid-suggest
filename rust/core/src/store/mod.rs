@@ -1,6 +1,11 @@
+mod trigrams;
+mod trigram_index;
+
+use std::cell::RefCell;
 use crate::utils::to_vec;
 use crate::tokenization::{Text, tokenize_record};
 use crate::lang::Lang;
+use trigram_index::TrigramIndex;
 
 
 pub static DEFAULT_LIMIT: usize = 10;
@@ -30,6 +35,7 @@ pub struct Store {
     pub limit:   usize,
     pub lang:    Option<Lang>,
     dividers:    (Vec<char>, Vec<char>),
+    pub index:   RefCell<TrigramIndex>,
 }
 
 
@@ -40,10 +46,12 @@ impl Store {
             limit:    DEFAULT_LIMIT,
             lang:     None,
             dividers: (vec!['['], vec![']']),
+            index:    RefCell::new(TrigramIndex::new()),
         }
     }
 
     pub fn add(&mut self, record: Record) {
+        self.index.borrow_mut().add(&record);
         self.records.push(record);
     }
 
