@@ -4,6 +4,10 @@ Embeddable search and autocomplete that works out of the box. Fast, simple, runs
 
 Note: this package hasn't been battle-tested in production.
 
+## Live demo
+
+[Check it out.](http://lucid-search.io.s3-website.eu-central-1.amazonaws.com/demo/index.html)
+
 ## Getting started
 
 Install:
