@@ -13,6 +13,14 @@ use std::collections::HashMap;
 pub use tokenization::{Word, Text, tokenize_query};
 pub use store::{Record, Store, DEFAULT_LIMIT};
 pub use search::{search, SearchResult};
+pub use lang::Lang;
+pub use lang::{
+    lang_german,
+    lang_english,
+    lang_portuguese,
+    lang_russian,
+    lang_spanish,
+};
 
 
 thread_local! {
@@ -21,14 +29,14 @@ thread_local! {
 }
 
 
-pub fn create_store(id: usize) {
+pub fn create_store(id: usize, lang: Option<Lang>) {
     STORES.with(|cell| {
         let stores = &mut *cell.borrow_mut();
         if stores.contains_key(&id) {
             panic!("Duplicate store id {}", id);
         }
         let mut store = Store::new();
-        store.lang = get_lang();
+        store.lang = lang;
         stores.insert(id, store);
     });
 
@@ -41,18 +49,6 @@ pub fn create_store(id: usize) {
     });
 }
 
-#[cfg(lang = "de")] pub fn get_lang() -> Option<lang::Lang> { Some(lang::lang_german()) }
-#[cfg(lang = "en")] pub fn get_lang() -> Option<lang::Lang> { Some(lang::lang_english()) }
-#[cfg(lang = "es")] pub fn get_lang() -> Option<lang::Lang> { Some(lang::lang_spanish()) }
-#[cfg(lang = "pt")] pub fn get_lang() -> Option<lang::Lang> { Some(lang::lang_portuguese()) }
-#[cfg(lang = "ru")] pub fn get_lang() -> Option<lang::Lang> { Some(lang::lang_russian()) }
-#[cfg(not(any(
-    lang = "de",
-    lang = "en",
-    lang = "es",
-    lang = "pt",
-    lang = "ru",
-)))] pub fn get_lang() -> Option<lang::Lang> { None }
 
 
 pub fn destroy_store(id: usize) {

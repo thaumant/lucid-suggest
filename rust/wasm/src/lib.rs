@@ -4,8 +4,22 @@ use lucid_suggest_core as core;
 
 #[wasm_bindgen]
 pub fn create_store(id: usize) {
-    core::create_store(id);
+    core::create_store(id, get_lang());
 }
+
+
+#[cfg(lang = "de")] pub fn get_lang() -> Option<core::Lang> { Some(core::lang_german()) }
+#[cfg(lang = "en")] pub fn get_lang() -> Option<core::Lang> { Some(core::lang_english()) }
+#[cfg(lang = "es")] pub fn get_lang() -> Option<core::Lang> { Some(core::lang_spanish()) }
+#[cfg(lang = "pt")] pub fn get_lang() -> Option<core::Lang> { Some(core::lang_portuguese()) }
+#[cfg(lang = "ru")] pub fn get_lang() -> Option<core::Lang> { Some(core::lang_russian()) }
+#[cfg(not(any(
+    lang = "de",
+    lang = "en",
+    lang = "es",
+    lang = "pt",
+    lang = "ru",
+)))] pub fn get_lang() -> Option<core::Lang> { None }
 
 
 #[wasm_bindgen]
