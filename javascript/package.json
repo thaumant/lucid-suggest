@@ -1,6 +1,6 @@
 {
   "name": "lucid-suggest",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Fulltext search and autocomplete engine that works out of the box.",
   "files": [
     "*.js",
@@ -28,6 +28,8 @@
     "rollup": "^2.16.1"
   },
   "jest": {
-    "testMatch": ["<rootDir>/tests/*.js"]
+    "testMatch": [
+      "<rootDir>/tests/*.js"
+    ]
   }
 }
