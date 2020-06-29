@@ -1,16 +1,17 @@
-use std::collections::{BTreeMap, HashSet, HashMap};
+use std::collections::{HashSet, HashMap};
 use crate::tokenization::Text;
 use super::Record;
 use super::trigrams::Trigrams;
 
 
-const DEFAULT_CAPACITY_TREE:  usize = 10;
+const DEFAULT_CAPACITY_IDS:   usize = 10;
 const DEFAULT_CAPACITY_COUNT: usize = 100;
 
 
 pub struct TrigramIndex {
-    tree:             BTreeMap<[char; 3], HashSet<usize>>,
-    indexed:          HashSet<usize>,
+    ids_by_gram:      HashMap<[char; 3], HashSet<usize>>,
+    grams_by_id:      HashMap<usize, HashSet<[char; 3]>>,
+    ids_indexed:      HashSet<usize>,
     buffer_grams:     HashSet<[char; 3]>,
     buffer_count_map: HashMap<usize, usize>,
     buffer_count_vec: Vec<(usize, usize)>,
@@ -20,8 +21,9 @@ pub struct TrigramIndex {
 impl TrigramIndex {
     pub fn new() -> Self {
         Self {
-            tree:             BTreeMap::new(),
-            indexed:          HashSet::new(),
+            ids_by_gram:      HashMap::new(),
+            grams_by_id:      HashMap::new(),
+            ids_indexed:      HashSet::new(),
             buffer_grams:     HashSet::new(),
             buffer_count_map: HashMap::with_capacity(DEFAULT_CAPACITY_COUNT),
             buffer_count_vec: Vec::with_capacity(DEFAULT_CAPACITY_COUNT),
@@ -29,29 +31,34 @@ impl TrigramIndex {
     }
 
     pub fn matches(&self, record: &Record) -> bool {
-        self.indexed.contains(&record.id)
+        self.ids_indexed.contains(&record.id)
     }
 
     pub fn add(&mut self, record: &Record) {
-        self.buffer_grams.clear();
-        for word in &record.title.words {
-            let chars = word.view(&record.title.chars.as_ref());
-            for gram in Trigrams::new(chars) {
-                self.buffer_grams.insert(gram);
-            }
+        let Self { ids_by_gram, grams_by_id, .. } = self;
+        let Record { id, title, .. } = record;
+
+        if grams_by_id.contains_key(id) {
+            panic!("Duplicate id {}", id);
         }
-        for &gram in self.buffer_grams.iter() {
-            self.tree
+
+        let mut grams = HashSet::new();
+        Self::collect_grams(title, &mut grams);
+
+        for &gram in grams.iter() {
+            ids_by_gram
                 .entry(gram)
                 .and_modify(|ids| {
-                    ids.insert(record.id);
+                    ids.insert(*id);
                 })
                 .or_insert_with(|| {
-                    let mut ids = HashSet::with_capacity(DEFAULT_CAPACITY_TREE);
-                    ids.insert(record.id);
+                    let mut ids = HashSet::with_capacity(DEFAULT_CAPACITY_IDS);
+                    ids.insert(*id);
                     ids
                 });
         }
+
+        grams_by_id.insert(*id, grams.clone());
     }
 
     pub fn prepare<T: AsRef<[char]>>(
@@ -63,28 +70,27 @@ impl TrigramIndex {
             return;
         }
 
-        let grams     = &mut self.buffer_grams;
-        let count_vec = &mut self.buffer_count_vec;
-        let count_map = &mut self.buffer_count_map;
+        let Self {
+            ids_by_gram,
+            ids_indexed,
+            buffer_grams:     grams,
+            buffer_count_vec: count_vec,
+            buffer_count_map: count_map,
+            ..
+        } = self;
 
         count_map.clear();
 
-        grams.clear();
-        for word in &query.words {
-            let chars = word.view(query.chars.as_ref());
-            for gram in Trigrams::new(chars) {
-                grams.insert(gram);
-            }
-        }
+        Self::collect_grams(&query, grams);
 
-        let update_count_vec = |map: &HashMap<usize, usize>, vec: &mut Vec<(usize, usize)>| {
+        let sync_count_vec = |map: &HashMap<usize, usize>, vec: &mut Vec<(usize, usize)>| {
             vec.clear();
             vec.extend(map.iter().map(|(&id, &count)| (id, count)));
             vec.sort_by(|(_, count1), (_, count2)| count2.cmp(count1));
         };
 
         for (i, gram) in grams.iter().enumerate() {
-            if let Some(ids) = self.tree.get(gram) {
+            if let Some(ids) = ids_by_gram.get(gram) {
                 for &id in ids {
                     count_map
                         .entry(id)
@@ -93,7 +99,7 @@ impl TrigramIndex {
                 }
             }
             if i > 0 && count_map.len() > size * 3 {
-                update_count_vec(count_map, count_vec);
+                sync_count_vec(count_map, count_vec);
                 while count_vec.len() > size * 2 {
                     let (id, _) = count_vec.pop().unwrap();
                     count_map.remove(&id);
@@ -101,11 +107,25 @@ impl TrigramIndex {
             }
         }
 
-        update_count_vec(count_map, count_vec);
+        sync_count_vec(count_map, count_vec);
 
-        self.indexed.clear();
+        ids_indexed.clear();
         for (id, _) in count_vec.iter().take(size) {
-            self.indexed.insert(*id);
+            ids_indexed.insert(*id);
+        }
+    }
+
+    fn collect_grams<T: AsRef<[char]>>(text: &Text<T>, grams: &mut HashSet<[char; 3]>) {
+        grams.clear();
+        let len = text.words.iter().map(|w| w.len()).sum::<usize>();
+        if len > grams.capacity() {
+            grams.reserve(len - grams.capacity());
+        }
+        for word in &text.words {
+            let chars = word.view(text.chars.as_ref());
+            for gram in Trigrams::new(chars) {
+                grams.insert(gram);
+            }
         }
     }
 }
@@ -117,17 +137,6 @@ mod tests {
     use crate::tokenization::tokenize_query;
     use super::Record;
     use super::TrigramIndex;
-
-    fn export_tree(index: &TrigramIndex) -> String {
-        let mut result = String::new();
-        for (gram, ids) in index.tree.iter() {
-            let gram    = gram.iter().cloned().collect::<String>();
-            let mut ids = ids.iter().cloned().collect::<Vec<_>>();
-            ids.sort();
-            result.push_str(&format!("\"{:3}\" {:?}\n", gram, ids));
-        }
-        result
-    }
 
     fn get_index() -> (TrigramIndex, [Record; 5]) {
         let records = [
@@ -144,12 +153,32 @@ mod tests {
         (index, records)
     }
 
+    fn export_tree(index: &TrigramIndex) -> String {
+        let mut ids = index.ids_by_gram
+            .iter()
+            .map(|(gram, ids)| {
+                let gram    = gram.iter().cloned().collect::<String>();
+                let mut ids = ids.iter().cloned().collect::<Vec<_>>();
+                ids.sort();
+                (gram, ids)
+            })
+            .collect::<Vec<_>>();
+
+        ids.sort_by(|(g1, _), (g2, _)| g1.cmp(g2));
+
+        let mut result = String::new();
+        for (gram, ids) in &ids {
+            result.push_str(&format!("\"{:3}\" {:?}\n", gram, ids));
+        }
+        result
+    }
+
     fn check_prepare(name: &str, size: usize, queries: &[&str]) {
         let (mut index, _) = get_index();
         for (i, query) in queries.iter().enumerate() {
             let query = tokenize_query(query, &None);
             index.prepare(&query, size);
-            let mut sorted = index.indexed.iter().collect::<Vec<_>>();
+            let mut sorted = index.ids_indexed.iter().collect::<Vec<_>>();
             sorted.sort();
             assert_debug_snapshot!(format!("{}-{}", name, i), sorted);
         }

@@ -1,7 +1,8 @@
 mod matrix;
 
 use std::cmp::max;
-use std::collections::BTreeMap;
+use std::hash::Hash;
+use std::collections::HashMap;
 use std::cell::RefCell;
 use matrix::DistMatrix;
 
@@ -9,16 +10,16 @@ use matrix::DistMatrix;
 const DEFAULT_CAPACITY: usize = 20;
 
 
-pub struct DamerauLevenshtein<T: PartialEq + Copy + Ord> {
+pub struct DamerauLevenshtein<T: PartialEq + Copy + Ord + Hash> {
     pub dists: RefCell<DistMatrix>,
-    last_i1: RefCell<BTreeMap<T, usize>>,
+    last_i1: RefCell<HashMap<T, usize>>,
 }
 
 
-impl<T: PartialEq + Copy + Ord> DamerauLevenshtein<T> {
+impl<T: PartialEq + Copy + Ord + Hash> DamerauLevenshtein<T> {
     pub fn new() -> Self {
         let dists   = RefCell::new(DistMatrix::new(DEFAULT_CAPACITY + 2));
-        let last_i1 = RefCell::new(BTreeMap::new());
+        let last_i1 = RefCell::new(HashMap::new());
         Self { dists, last_i1 }
     }
 
