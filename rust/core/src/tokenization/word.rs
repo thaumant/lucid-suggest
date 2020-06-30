@@ -50,6 +50,14 @@ impl Word {
         &mut chars[self.place.0 .. self.place.1]
     }
 
+    pub fn dist(&self, other: &Self) -> usize {
+        let (start1, end1) = self.place;
+        let (start2, end2) = other.place;
+        if start1 >= end2 { return start1 - end2; }
+        if start2 >= end1 { return start2 - end1; }
+        panic!("Malformed words: ({}, {}), ({}, {})", start1, end1, start2, end2);
+    }
+
     pub fn join(&self, other: &Self) -> Self {
         Word {
             ix:    self.ix,
@@ -172,6 +180,36 @@ mod tests {
         Whitespaces,
         Punctuation,
     };
+
+    #[test]
+    fn word_dist_basic() {
+        let mut w1 = Word::new(7);
+        let mut w2 = Word::new(5);
+        w1.place = (0, w1.len());
+        w2.place = (w1.place.1 + 2, w1.place.1 + 2 + w2.len());
+        assert_eq!(w1.dist(&w2), 2);
+        assert_eq!(w2.dist(&w1), 2);
+    }
+
+    #[test]
+    fn word_dist_fused() {
+        let mut w1 = Word::new(7);
+        let mut w2 = Word::new(5);
+        w1.place = (0, w1.len());
+        w2.place = (w1.place.1, w1.place.1 + w2.len());
+        assert_eq!(w1.dist(&w2), 0);
+        assert_eq!(w2.dist(&w1), 0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn word_dist_malformed() {
+        let mut w1 = Word::new(7);
+        let mut w2 = Word::new(5);
+        w1.place = (0, w1.len());
+        w2.place = (w1.place.1 - 2, w1.place.1 - 2 + w2.len());
+        w1.dist(&w2);
+    }
 
     #[test]
     fn word_join_basic() {

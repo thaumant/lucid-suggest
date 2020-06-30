@@ -22,17 +22,17 @@ pub fn text_match(rtext: &Text<&[char]>, qtext: &Text<&[char]>) -> Vec<WordMatch
 
             let new_candidate = None
                 .or_else(|| {
-                    if qword.len() <= rword.len() + 1   { return None; }
+                    let rnext = rtext.words.get(rword.ix + 1)?;
+                    if qword.len() <= rword.len() + rword.dist(rnext) { return None; }
                     if rtaken.contains(&(rword.ix + 1)) { return None; }
-                    let rnext    = rtext.words.get(rword.ix + 1)?;
                     let m        = word_match(&rword.join(rnext), qword, rchars, qchars)?;
                     let (m1, m2) = m.split_record(rword, rnext);
                     Some((m1, Some(m2)))
                 })
                 .or_else(|| {
-                    if rword.len() <= qword.len() + 1   { return None; }
+                    let qnext = qtext.words.get(qword.ix + 1)?;
+                    if rword.len() <= qword.len() + qword.dist(qnext) { return None; }
                     if qtaken.contains(&(qword.ix + 1)) { return None; }
-                    let qnext    = qtext.words.get(qword.ix + 1)?;
                     let m        = word_match(rword, &qword.join(qnext), rchars, qchars)?;
                     let (m1, m2) = m.split_query(qword, qnext);
                     Some((m1, Some(m2)))
@@ -79,7 +79,7 @@ mod tests {
 
 
     fn text(s: &str) -> Text<Vec<char>> {
-        Text::from_str(s).split(&Chars::Whitespaces)
+        Text::from_str(s).split(&[Chars::Punctuation, Chars::Whitespaces])
     }
 
 
@@ -208,6 +208,13 @@ mod tests {
     fn match_text_joined_record_unfinished() {
         let qtext = text("microbio").fin(false);
         let rtext = text("micro biology");
+        assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
+    }
+
+    #[test]
+    fn match_text_joined_regression_1() {
+        let qtext = text("especiall").fin(false);
+        let rtext = text("special, year");
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 }
