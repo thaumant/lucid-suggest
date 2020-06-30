@@ -1,0 +1,148 @@
+- Normalize particles.
+- Fix "mitteltö", where ö in nfd
+
+
+
+{
+  query: 'linef port i',
+  hits: [
+    { id: 79, title: '[Line] [port] [i]ndicate plane', rating: 22 },
+    { id: 26, title: '[I] game plane', rating: 75 },
+    { id: 99, title: '[Port] final month', rating: 2 },
+    { id: 54, title: 'Eight, [port] came any main', rating: 47 },
+    { id: 67, title: 'Month [port] desert', rating: 34 },
+    { id: 40, title: 'Divide, mark [I]', rating: 61 },
+    { id: 64, title: 'He blood [port]', rating: 37 },
+    { id: 69, title: '[I]t sure question hole change', rating: 32 },
+    { id: 80, title: 'Flat morning wish rest [i]t', rating: 21 },
+    { id: 12, title: 'Change, practice week board [i]f', rating: 89 }
+  ]
+}
+
+
+
+{
+  query: 'i'
+  hits: [
+    Iowa
+    Rhode Island
+    Idaho
+  ]
+}
+
+
+
+
+> babu
+14 ms
+┌─────────┬───────┬─────────────────────────────────────────┬────────┐
+│ (index) │  id   │                  title                  │ rating │
+├─────────┼───────┼─────────────────────────────────────────┼────────┤
+│    0    │ 35957 │  'Smallfolkart [baub]le christmas dec'  │  688   │
+│    1    │ 20893 │ 'Hanging [baub]le t-light holder small' │  269   │
+│    2    │ 20894 │ 'Hanging [baub]le t-light holder large' │   33   │
+│    3    │ 23085 │     'Antique silver [baub]le lamp'      │  381   │
+│    4    │ 84352 │ 'Silver christmas tree [baub]le stand'  │   34   │
+│    5    │ 22739 │  'Ribbon reel christmas sock [baub]le'  │  1835  │
+│    6    │ 23650 │ 'Set 10 cards filigree [baub]le 16961'  │   4    │
+│    7    │ 23643 │ 'Set 10 cards christmas [baub]le 16954' │   1    │
+│    8    │ 22468 │    '[Babu]shka lights string of 10'     │  517   │
+│    9    │ 22511 │     'Retrospot [babu]shka doorstop'     │  251   │
+└─────────┴───────┴─────────────────────────────────────────┴────────┘
+
+
+
+> hold
+15 ms
+┌─────────┬───────┬─────────────────────────────────────────┬────────┐
+│ (index) │  id   │                  title                  │ rating │
+├─────────┼───────┼─────────────────────────────────────────┼────────┤
+│    0    │ 35966 │ 'Folkart christmas tree t-light [hold]' │   27   │
+│    1    │ 20733 │       '[Gold] mini tape measure'        │  1236  │
+│    2    │ 22307 │  '[Gold] mug bone china tree of life'   │  770   │
+│    3    │ 20831 │          '[Gold] photo frame'           │  216   │
+│    4    │ 20869 │         '[Gold] fabric mirror'          │  180   │
+│    5    │ 20823 │          '[Gold] wine goblet'           │  168   │
+│    6    │ 21736 │  '[Gold] scroll glass t-light holder'   │  114   │
+│    7    │ 21131 │         '[Gold] standing gnome'         │  106   │
+│    8    │ 20827 │         '[Gold] aperitif glass'         │   88   │
+│    9    │ 90019 │      '[Gold] m.o.p orbit bracelet'      │   69   │
+└─────────┴───────┴─────────────────────────────────────────┴────────┘
+
+
+> backp
+16 ms
+┌─────────┬───────┬─────────────────────────────────────┬────────┐
+│ (index) │  id   │                title                │ rating │
+├─────────┼───────┼─────────────────────────────────────┼────────┤
+│    0    │ 21137 │    '[Black] record cover frame'     │ 11656  │
+│    1    │ 22188 │     '[Black] heart card holder'     │  4871  │
+│    2    │ 85169 │     '[Black] love bird candle'      │  1921  │
+│    3    │ 79164 │        '[Black] wine glass'         │  1672  │
+│    4    │ 79163 │      '[Black] champagne glass'      │  1529  │
+│    5    │ 22702 │    '[Black] and white cat bowl'     │  1363  │
+│    6    │ 22700 │    '[Black] and white dog bowl'     │  1198  │
+│    7    │ 85159 │   '[Black] tea,coffee,sugar jars'   │  1075  │
+│    8    │ 85116 │ '[Black] candelabra t-light holder' │  941   │
+│    9    │ 22481 │ '[Black] tea towel classic design'  │  827   │
+└─────────┴───────┴─────────────────────────────────────┴────────┘
+
+
+
+
+> chop board
+27 ms
+--------------------------------
+Memo board retrospot  design
+Memo board cottage design
+Wood black board ant white finish
+Pantry chopping board
+Retro longboard ironing board cover
+Red apples chopping board
+Vintage leaf chopping board
+Poppy fields chopping board
+Vegetable garden chopping board
+Choc truffle gold trinket pot
+--------------------------------
+
+
+
+
+# ignores transpositions
+night l
+  - Red toadstool [l]ed [night] light
+  - Rabbit [night] [l]ight
+
+
+# worse match higher
+pop corn
+  - Large [popcorn] holder
+  - Party [con]es carnival assorted
+  - Mirror [corn]ice
+
+
+
+
+"vn", "vnt" (start typing "vintage") - no results
+
+
+
+"50s" should match "50's"
+
+
+
+"greenpink" should not match "[Green] [pen]dant shell necklace"
+
+
+
+"little bird"
+- shows "[Bird] house hot water bottle" in top10
+- misses "Paper craft , [little] [bird]ie"
+(same for "paper bird")
+
+
+"ornament" shows results inconsistency only at "a"
+"orna" misess "ornament" in result
+
+
+"babu design" shows only "Hand warmer babushka [design]"

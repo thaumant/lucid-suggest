@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use fnv::{FnvHashSet as HashSet};
 use crate::tokenization::Text;
 use super::WordMatch;
 use super::word::word_match;
@@ -8,8 +8,8 @@ pub fn text_match(rtext: &Text<&[char]>, qtext: &Text<&[char]>) -> Vec<WordMatch
     let rchars   = &rtext.chars;
     let qchars   = &qtext.chars;
     let capacity = min!(rtext.words.len(), qtext.words.len());
-    let mut rtaken: HashSet<usize>  = HashSet::with_capacity(capacity);
-    let mut qtaken: HashSet<usize>  = HashSet::with_capacity(capacity);
+    let mut rtaken: HashSet<usize>  = HashSet::with_capacity_and_hasher(capacity, Default::default());
+    let mut qtaken: HashSet<usize>  = HashSet::with_capacity_and_hasher(capacity, Default::default());
     let mut matches: Vec<WordMatch> = Vec::with_capacity(capacity);
 
     for qword in qtext.words.iter() {

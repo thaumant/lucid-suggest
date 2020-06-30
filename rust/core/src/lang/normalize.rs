@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use fnv::{FnvHashMap as HashMap};
 use crate::utils::FadingWindows;
 
 const NORM_MAX_PATTERN_LEN: usize = 2;
@@ -48,13 +48,13 @@ impl<'a> Iterator for Normalize<'a> {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
+    use fnv::{FnvHashMap as HashMap};
     use insta::assert_debug_snapshot;
     use crate::utils::{to_vec, to_str};
     use super::Normalize;
 
     fn normalize<'a>(word: &'a [char]) -> (Vec<String>, Vec<String>) {
-        let mut norm_map = HashMap::new();
+        let mut norm_map = HashMap::default();
         norm_map.insert(to_vec("ó"), to_vec("o"));
         norm_map.insert(to_vec("ó"), to_vec("o"));
         let mut source = Vec::new();

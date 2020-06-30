@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 use std::hash::Hash;
-use std::collections::HashSet;
+use fnv::{FnvHashSet as HashSet};
 
 
 const DEFAULT_CAPACITY: usize = 20;
@@ -15,8 +15,8 @@ pub struct Jaccard<T: PartialEq + Copy + Ord + Hash> {
 impl<T: PartialEq + Copy + Ord + Hash> Jaccard<T> {
     pub fn new() -> Self {
         Self {
-            set1: RefCell::new(HashSet::with_capacity(DEFAULT_CAPACITY)),
-            set2: RefCell::new(HashSet::with_capacity(DEFAULT_CAPACITY)),
+            set1: RefCell::new(HashSet::with_capacity_and_hasher(DEFAULT_CAPACITY, Default::default())),
+            set2: RefCell::new(HashSet::with_capacity_and_hasher(DEFAULT_CAPACITY, Default::default())),
         }
     }
 

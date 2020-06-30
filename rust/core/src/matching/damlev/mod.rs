@@ -2,7 +2,7 @@ mod matrix;
 
 use std::cmp::max;
 use std::hash::Hash;
-use std::collections::HashMap;
+use fnv::{FnvHashMap as HashMap};
 use std::cell::RefCell;
 use matrix::DistMatrix;
 
@@ -19,7 +19,7 @@ pub struct DamerauLevenshtein<T: PartialEq + Copy + Ord + Hash> {
 impl<T: PartialEq + Copy + Ord + Hash> DamerauLevenshtein<T> {
     pub fn new() -> Self {
         let dists   = RefCell::new(DistMatrix::new(DEFAULT_CAPACITY + 2));
-        let last_i1 = RefCell::new(HashMap::new());
+        let last_i1 = RefCell::new(HashMap::with_capacity_and_hasher(DEFAULT_CAPACITY, Default::default()));
         Self { dists, last_i1 }
     }
 

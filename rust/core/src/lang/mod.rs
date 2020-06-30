@@ -12,7 +12,7 @@ pub use lang_portuguese::lang_portuguese;
 pub use lang_russian::lang_russian;
 
 use std::cell::RefCell;
-use std::collections::HashMap;
+use fnv::{FnvHashMap as HashMap};
 use rust_stemmers::Stemmer;
 use crate::utils::to_vec;
 use crate::tokenization::PartOfSpeech;
@@ -37,9 +37,9 @@ impl Lang {
     pub fn new() -> Self {
         Self {
             stemmer:      None,
-            pos_map:      HashMap::new(),
-            compose_map:  HashMap::new(),
-            reduce_map:   HashMap::new(),
+            pos_map:      HashMap::default(),
+            compose_map:  HashMap::default(),
+            reduce_map:   HashMap::default(),
             stem_buffer:  RefCell::new(String::with_capacity(BUFFER_CAPACITY)),
             norm_buffer1: RefCell::new(Vec::with_capacity(BUFFER_CAPACITY)),
             norm_buffer2: RefCell::new(Vec::with_capacity(BUFFER_CAPACITY)),

@@ -207,6 +207,11 @@ version = "0.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
+name = "fnv"
+version = "1.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "hermit-abi"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -276,6 +281,7 @@ name = "lucid-suggest-core"
 version = "0.6.1"
 dependencies = [
  "criterion 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "fnv 1.0.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "insta 0.16.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rust-stemmers 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -659,6 +665,7 @@ dependencies = [
 "checksum dtoa 0.4.5 (registry+https://github.com/rust-lang/crates.io-index)" = "4358a9e11b9a09cf52383b451b49a169e8d797b68aa02301ff586d70d9661ea3"
 "checksum either 1.5.3 (registry+https://github.com/rust-lang/crates.io-index)" = "bb1f6b1ce1c140482ea30ddd3335fc0024ac7ee112895426e0a629a6c20adfe3"
 "checksum encode_unicode 0.3.6 (registry+https://github.com/rust-lang/crates.io-index)" = "a357d28ed41a50f9c765dbfe56cbc04a64e53e5fc58ba79fbc34c10ef3df831f"
+"checksum fnv 1.0.7 (registry+https://github.com/rust-lang/crates.io-index)" = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
 "checksum hermit-abi 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)" = "1010591b26bbfe835e9faeabeb11866061cc7dcebffd56ad7d0942d0e61aefd8"
 "checksum insta 0.16.0 (registry+https://github.com/rust-lang/crates.io-index)" = "8386e795fb3927131ea4cede203c529a333652eb6dc4ff29616b832b27e9b096"
 "checksum itertools 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)" = "284f18f85651fe11e8a991b2adb42cb078325c996ed026d994719efcfca1d54b"

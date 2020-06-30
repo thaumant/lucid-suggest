@@ -1,4 +1,4 @@
-use std::collections::{HashSet, HashMap};
+use fnv::{FnvHashMap as HashMap, FnvHashSet as HashSet};
 use crate::tokenization::Text;
 use super::Record;
 use super::trigrams::Trigrams;
@@ -21,11 +21,11 @@ pub struct TrigramIndex {
 impl TrigramIndex {
     pub fn new() -> Self {
         Self {
-            ids_by_gram:      HashMap::new(),
-            grams_by_id:      HashMap::new(),
-            ids_indexed:      HashSet::new(),
-            buffer_grams:     HashSet::new(),
-            buffer_count_map: HashMap::with_capacity(DEFAULT_CAPACITY_COUNT),
+            ids_by_gram:      HashMap::default(),
+            grams_by_id:      HashMap::default(),
+            ids_indexed:      HashSet::default(),
+            buffer_grams:     HashSet::default(),
+            buffer_count_map: HashMap::with_capacity_and_hasher(DEFAULT_CAPACITY_COUNT, Default::default()),
             buffer_count_vec: Vec::with_capacity(DEFAULT_CAPACITY_COUNT),
         }
     }
@@ -42,7 +42,7 @@ impl TrigramIndex {
             panic!("Duplicate id {}", id);
         }
 
-        let mut grams = HashSet::new();
+        let mut grams = HashSet::default();
         Self::collect_grams(title, &mut grams);
 
         for &gram in grams.iter() {
@@ -52,7 +52,7 @@ impl TrigramIndex {
                     ids.insert(*id);
                 })
                 .or_insert_with(|| {
-                    let mut ids = HashSet::with_capacity(DEFAULT_CAPACITY_IDS);
+                    let mut ids = HashSet::with_capacity_and_hasher(DEFAULT_CAPACITY_IDS, Default::default());
                     ids.insert(*id);
                     ids
                 });

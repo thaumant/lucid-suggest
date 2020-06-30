@@ -8,7 +8,7 @@ mod search;
 pub mod lang;
 
 use std::cell::RefCell;
-use std::collections::HashMap;
+use fnv::{FnvHashMap as HashMap};
 
 pub use tokenization::{Word, Text, tokenize_query};
 pub use store::{Record, Store, DEFAULT_LIMIT};
@@ -24,8 +24,8 @@ pub use lang::{
 
 
 thread_local! {
-    static STORES:  RefCell<HashMap<usize, Store>>             = RefCell::new(HashMap::new());
-    static RESULTS: RefCell<HashMap<usize, Vec<SearchResult>>> = RefCell::new(HashMap::new());
+    static STORES:  RefCell<HashMap<usize, Store>>             = RefCell::new(HashMap::default());
+    static RESULTS: RefCell<HashMap<usize, Vec<SearchResult>>> = RefCell::new(HashMap::default());
 }
 
 
