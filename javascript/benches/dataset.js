@@ -61,6 +61,10 @@ function generateTitle(minWords, maxWords) {
 
 
 function corrupt(title) {
+    if (title.length == 1) {
+        return title
+    }
+
     const chars = title
     .toLowerCase()
     .replace(/, /, ' ')

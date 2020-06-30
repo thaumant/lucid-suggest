@@ -2,59 +2,38 @@ const {Suite} = require('benchmark')
 const {LucidSuggest} = require('../en')
 const {generateRecords, generateQueries} = require('./dataset')
 
+const PRESETS = [
+    {minWords: 2, maxWords: 4, queryMaxLen: 1.0},
+    {minWords: 4, maxWords: 8, queryMaxLen: 0.5},
+]
 
-const SAMPLE_SIZE     = 100
-const MIN_WORDS       = 3
-const MAX_WORDS       = 5
-const RECORDS         = generateRecords(SAMPLE_SIZE, MIN_WORDS, MAX_WORDS)
-const QUERIES_1CHAR   = generateQueries(1000, RECORDS, 0, 0)
-const QUERIES_PARTIAL = generateQueries(1000, RECORDS, 0, 1)
-const QUERIES_FULL    = generateQueries(1000, RECORDS, 1, 1)
-
+const SAMPLE_SIZE = 100
+const PRESET      = PRESETS[0]
+const RECORDS     = generateRecords(SAMPLE_SIZE, PRESET.minWords, PRESET.maxWords)
+const QUERIES     = generateQueries(10000, RECORDS, 0, PRESET.queryMaxLen)
 
 const SUGGEST = new LucidSuggest()
 SUGGEST.setRecords(RECORDS)
 
-
-let offset1 = 0
-let offset2 = 0
-let offset3 = 0
+let offset = 0
 
 new Suite()
-    .add({
-        name: 'queries_single_char',
-        defer: true,
-        async fn(deferred) {
-            const query = QUERIES_1CHAR[offset1++ % QUERIES_1CHAR.length]
-            await SUGGEST.search(query)
-            deferred.resolve()
-        },
-    })
     .add({
         name: 'queries_partial',
         defer: true,
         async fn(deferred) {
-            const query = QUERIES_PARTIAL[offset2++ % QUERIES_PARTIAL.length]
-            await SUGGEST.search(query)
-            deferred.resolve()
-        },
-    })
-    .add({
-        name: 'queries_full',
-        defer: true,
-        async fn(deferred) {
-            const query = QUERIES_FULL[offset3++ % QUERIES_FULL.length]
-            await SUGGEST.search(query)
+            await SUGGEST.search(QUERIES[offset])
+            offset = (offset + 1) % QUERIES.length
             deferred.resolve()
         },
     })
     .on('complete', function () {
-        const results = []
-        this.forEach(bench => {
-            const name = bench.name
-            const mean = Math.round(bench.stats.mean * 1e6) + ' μs'
-            results.push({name, mean})
+        console.log()
+        this.forEach(({name, hz, stats: {mean}}) => {
+            console.log(name)
+            console.log(`    ${(mean * 1e6).toFixed(2)} μs`)
+            console.log(`    ${Math.round(hz)} ops/s`)
+            console.log()
         })
-        console.table(results)
     })
     .run()

@@ -163,12 +163,12 @@ await suggest.search("ne")
 
 At the moment LucidSuggest works best with shorter sentences, like shopping items or book titles. Using longer texts, like articles or movie descriptions, may lead to poor experience.
 
-For example, for 10000 records, each containing 4-8 common English words you can expect a search to take up to 2ms, as illustrated in the table below. That's about 12% of a single frame if you target 60 FPS. You can call it at every keystroke, without throttling or Web Workers.
+For example, for 10000 records, each containing 4-8 common English words, you can expect a typical search to take 1.3 ms, as illustrated in the table below. That's about 8% of a single frame if you target 60 FPS, so you can call it at every keystroke, without throttling or Web Workers.
 
 Below are the detailed performance measurements, obtained using Node.js 14.3, Intel Core i7 (I7-9750H) 2.6 GHz.
 
 |               | 2-4 words | 4-8 words |
 | ------------: | --------: | --------: |
-|   100 records |   0.10 ms |   0.40 ms |
-|  1000 records |   0.20 ms |   0.60 ms |
-| 10000 records |   0.90 ms |   1.90 ms |
+|   100 records |   0.12 ms |   0.24 ms |
+|  1000 records |   0.22 ms |   0.37 ms |
+| 10000 records |   0.86 ms |   1.30 ms |
