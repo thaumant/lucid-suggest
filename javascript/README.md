@@ -152,11 +152,11 @@ await suggest.search("ne")
 
 | lang | size | gzipped |
 | :--- | ---: | ------: |
-| de   | 172K |     69K |
-| en   | 174K |     69K |
-| es   | 178K |     70K |
-| pt   | 178K |     70K |
-| ru   | 174K |     69K |
+| de   | 167K |     66K |
+| en   | 169K |     66K |
+| es   | 172K |     67K |
+| pt   | 172K |     67K |
+| ru   | 168K |     66K |
 
 
 ## Performance
