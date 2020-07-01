@@ -8,18 +8,18 @@ pub fn create_store(id: usize) {
 }
 
 
-#[cfg(lang = "de")] pub fn get_lang() -> Option<core::Lang> { Some(core::lang_german()) }
-#[cfg(lang = "en")] pub fn get_lang() -> Option<core::Lang> { Some(core::lang_english()) }
-#[cfg(lang = "es")] pub fn get_lang() -> Option<core::Lang> { Some(core::lang_spanish()) }
-#[cfg(lang = "pt")] pub fn get_lang() -> Option<core::Lang> { Some(core::lang_portuguese()) }
-#[cfg(lang = "ru")] pub fn get_lang() -> Option<core::Lang> { Some(core::lang_russian()) }
+#[cfg(lang = "de")] pub fn get_lang() -> core::Lang { core::lang_german() }
+#[cfg(lang = "en")] pub fn get_lang() -> core::Lang { core::lang_english() }
+#[cfg(lang = "es")] pub fn get_lang() -> core::Lang { core::lang_spanish() }
+#[cfg(lang = "pt")] pub fn get_lang() -> core::Lang { core::lang_portuguese() }
+#[cfg(lang = "ru")] pub fn get_lang() -> core::Lang { core::lang_russian() }
 #[cfg(not(any(
     lang = "de",
     lang = "en",
     lang = "es",
     lang = "pt",
     lang = "ru",
-)))] pub fn get_lang() -> Option<core::Lang> { None }
+)))] pub fn get_lang() -> core::Lang { core::Lang::new() }
 
 
 #[wasm_bindgen]
