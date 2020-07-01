@@ -13,7 +13,7 @@ pub use text::text_match;
 pub struct WordMatch {
     pub query:  MatchSide,
     pub record: MatchSide,
-    pub typos:  usize,
+    pub typos:  f64,
     pub fin:    bool,
 }
 
@@ -24,7 +24,7 @@ impl WordMatch {
         rword: &Word,
         qlen:  usize,
         rlen:  usize,
-        typos: usize
+        typos: f64
     ) -> Self {
         Self {
             query: MatchSide {
@@ -80,12 +80,13 @@ impl WordMatch {
         (part1, part2)
     }
 
-    fn split_typos(typos: usize, len1: usize, len2: usize) -> (usize, usize) {
-        let split1 = (
-            (typos * len1) as f64 /
-            (len1 + len2) as f64
-        ).round() as usize;
-        let split2 = typos - split1;
+    fn split_typos(typos: f64, len1: usize, len2: usize) -> (f64, f64) {
+        if len1 == 0 { return (0.0, typos); }
+        if len2 == 0 { return (typos, 0.0); }
+        let len1   = len1 as f64;
+        let len2   = len2 as f64;
+        let split1 = (typos * len1 * 10.0 / (len1 + len2)).ceil() / 10.0;
+        let split2 = ((typos - split1) * 10.0).round() / 10.0;
         (split1, split2)
     }
 }
@@ -152,7 +153,7 @@ mod tests {
     fn test_split_typos(
         len1:   usize,
         len2:   usize,
-        sample: &[(usize, usize, usize)],
+        sample: &[(f64, f64, f64)],
     ) {
         for &(typos, expected1, expected2) in sample {
             let (received1, received2) = WordMatch::split_typos(typos, len1, len2);
@@ -166,99 +167,84 @@ mod tests {
     }
 
     #[test]
-    fn split_typos_empty() {
-        test_split_typos(5, 5, &[
-            (0, 0, 0),
-        ]);
-    }
-
-    #[test]
     fn split_typos_in_half() {
         test_split_typos(5, 5, &[
-            (2, 1, 1),
-            (4, 2, 2),
-            (6, 3, 3),
-            (8, 4, 4),
-        ]);
-    }
-
-    #[test]
-    fn split_typos_left_first() {
-        test_split_typos(5, 5, &[
-            (1, 1, 0),
-            (3, 2, 1),
-            (5, 3, 2),
-            (7, 4, 3),
+            (0.0, 0.0, 0.0),
+            (1.0, 0.5, 0.5),
+            (2.0, 1.0, 1.0),
+            (3.0, 1.5, 1.5),
+            (4.0, 2.0, 2.0),
+            (5.0, 2.5, 2.5),
         ]);
     }
 
     #[test]
     fn split_typos_1_to_0() {
         test_split_typos(5, 0, &[
-            (2, 2, 0),
-            (4, 4, 0),
-            (6, 6, 0),
-            (8, 8, 0),
+            (1.0, 1.0, 0.0),
+            (2.0, 2.0, 0.0),
+            (3.0, 3.0, 0.0),
+            (4.0, 4.0, 0.0),
+            (5.0, 5.0, 0.0),
         ]);
     }
 
     #[test]
     fn split_typos_0_to_1() {
         test_split_typos(0, 5, &[
-            (2, 0, 2),
-            (4, 0, 4),
-            (6, 0, 6),
-            (8, 0, 8),
+            (1.0, 0.0, 1.0),
+            (2.0, 0.0, 2.0),
+            (3.0, 0.0, 3.0),
+            (4.0, 0.0, 4.0),
+            (5.0, 0.0, 5.0),
         ]);
     }
 
     #[test]
     fn split_typos_2_to_1() {
         test_split_typos(10, 5, &[
-            (1, 1, 0),
-            (2, 1, 1),
-            (3, 2, 1),
-            (4, 3, 1),
-            (5, 3, 2),
-            (6, 4, 2),
-            (7, 5, 2),
-            (8, 5, 3),
+            (0.0, 0.0, 0.0),
+            (1.0, 0.7, 0.3),
+            (2.0, 1.4, 0.6),
+            (3.0, 2.0, 1.0),
+            (4.0, 2.7, 1.3),
+            (5.0, 3.4, 1.6),
         ]);
     }
 
     #[test]
     fn split_typos_1_to_2() {
         test_split_typos(5, 10, &[
-            (1, 0, 1),
-            (2, 1, 1),
-            (3, 1, 2),
-            (4, 1, 3),
-            (5, 2, 3),
-            (6, 2, 4),
-            (7, 2, 5),
-            (8, 3, 5),
+            (0.0, 0.0, 0.0),
+            (1.0, 0.4, 0.6),
+            (2.0, 0.7, 1.3),
+            (3.0, 1.0, 2.0),
+            (4.0, 1.4, 2.6),
+            (5.0, 1.7, 3.3),
         ]);
     }
 
     #[test]
     fn split_typos_3_to_2() {
         test_split_typos(9, 6, &[
-            (4, 2, 2),
-            (5, 3, 2),
-            (6, 4, 2),
-            (7, 4, 3),
-            (8, 5, 3),
+            (0.0, 0.0, 0.0),
+            (1.0, 0.6, 0.4),
+            (2.0, 1.2, 0.8),
+            (3.0, 1.8, 1.2),
+            (4.0, 2.4, 1.6),
+            (5.0, 3.0, 2.0),
         ]);
     }
 
     #[test]
     fn split_typos_2_to_3() {
         test_split_typos(6, 9, &[
-            (4, 2, 2),
-            (5, 2, 3),
-            (6, 2, 4),
-            (7, 3, 4),
-            (8, 3, 5),
+            (0.0, 0.0, 0.0),
+            (1.0, 0.4, 0.6),
+            (2.0, 0.8, 1.2),
+            (3.0, 1.2, 1.8),
+            (4.0, 1.6, 2.4),
+            (5.0, 2.0, 3.0),
         ]);
     }
 }

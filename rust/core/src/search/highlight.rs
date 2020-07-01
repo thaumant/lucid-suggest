@@ -57,7 +57,7 @@ mod tests {
         WordMatch {
             query:  MatchSide { ix:  0, len: size, slice: (0, size), function: false },
             record: MatchSide { ix: ix, len: size, slice: (0, size), function: false },
-            typos:  0,
+            typos:  0.0,
             fin:    false,
         }
     }

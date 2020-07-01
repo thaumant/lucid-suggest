@@ -22,7 +22,7 @@ Some(
             ),
             function: false,
         },
-        typos: 0,
+        typos: 0.0,
         fin: false,
     },
 )

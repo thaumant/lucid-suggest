@@ -33,7 +33,7 @@ pub fn score_nonfunction_up(hit: &Hit) -> isize {
 pub fn score_typos_down(hit: &Hit) -> isize {
     let mut typos = 0;
     for m in &hit.matches {
-        typos += m.typos + m.record.slice.0 + (m.record.len - m.record.slice.1);
+        typos += m.typos as usize + m.record.slice.0 + (m.record.len - m.record.slice.1);
     }
     -(typos as isize)
 }

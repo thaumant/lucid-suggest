@@ -54,8 +54,8 @@ pub fn word_match(rword: &Word, qword: &Word, rchars: &[char], qchars: &[char]) 
                 if (qlen as isize - rlen as isize).abs() > 1 { continue; }
 
                 let dist = dists.get(qlen + 1, rlen + 1);
-                let rel  = dist as f64 / max!(qlen, rlen, 1) as f64;
 
+                let rel = dist / max!(qlen, rlen, 1) as f64;
                 if rel > DAMLEV_THRESHOLD { continue; }
 
                 best_match = best_match
@@ -69,7 +69,7 @@ pub fn word_match(rword: &Word, qword: &Word, rchars: &[char], qchars: &[char]) 
                         dist,
                     )));
 
-                if dist == 0 {
+                if dist <= std::f64::EPSILON {
                     break;
                 }
             }
