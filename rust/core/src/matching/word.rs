@@ -9,8 +9,8 @@ const JACCARD_THRESHOLD: f64 = 0.41;
 const DAMLEV_THRESHOLD:  f64 = 0.26;
 
 thread_local! {
-    static DAMLEV:  DamerauLevenshtein<char> = DamerauLevenshtein::new();
-    static JACCARD: Jaccard<char>            = Jaccard::new();
+    static DAMLEV:  DamerauLevenshtein = DamerauLevenshtein::new();
+    static JACCARD: Jaccard<char>      = Jaccard::new();
 }
 
 
