@@ -1,3 +1,4 @@
+mod chars;
 mod normalize;
 mod lang_english;
 mod lang_german;
@@ -5,6 +6,7 @@ mod lang_portuguese;
 mod lang_russian;
 mod lang_spanish;
 
+pub use chars::{Chars, CharPattern};
 pub use lang_german::lang_german;
 pub use lang_english::lang_english;
 pub use lang_spanish::lang_spanish;

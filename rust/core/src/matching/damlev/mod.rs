@@ -34,13 +34,15 @@ impl DamerauLevenshtein {
 
             for (i2, &x2) in slice2.iter().enumerate() {
                 let l1 = *last_i1.get(&x2).unwrap_or(&0);
+
+                let dist_add   = unsafe { dists.get_unchecked(i1 + 2, i2 + 1) + 1.0 };
+                let dist_del   = unsafe { dists.get_unchecked(i1 + 1, i2 + 2) + 1.0 };
+                let dist_sub   = unsafe { dists.get_unchecked(i1 + 1, i2 + 1) + ((x1 != x2) as usize) as f64 };
+                let dist_trans = unsafe { dists.get_unchecked(l1, l2) + ((i1 - l1) + (i2 - l2) + 1) as f64 };
+                let dist       = min4(dist_add, dist_del, dist_sub, dist_trans);
+
                 unsafe {
-                    dists.set_unchecked(i1 + 2, i2 + 2, min4(
-                        dists.get_unchecked(i1 + 2, i2 + 1) + 1.0,
-                        dists.get_unchecked(i1 + 1, i2 + 2) + 1.0,
-                        dists.get_unchecked(i1 + 1, i2 + 1) + ((x1 != x2) as usize) as f64,
-                        dists.get_unchecked(l1, l2) + ((i1 - l1) + (i2 - l2) + 1) as f64
-                    ));
+                    dists.set_unchecked(i1 + 2, i2 + 2, dist);
                 }
 
                 if x1 == x2 { l2 = i2 + 1; }

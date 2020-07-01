@@ -1,13 +1,11 @@
 mod pos;
-mod pattern;
 mod word;
 mod text;
 
-use crate::lang::Lang;
+use crate::lang::{Lang, Chars, CharPattern};
 pub use pos::PartOfSpeech;
 pub use word::Word;
 pub use text::Text;
-pub use pattern::{Chars, CharPattern};
 
 
 pub fn tokenize_query(source: &str, lang: &Option<Lang>) -> Text<Vec<char>> {

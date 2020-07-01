@@ -1,5 +1,4 @@
-pub use crate::lang::Lang;
-pub use super::{Chars, CharPattern};
+pub use crate::lang::{Lang, Chars, CharPattern};
 pub use super::pos::PartOfSpeech;
 
 

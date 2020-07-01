@@ -73,8 +73,8 @@ pub fn text_match(rtext: &Text<&[char]>, qtext: &Text<&[char]>) -> Vec<WordMatch
 #[cfg(test)]
 mod tests {
     use insta::assert_debug_snapshot;
-    use crate::tokenization::{Chars, Text};
-    use crate::lang::lang_english;
+    use crate::tokenization::Text;
+    use crate::lang::{Chars, lang_english};
     use super::{text_match};
 
 

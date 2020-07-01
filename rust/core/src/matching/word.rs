@@ -109,8 +109,8 @@ pub fn jaccard_check(rword: &Word, qword: &Word, rchars: &[char], qchars: &[char
 mod tests {
     use insta::assert_debug_snapshot;
     use crate::utils::to_vec;
-    use crate::tokenization::{Chars, Word, Text};
-    use crate::lang::lang_english;
+    use crate::tokenization::{Word, Text};
+    use crate::lang::{Chars, lang_english};
     use super::{length_check, jaccard_check, word_match};
 
 
