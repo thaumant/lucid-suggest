@@ -1,9 +1,9 @@
-use crate::tokenization::Text;
+use crate::tokenization::TextRef;
 use crate::matching::text_match;
 use crate::search::{Hit, ScoreType};
 
 
-pub fn score(query: &Text<&[char]>, hit: &mut Hit) {
+pub fn score(query: &TextRef, hit: &mut Hit) {
     hit.matches = text_match(&hit.title, &query);
 
     hit.scores[ScoreType::SameWords]   = score_words_up(hit);

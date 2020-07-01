@@ -3,7 +3,7 @@ mod trigram_index;
 
 use std::cell::RefCell;
 use crate::utils::to_vec;
-use crate::tokenization::{Text, tokenize_record};
+use crate::tokenization::{TextOwn, tokenize_record};
 use crate::lang::Lang;
 use trigram_index::TrigramIndex;
 
@@ -14,7 +14,7 @@ pub static DEFAULT_LIMIT: usize = 10;
 #[derive(Debug)]
 pub struct Record {
     pub id:     usize,
-    pub title:  Text<Vec<char>>,
+    pub title:  TextOwn,
     pub rating: usize,
 }
 

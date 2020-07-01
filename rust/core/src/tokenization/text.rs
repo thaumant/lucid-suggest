@@ -1,58 +1,65 @@
 use std::fmt;
 use crate::utils::to_vec;
-use crate::lang::Lang;
-use super::CharPattern;
+use crate::lang::{Lang, CharPattern, CharClass};
 use super::Word;
 
 
 #[derive(PartialEq)]
-pub struct Text<T: AsRef<[char]>> {
-    pub source: T,
-    pub chars: T,
-    pub words: Vec<Word>,
+pub struct Text<T: AsRef<[char]>, U: AsRef<[CharClass]>> {
+    pub words:   Vec<Word>,
+    pub source:  T,
+    pub chars:   T,
+    pub classes: U,
 }
 
+pub type TextOwn     = Text<Vec<char>, Vec<CharClass>>;
+pub type TextRef<'a> = Text<&'a [char], &'a [CharClass]>;
 
-impl Text<Vec<char>> {
-    pub fn from_vec(source: Vec<char>) -> Text<Vec<char>> {
-        let len   = source.len();
-        let chars = source.clone();
+
+impl TextOwn {
+    pub fn from_vec(source: Vec<char>) -> TextOwn {
+        let len     = source.len();
+        let chars   = source.clone();
+        let classes = chars.iter().map(|_| CharClass::Any).collect::<Vec<_>>();
         Text {
+            words: vec![Word::new(len)],
             source,
             chars,
-            words: vec![Word::new(len)],
+            classes,
         }
     }
 
-    pub fn from_str(source: &str) -> Text<Vec<char>> {
+    pub fn from_str(source: &str) -> TextOwn {
         Text::from_vec(to_vec(source))
     }
 }
 
 
-impl Text<Vec<char>> {
-    pub fn to_ref<'a>(&'a self) -> Text<&'a [char]> {
+impl TextOwn {
+    pub fn to_ref<'a>(&'a self) -> Text<&'a [char], &'a [CharClass]> {
         Text {
-            source: &self.source,
-            chars:  &self.chars,
-            words:  self.words.clone(),
+            words:   self.words.clone(),
+            source:  &self.source,
+            chars:   &self.chars,
+            classes: &self.classes,
         }
     }
 }
 
 
-impl<'a> Text<&'a [char]> {
-    pub fn to_own(&self) -> Text<Vec<char>> {
+impl<'a> TextRef<'a> {
+    pub fn to_own(&'a self) -> TextOwn {
         Text {
-            source: self.source.to_vec(),
-            chars:  self.chars.to_vec(),
-            words:  self.words.clone(),
+            words:   self.words.clone(),
+            source:  self.source.to_vec(),
+            chars:   self.chars.to_vec(),
+            classes: self.classes.to_vec(),
         }
     }
 }
 
 
-impl<T: AsRef<[char]>> Text<T> {
+impl<T: AsRef<[char]>, U: AsRef<[CharClass]>> Text<T, U> {
     pub fn fin(mut self, fin: bool) -> Self {
         if let Some(word) = self.words.last_mut() {
             word.fin = fin;
@@ -66,7 +73,7 @@ impl<T: AsRef<[char]>> Text<T> {
 }
 
 
-impl Text<Vec<char>> {
+impl TextOwn {
     pub fn normalize(mut self, lang: &Option<Lang>) -> Self {
         if let Some(lang) = lang {
             if self.words.len() == 0 {
@@ -145,7 +152,7 @@ impl Text<Vec<char>> {
 }
 
 
-impl<T: AsRef<[char]>> fmt::Debug for Text<T> {
+impl<T: AsRef<[char]>, U: AsRef<[CharClass]>> fmt::Debug for Text<T, U> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Text {{")?;
         for word in &self.words {
@@ -214,13 +221,14 @@ mod tests {
     fn text_strip() {
         let chars = to_vec("-Foo- , Baz; ");
         let text  = Text {
-                source: chars.clone(),
-                chars:  chars.clone(),
                 words:  vec![
                     Word { ix: 0, place: (0,  5), stem: 5, pos: None, fin: true },  // "-Foo-"
                     Word { ix: 1, place: (6,  7), stem: 1, pos: None, fin: true },  // ","
                     Word { ix: 2, place: (8, 13), stem: 5, pos: None, fin: true },  // "Baz; "
                 ],
+                source:  chars.clone(),
+                chars:   chars.clone(),
+                classes: chars.iter().map(|_| CharClass::Any).collect(),
             }
             .strip(&[Whitespace, Punctuation], &None);
         assert_debug_snapshot!(text);
@@ -231,23 +239,25 @@ mod tests {
     fn text_strip_unfinished() {
         let chars = to_vec("-Foo- Baz; ");
         let text1 = Text {
-                source: chars.clone(),
-                chars:  chars.clone(),
                 words:  vec![
                     Word { ix: 0, place: (0, 5), stem: 5, pos: None, fin: true },  // "-Foo-"
                     Word { ix: 1, place: (5, 8), stem: 3, pos: None, fin: true },  // "Baz"
                 ],
+                source:  chars.clone(),
+                chars:   chars.clone(),
+                classes: chars.iter().map(|_| CharClass::Any).collect(),
             }
             .fin(false)
             .strip(&[Whitespace, Punctuation], &None);
 
         let text2 = Text {
-                source: chars.clone(),
-                chars:  chars.clone(),
                 words:  vec![
                     Word { ix: 0, place: (0,  5), stem: 5, pos: None, fin: true },  // "-Foo-"
                     Word { ix: 1, place: (5, 10), stem: 5, pos: None, fin: true },  // "Baz; "
                 ],
+                source:  chars.clone(),
+                chars:   chars.clone(),
+                classes: chars.iter().map(|_| CharClass::Any).collect(),
             }
             .fin(false)
             .strip(&[Whitespace, Punctuation], &None);
@@ -260,13 +270,14 @@ mod tests {
     fn text_lower() {
         let chars = to_vec("Foo, Bar Baz");
         let text  = Text {
-                source: chars.clone(),
-                chars:  chars.clone(),
                 words:  vec![
                     Word { ix: 0, place: (0,  4), stem: 4, pos: None, fin: true }, // "Foo,"
                     Word { ix: 1, place: (5,  8), stem: 3, pos: None, fin: true }, // "Bar"
                     Word { ix: 2, place: (9, 12), stem: 3, pos: None, fin: true }, // "Baz"
                 ],
+                source:  chars.clone(),
+                chars:   chars.clone(),
+                classes: chars.iter().map(|_| CharClass::Any).collect(),
             }
             .lower();
         assert_debug_snapshot!(text);
@@ -277,12 +288,13 @@ mod tests {
         let chars = to_vec("hello universe");
         let lang  = lang_english();
         let text  = Text {
-                source: chars.clone(),
-                chars:  chars.clone(),
                 words: vec![
                     Word { ix: 0, place: (0,  5), stem: 5, pos: None, fin: true }, // "hello"
                     Word { ix: 1, place: (6, 14), stem: 8, pos: None, fin: true }, // "universe"
                 ],
+                source:  chars.clone(),
+                chars:   chars.clone(),
+                classes: chars.iter().map(|_| CharClass::Any).collect(),
             }.stem(&Some(lang));
         assert_eq!(text.words[0].stem, 5);
         assert_eq!(text.words[1].stem, 7);
@@ -293,12 +305,13 @@ mod tests {
         let chars = to_vec("the universe");
         let lang  = lang_english();
         let text  = Text {
-                source: chars.clone(),
-                chars:  chars.clone(),
                 words: vec![
                     Word { ix: 0, place: (0,  3), stem: 3, pos: None, fin: true }, // "hello"
                     Word { ix: 1, place: (4, 12), stem: 8, pos: None, fin: true }, // "universe"
                 ],
+                source:  chars.clone(),
+                chars:   chars.clone(),
+                classes: chars.iter().map(|_| CharClass::Any).collect(),
             }.mark_pos(&Some(lang));
         assert_eq!(text.words[0].pos, Some(PartOfSpeech::Article));
         assert_eq!(text.words[1].pos, None);

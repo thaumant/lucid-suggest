@@ -9,6 +9,7 @@ pub trait CharPattern: fmt::Debug {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CharClass {
+    Any,
     Control,
     Whitespace,
     Punctuation,
@@ -18,6 +19,7 @@ pub enum CharClass {
 }
 
 use CharClass::{
+    Any,
     Control,
     Whitespace,
     Punctuation,
@@ -30,9 +32,10 @@ use CharClass::{
 impl CharPattern for CharClass {
     fn matches(&self, ch: char, lang: &Option<Lang>) -> Option<bool> {
         match self {
+            Any         => Some(true),
+            Control     => Some(ch.is_control()),
             Whitespace  => Some(ch.is_whitespace()),
             Punctuation => Some(ch.is_ascii_punctuation()),
-            Control     => Some(ch.is_control()),
             NotAlphaNum => Some(!ch.is_alphanumeric()),
             Consonant   => Some(lang.as_ref()?.get_char_class(ch)? == Consonant),
             Vowel       => Some(lang.as_ref()?.get_char_class(ch)? == Vowel),
@@ -71,13 +74,23 @@ mod tests {
     use super::{CharClass, CharPattern, Lang};
 
     use CharClass::{
+        Any,
+        Control,
         Whitespace,
         Punctuation,
-        Control,
         NotAlphaNum,
         Consonant,
         Vowel,
     };
+
+    #[test]
+    fn pattern_matches_any() {
+        assert_eq!(Any.matches('\0', &None), Some(true));
+        assert_eq!(Any.matches('2',  &None), Some(true));
+        assert_eq!(Any.matches('f',  &None), Some(true));
+        assert_eq!(Any.matches(';',  &None), Some(true));
+        assert_eq!(Any.matches(' ',  &None), Some(true));
+    }
 
     #[test]
     fn pattern_matches_control() {

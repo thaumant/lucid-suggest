@@ -109,13 +109,13 @@ pub fn jaccard_check(rword: &Word, qword: &Word, rchars: &[char], qchars: &[char
 mod tests {
     use insta::assert_debug_snapshot;
     use crate::utils::to_vec;
-    use crate::tokenization::{Word, Text};
+    use crate::tokenization::{Word, TextOwn};
     use crate::lang::{CharClass, lang_english};
     use super::{length_check, jaccard_check, word_match};
 
 
-    fn text(s: &str) -> Text<Vec<char>> {
-        Text::from_str(s).split(&CharClass::Whitespace, &None)
+    fn text(s: &str) -> TextOwn {
+        TextOwn::from_str(s).split(&CharClass::Whitespace, &None)
     }
 
     #[test]

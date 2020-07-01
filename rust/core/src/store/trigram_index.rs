@@ -1,5 +1,5 @@
 use fnv::{FnvHashMap as HashMap, FnvHashSet as HashSet};
-use crate::tokenization::Text;
+use crate::tokenization::TextRef;
 use super::Record;
 use super::trigrams::Trigrams;
 
@@ -43,7 +43,7 @@ impl TrigramIndex {
         }
 
         let mut grams = HashSet::default();
-        Self::collect_grams(title, &mut grams);
+        Self::collect_grams(&title.to_ref(), &mut grams);
 
         for &gram in grams.iter() {
             ids_by_gram
@@ -61,9 +61,9 @@ impl TrigramIndex {
         grams_by_id.insert(*id, grams.clone());
     }
 
-    pub fn prepare<T: AsRef<[char]>>(
+    pub fn prepare(
         &mut self,
-        query:   &Text<T>,
+        query:   &TextRef,
         size:    usize,
     ) {
         if query.words.len() == 0 {
@@ -115,7 +115,7 @@ impl TrigramIndex {
         }
     }
 
-    fn collect_grams<T: AsRef<[char]>>(text: &Text<T>, grams: &mut HashSet<[char; 3]>) {
+    fn collect_grams(text: &TextRef, grams: &mut HashSet<[char; 3]>) {
         grams.clear();
         let len = text.words.iter().map(|w| w.len()).sum::<usize>();
         if len > grams.capacity() {
@@ -177,6 +177,7 @@ mod tests {
         let (mut index, _) = get_index();
         for (i, query) in queries.iter().enumerate() {
             let query = tokenize_query(query, &None);
+            let query = query.to_ref();
             index.prepare(&query, size);
             let mut sorted = index.ids_indexed.iter().collect::<Vec<_>>();
             sorted.sort();
@@ -250,6 +251,7 @@ mod tests {
     fn matches_basic() {
         let (mut index, records) = get_index();
         let query = tokenize_query("metal", &None);
+        let query = query.to_ref();
         index.prepare(&query, 10);
         assert_eq!(index.matches(&records[0]), false);
         assert_eq!(index.matches(&records[1]), true);

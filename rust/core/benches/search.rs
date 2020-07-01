@@ -3,7 +3,7 @@ use std::fs;
 use std::cmp::min;
 use rand::prelude::*;
 use rand::distributions::WeightedIndex;
-use lucid_suggest_core::{Store, Record, lang, Text, tokenize_query};
+use lucid_suggest_core::{Store, Record, lang, TextOwn, tokenize_query};
 
 
 fn search_benchmark(criterion: &mut Criterion) {
@@ -57,7 +57,7 @@ impl SyntheticDataset {
         Self { chars, words, dist }
     }
 
-    pub fn gen_data(&self, len: usize, min_words: usize, max_words: usize) -> (Store, Vec<Text<Vec<char>>>) {
+    pub fn gen_data(&self, len: usize, min_words: usize, max_words: usize) -> (Store, Vec<TextOwn>) {
         let mut records = self.gen_records(len, min_words, max_words);
         let queries = self.gen_queries(&records, 10000);
         let mut store = Store::new();
@@ -80,7 +80,7 @@ impl SyntheticDataset {
         records
     }
 
-    pub fn gen_queries(&self, records: &[Record], len: usize) -> Vec<Text<Vec<char>>> {
+    pub fn gen_queries(&self, records: &[Record], len: usize) -> Vec<TextOwn> {
         let mut queries = Vec::with_capacity(len);
         let mut rng     = thread_rng();
         for _ in 0..len {

@@ -5,7 +5,7 @@ mod highlight;
 
 use std::default::Default;
 use crate::utils::LimitSortIterator;
-use crate::tokenization::Text;
+use crate::tokenization::TextRef;
 use crate::matching::WordMatch;
 use crate::store::{Store, Record};
 
@@ -13,7 +13,7 @@ use crate::store::{Store, Record};
 #[derive(Debug)]
 pub struct Hit<'a> {
     pub id:      usize,
-    pub title:   Text<&'a [char]>,
+    pub title:   TextRef<'a>,
     pub rating:  usize,
     pub matches: Vec<WordMatch>,
     pub scores:  Scores,
@@ -93,7 +93,7 @@ pub struct SearchResult {
 impl Store {
     pub fn search<'a>(
         &'a self,
-        query: &'a Text<&'a [char]>,
+        query: &'a TextRef<'a>,
     ) -> Vec<SearchResult> {
         let dividers = self.dividers();
 

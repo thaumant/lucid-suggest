@@ -1,10 +1,10 @@
 use fnv::{FnvHashSet as HashSet};
-use crate::tokenization::Text;
+use crate::tokenization::TextRef;
 use super::WordMatch;
 use super::word::word_match;
 
 
-pub fn text_match(rtext: &Text<&[char]>, qtext: &Text<&[char]>) -> Vec<WordMatch> {
+pub fn text_match(rtext: &TextRef, qtext: &TextRef) -> Vec<WordMatch> {
     let rchars   = &rtext.chars;
     let qchars   = &qtext.chars;
     let capacity = min!(rtext.words.len(), qtext.words.len());
@@ -73,12 +73,12 @@ pub fn text_match(rtext: &Text<&[char]>, qtext: &Text<&[char]>) -> Vec<WordMatch
 #[cfg(test)]
 mod tests {
     use insta::assert_debug_snapshot;
-    use crate::tokenization::Text;
+    use crate::tokenization::{Text, TextOwn};
     use crate::lang::{CharClass, lang_english};
     use super::{text_match};
 
 
-    fn text(s: &str) -> Text<Vec<char>> {
+    fn text(s: &str) -> TextOwn {
         Text::from_str(s).split(&[CharClass::Punctuation, CharClass::Whitespace], &None)
     }
 
