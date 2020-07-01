@@ -115,7 +115,7 @@ mod tests {
 
 
     fn text(s: &str) -> Text<Vec<char>> {
-        Text::from_str(s).split(&CharClass::Whitespace)
+        Text::from_str(s).split(&CharClass::Whitespace, &None)
     }
 
     #[test]

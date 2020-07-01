@@ -91,10 +91,10 @@ impl Text<Vec<char>> {
         self
     }
 
-    pub fn split<P: CharPattern>(mut self, pattern: &P) -> Self {
+    pub fn split<P: CharPattern>(mut self, pattern: &P, lang: &Option<Lang>) -> Self {
         let mut words = Vec::with_capacity(self.words.len());
         for word in &self.words {
-            for splitted in word.split(&self.chars, pattern) {
+            for splitted in word.split(&self.chars, pattern, lang) {
                 words.push(splitted);
             }
         }
@@ -105,9 +105,9 @@ impl Text<Vec<char>> {
         self
     }
 
-    pub fn strip<P: CharPattern>(mut self, pattern: &P) -> Self {
+    pub fn strip<P: CharPattern>(mut self, pattern: &P, lang: &Option<Lang>) -> Self {
         for word in &mut self.words {
-            word.strip(&self.chars, pattern);
+            word.strip(&self.chars, pattern, lang);
         }
         self.words.retain(|w| w.len() > 0);
         for (ix, word) in self.words.iter_mut().enumerate() {
@@ -192,20 +192,20 @@ mod tests {
 
     #[test]
     fn text_split() {
-        let text = Text::from_str(" Foo Bar, Baz; ").split(&[Whitespace, Punctuation]);
+        let text = Text::from_str(" Foo Bar, Baz; ").split(&[Whitespace, Punctuation], &None);
         assert_debug_snapshot!(text);
     }
 
     #[test]
     fn text_split_empty() {
-        let text = Text::from_str(", ").split(&[Whitespace, Punctuation]);
+        let text = Text::from_str(", ").split(&[Whitespace, Punctuation], &None);
         assert_debug_snapshot!(text);
     }
 
     #[test]
     fn text_split_unfinished() {
-        let text1 = Text::from_str(" Foo Bar, Baz"  ).fin(false).split(&[Whitespace, Punctuation]);
-        let text2 = Text::from_str(" Foo Bar, Baz; ").fin(false).split(&[Whitespace, Punctuation]);
+        let text1 = Text::from_str(" Foo Bar, Baz"  ).fin(false).split(&[Whitespace, Punctuation], &None);
+        let text2 = Text::from_str(" Foo Bar, Baz; ").fin(false).split(&[Whitespace, Punctuation], &None);
         assert_eq!(text1.words.last().unwrap().fin, false);
         assert_eq!(text2.words.last().unwrap().fin, true);
     }
@@ -222,7 +222,7 @@ mod tests {
                     Word { ix: 2, place: (8, 13), stem: 5, pos: None, fin: true },  // "Baz; "
                 ],
             }
-            .strip(&[Whitespace, Punctuation]);
+            .strip(&[Whitespace, Punctuation], &None);
         assert_debug_snapshot!(text);
         assert_debug_snapshot!(text.words);
     }
@@ -239,7 +239,7 @@ mod tests {
                 ],
             }
             .fin(false)
-            .strip(&[Whitespace, Punctuation]);
+            .strip(&[Whitespace, Punctuation], &None);
 
         let text2 = Text {
                 source: chars.clone(),
@@ -250,7 +250,7 @@ mod tests {
                 ],
             }
             .fin(false)
-            .strip(&[Whitespace, Punctuation]);
+            .strip(&[Whitespace, Punctuation], &None);
 
         assert_eq!(text1.words.last().unwrap().fin, false);
         assert_eq!(text2.words.last().unwrap().fin, true);

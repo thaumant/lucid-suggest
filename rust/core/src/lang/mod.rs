@@ -9,7 +9,7 @@ mod lang_russian;
 mod lang_spanish;
 
 pub use char_class::{CharClass, CharPattern};
-pub use pos::{PartOfSpeech};
+pub use pos::PartOfSpeech;
 pub use lang::Lang;
 pub use lang_german::lang_german;
 pub use lang_english::lang_english;

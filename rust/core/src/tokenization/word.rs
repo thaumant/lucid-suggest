@@ -74,18 +74,18 @@ impl Word {
         self
     }
 
-    pub fn split<'a, 'b, P: CharPattern>(&'a self, chars: &'a [char], pattern: &'b P) -> WordSplit<'a, 'b, P> {
-        WordSplit { word: self, chars, pattern, ix: self.ix, offset: 0 }
+    pub fn split<'a, 'b, P: CharPattern>(&'a self, chars: &'a [char], pattern: &'b P, lang: &'a Option<Lang>) -> WordSplit<'a, 'b, P> {
+        WordSplit { lang, word: self, chars, pattern, ix: self.ix, offset: 0 }
     }
 
-    pub fn strip<P: CharPattern>(&mut self, chars: &[char], pattern: &P) -> &mut Self {
+    pub fn strip<P: CharPattern>(&mut self, chars: &[char], pattern: &P, lang: &Option<Lang>) -> &mut Self {
         let chars = self.view(chars);
         let left  = chars.iter()
-            .take_while(|&&ch| pattern.matches(ch).unwrap_or(false))
+            .take_while(|&&ch| pattern.matches(ch, lang).unwrap_or(false))
             .count();
         let right = chars.iter()
             .rev()
-            .take_while(|&&ch| pattern.matches(ch).unwrap_or(false))
+            .take_while(|&&ch| pattern.matches(ch, lang).unwrap_or(false))
             .take(chars.len() - left)
             .count();
         self.place.0 += left;
@@ -116,8 +116,8 @@ impl Word {
 }
 
 
-#[derive(Debug)]
 pub struct WordSplit<'a, 'b, P: CharPattern> {
+    lang:    &'a Option<Lang>,
     word:    &'a Word,
     chars:   &'a [char],
     pattern: &'b P,
@@ -130,7 +130,7 @@ impl<'a, 'b, P: CharPattern> Iterator for WordSplit<'a, 'b, P> {
     type Item = Word;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let Self { word, ix, offset, pattern, .. } = self;
+        let Self { word, ix, offset, pattern, lang, .. } = self;
         let chars = word.view(self.chars);
 
         if *offset >= word.len() {
@@ -139,12 +139,12 @@ impl<'a, 'b, P: CharPattern> Iterator for WordSplit<'a, 'b, P> {
 
         *offset += chars[*offset ..]
             .iter()
-            .take_while(|&&ch| pattern.matches(ch).unwrap_or(false))
+            .take_while(|&&ch| pattern.matches(ch, lang).unwrap_or(false))
             .count();
 
         let len = chars[*offset ..]
             .iter()
-            .take_while(|&&ch| !pattern.matches(ch).unwrap_or(false))
+            .take_while(|&&ch| !pattern.matches(ch, lang).unwrap_or(false))
             .count();
 
         if len == 0 {
@@ -275,7 +275,7 @@ mod tests {
     fn word_split() {
         let chars = to_vec(" Foo Bar, Baz; ");
         let word  = Word::new(chars.len());
-        let split = word.split(&chars[..], &[Whitespace, Punctuation]).collect::<Vec<_>>();
+        let split = word.split(&chars[..], &[Whitespace, Punctuation], &None).collect::<Vec<_>>();
         assert_debug_snapshot!(split);
     }
 
@@ -283,7 +283,7 @@ mod tests {
     fn word_split_empty() {
         let chars = to_vec(" ,;");
         let word  = Word::new(chars.len());
-        let split = word.split(&chars[..], &[Whitespace, Punctuation]).collect::<Vec<_>>();
+        let split = word.split(&chars[..], &[Whitespace, Punctuation], &None).collect::<Vec<_>>();
         assert_debug_snapshot!(split);
     }
 
@@ -293,8 +293,8 @@ mod tests {
         let chars2 = to_vec(" Foo Bar, Baz; ");
         let word1  = Word::new(chars1.len()).fin(false);
         let word2  = Word::new(chars2.len()).fin(false);
-        let split1 = word1.split(&chars1[..], &[Whitespace, Punctuation]).collect::<Vec<_>>();
-        let split2 = word2.split(&chars2[..], &[Whitespace, Punctuation]).collect::<Vec<_>>();
+        let split1 = word1.split(&chars1[..], &[Whitespace, Punctuation], &None).collect::<Vec<_>>();
+        let split2 = word2.split(&chars2[..], &[Whitespace, Punctuation], &None).collect::<Vec<_>>();
         assert_eq!(split1.last().unwrap().fin, false);
         assert_eq!(split2.last().unwrap().fin, true);
     }
@@ -303,7 +303,7 @@ mod tests {
     fn word_strip() {
         let chars = to_vec(" Foo; ");
         let mut word = Word::new(chars.len());
-        word.strip(&chars[..], &[Whitespace, Punctuation]);
+        word.strip(&chars[..], &[Whitespace, Punctuation], &None);
         assert_debug_snapshot!(&word);
     }
 
@@ -311,7 +311,7 @@ mod tests {
     fn word_strip_empty() {
         let chars = to_vec(" ,;");
         let mut word = Word::new(chars.len());
-        word.strip(&chars[..], &[Whitespace, Punctuation]);
+        word.strip(&chars[..], &[Whitespace, Punctuation], &None);
         assert_debug_snapshot!(word);
     }
 
@@ -321,8 +321,8 @@ mod tests {
         let chars2 = to_vec(" Foo Bar, Baz; ");
         let mut word1 = Word::new(chars1.len()).fin(false);
         let mut word2 = Word::new(chars2.len()).fin(false);
-        word1.strip(&chars1[..], &[Whitespace, Punctuation]);
-        word2.strip(&chars2[..], &[Whitespace, Punctuation]);
+        word1.strip(&chars1[..], &[Whitespace, Punctuation], &None);
+        word2.strip(&chars2[..], &[Whitespace, Punctuation], &None);
         assert_eq!(word1.fin, false);
         assert_eq!(word2.fin, true);
     }
