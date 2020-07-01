@@ -72,9 +72,9 @@ mod tests {
         let damlev = DamerauLevenshtein::new();
         let sample = [
             to_vec(""),
-            to_vec("a"),
-            to_vec("ab"),
-            to_vec("abc"),
+            to_vec("k"),
+            to_vec("kl"),
+            to_vec("klm"),
         ];
         for s in sample.iter() {
             assert_eq!(damlev.distance(s, s), 0.0);
@@ -85,10 +85,10 @@ mod tests {
     fn prefix() {
         let damlev = DamerauLevenshtein::new();
         let sample = [
-            (0.0, to_vec("abc"), to_vec("abc")),
-            (1.0, to_vec("abc"), to_vec("ab")),
-            (2.0, to_vec("abc"), to_vec("a")),
-            (3.0, to_vec("abc"), vec![]),
+            (0.0, to_vec("klm"), to_vec("klm")),
+            (1.0, to_vec("klm"), to_vec("kl")),
+            (2.0, to_vec("klm"), to_vec("k")),
+            (3.0, to_vec("klm"), vec![]),
         ];
         for (d, s1, s2) in sample.iter() {
             assert_eq!(damlev.distance(s1, s2), *d);
@@ -100,17 +100,17 @@ mod tests {
     fn add_del_continuous() {
         let damlev = DamerauLevenshtein::new();
         let sample = [
-            (1.0, to_vec("abc"), to_vec("_abc")),
-            (2.0, to_vec("abc"), to_vec("__abc")),
-            (3.0, to_vec("abc"), to_vec("___abc")),
+            (1.0, to_vec("klm"), to_vec("_klm")),
+            (2.0, to_vec("klm"), to_vec("__klm")),
+            (3.0, to_vec("klm"), to_vec("___klm")),
 
-            (1.0, to_vec("abc"), to_vec("a_bc")),
-            (2.0, to_vec("abc"), to_vec("a__bc")),
-            (3.0, to_vec("abc"), to_vec("a___bc")),
+            (1.0, to_vec("klm"), to_vec("k_lm")),
+            (2.0, to_vec("klm"), to_vec("k__lm")),
+            (3.0, to_vec("klm"), to_vec("k___lm")),
 
-            (1.0, to_vec("abc"), to_vec("abc_")),
-            (2.0, to_vec("abc"), to_vec("abc__")),
-            (3.0, to_vec("abc"), to_vec("abc___")),
+            (1.0, to_vec("klm"), to_vec("klm_")),
+            (2.0, to_vec("klm"), to_vec("klm__")),
+            (3.0, to_vec("klm"), to_vec("klm___")),
         ];
         for (d, s1, s2) in sample.iter() {
             assert_eq!(damlev.distance(s1, s2), *d);
@@ -122,16 +122,16 @@ mod tests {
     fn sub_continuous() {
         let damlev = DamerauLevenshtein::new();
         let sample = [
-            (1.0, to_vec("abcd"), to_vec("_bcd")),
-            (2.0, to_vec("abcd"), to_vec("__cd")),
-            (3.0, to_vec("abcd"), to_vec("___d")),
+            (1.0, to_vec("klmn"), to_vec("_lmn")),
+            (2.0, to_vec("klmn"), to_vec("__mn")),
+            (3.0, to_vec("klmn"), to_vec("___n")),
 
-            (1.0, to_vec("abcd"), to_vec("a_cd")),
-            (2.0, to_vec("abcd"), to_vec("a__d")),
+            (1.0, to_vec("klmn"), to_vec("k_mn")),
+            (2.0, to_vec("klmn"), to_vec("k__n")),
 
-            (1.0, to_vec("abcd"), to_vec("abc_")),
-            (2.0, to_vec("abcd"), to_vec("ab__")),
-            (3.0, to_vec("abcd"), to_vec("a___")),
+            (1.0, to_vec("klmn"), to_vec("klm_")),
+            (2.0, to_vec("klmn"), to_vec("kl__")),
+            (3.0, to_vec("klmn"), to_vec("k___")),
         ];
         for (d, s1, s2) in sample.iter() {
             assert_eq!(damlev.distance(s1, s2), *d);
@@ -142,9 +142,9 @@ mod tests {
     fn trans_continuous() {
         let damlev = DamerauLevenshtein::new();
         let sample = [
-            (1.0, to_vec("abcd"), to_vec("bacd")), // swap 1 and 2
-            (2.0, to_vec("abcd"), to_vec("badc")), // swap 3 and 4
-            (3.0, to_vec("abcd"), to_vec("bdac")), // swap 1 and 4
+            (1.0, to_vec("klmn"), to_vec("lkmn")), // swap 1 and 2
+            (2.0, to_vec("klmn"), to_vec("lknm")), // swap 3 and 4
+            (3.0, to_vec("klmn"), to_vec("lnkm")), // swap 1 and 4
         ];
         for (d, s1, s2) in sample.iter() {
             assert_eq!(damlev.distance(s1, s2), *d);
@@ -155,13 +155,13 @@ mod tests {
     fn add_del_intermittent() {
         let damlev = DamerauLevenshtein::new();
         let sample = [
-            (1.0, to_vec("abc"), to_vec("_abc")),
-            (2.0, to_vec("abc"), to_vec("_a_bc")),
-            (3.0, to_vec("abc"), to_vec("_a_b_c")),
+            (1.0, to_vec("klm"), to_vec("_klm")),
+            (2.0, to_vec("klm"), to_vec("_k_lm")),
+            (3.0, to_vec("klm"), to_vec("_k_l_m")),
 
-            (1.0, to_vec("abc"), to_vec("abc_")),
-            (2.0, to_vec("abc"), to_vec("ab_c_")),
-            (3.0, to_vec("abc"), to_vec("a_b_c_")),
+            (1.0, to_vec("klm"), to_vec("klm_")),
+            (2.0, to_vec("klm"), to_vec("kl_m_")),
+            (3.0, to_vec("klm"), to_vec("k_l_m_")),
         ];
         for (d, s1, s2) in sample.iter() {
             assert_eq!(damlev.distance(s1, s2), *d);
@@ -173,11 +173,11 @@ mod tests {
     fn sub_intermittent() {
         let damlev = DamerauLevenshtein::new();
         let sample = [
-            (1.0, to_vec("abcd"), to_vec("_bcd")),
-            (2.0, to_vec("abcd"), to_vec("_b_d")),
+            (1.0, to_vec("klmn"), to_vec("_lmn")),
+            (2.0, to_vec("klmn"), to_vec("_l_n")),
 
-            (1.0, to_vec("abcd"), to_vec("abc_")),
-            (2.0, to_vec("abcd"), to_vec("a_c_")),
+            (1.0, to_vec("klmn"), to_vec("klm_")),
+            (2.0, to_vec("klmn"), to_vec("k_m_")),
         ];
         for (d, s1, s2) in sample.iter() {
             assert_eq!(damlev.distance(s1, s2), *d);
@@ -190,8 +190,8 @@ mod tests {
         for len in (1..501).step_by(100) {
             let mut v1 = Vec::with_capacity(len);
             let mut v2 = Vec::with_capacity(len);
-            v1.resize(len, 'a');
-            v2.resize(len, 'b');
+            v1.resize(len, 'k');
+            v2.resize(len, 'l');
             assert_eq!(damlev.distance(&v1, &v1), 0.0);
             assert_eq!(damlev.distance(&v1, &[]), len as f64);
             assert_eq!(damlev.distance(&v1, &v2), len as f64);
