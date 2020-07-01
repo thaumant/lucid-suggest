@@ -1,0 +1,23 @@
+---
+source: src/tokenization/text.rs
+expression: text.classes
+---
+[
+    Consonant,
+    Consonant,
+    Vowel,
+    Any,
+    Vowel,
+    Consonant,
+    Vowel,
+    Consonant,
+    Vowel,
+    Consonant,
+    Consonant,
+    Vowel,
+    Any,
+    Any,
+    Any,
+    Any,
+    Any,
+]

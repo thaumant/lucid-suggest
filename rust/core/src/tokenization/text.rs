@@ -141,6 +141,16 @@ impl TextOwn {
         self
     }
 
+    pub fn mark_char_classes(mut self, lang: &Option<Lang>) -> Self {
+        self.classes.resize(self.chars.len(), CharClass::Any);
+        if let Some(lang) = lang {
+            for (&ch, class) in &mut self.chars.iter().zip(&mut self.classes) {
+                *class = lang.get_char_class(ch).unwrap_or(CharClass::Any);
+            }
+        }
+        self
+    }
+
     pub fn lower(mut self) -> Self {
         if self.chars.iter().any(|ch| ch.is_uppercase()) {
             for ch in &mut self.chars {
@@ -315,5 +325,19 @@ mod tests {
             }.mark_pos(&Some(lang));
         assert_eq!(text.words[0].pos, Some(PartOfSpeech::Article));
         assert_eq!(text.words[1].pos, None);
+    }
+
+    #[test]
+    fn text_mark_char_classes_no_lang() {
+        let lang  = None;
+        let text  = Text::from_str("the universe, 123").mark_char_classes(&lang);
+        assert_debug_snapshot!(text.classes);
+    }
+
+    #[test]
+    fn text_mark_char_classes_lang_en() {
+        let lang  = Some(lang_english());
+        let text  = Text::from_str("the universe, 123").mark_char_classes(&lang);
+        assert_debug_snapshot!(text.classes);
     }
 }

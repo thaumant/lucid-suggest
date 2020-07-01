@@ -14,6 +14,7 @@ pub fn tokenize_query(source: &str, lang: &Option<Lang>) -> TextOwn {
         .strip(&[CharClass::NotAlphaNum], lang)
         .lower()
         .mark_pos(lang)
+        .mark_char_classes(lang)
         .stem(lang)
 }
 
@@ -25,5 +26,6 @@ pub fn tokenize_record(source: &str, lang: &Option<Lang>) -> TextOwn {
         .strip(&[CharClass::NotAlphaNum], lang)
         .lower()
         .mark_pos(lang)
+        .mark_char_classes(lang)
         .stem(lang)
 }
