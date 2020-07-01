@@ -1,8 +1,9 @@
 #![allow(dead_code)]
 
 use rust_stemmers::{Algorithm, Stemmer};
-use super::PartOfSpeech;
+use super::{CharClass, PartOfSpeech};
 use super::Lang;
+use super::constants::CHAR_CLASSES_LATIN;
 
 use PartOfSpeech::{
     Article,
@@ -123,7 +124,12 @@ const FUNCTION_WORDS: &[(PartOfSpeech, &'static str)] = &[
     (Particle, "oh"),
 ];
 
+
+const CHAR_CLASSES: &[(CharClass, char)] = &[];
+
+
 const UTF_COMPOSE_MAP: &[(&'static str, &'static str)] = &[];
+
 
 const UTF_REDUCE_MAP: &[(&'static str, &'static str)] = &[];
 
@@ -138,6 +144,9 @@ pub fn lang_english() -> Lang {
 
     for &(pos, word) in FUNCTION_WORDS { lang.add_pos(word, pos); }
 
+    for &(class, ch) in CHAR_CLASSES_LATIN { lang.add_char_class(ch, class); }
+    for &(class, ch) in CHAR_CLASSES       { lang.add_char_class(ch, class); }
+
     lang
 }
 
@@ -145,7 +154,7 @@ pub fn lang_english() -> Lang {
 #[cfg(test)]
 mod tests {
     use crate::utils::to_vec;
-    use super::PartOfSpeech;
+    use super::{PartOfSpeech, CharClass};
     use super::{lang_english, UTF_COMPOSE_MAP, UTF_REDUCE_MAP};
 
     #[test]
@@ -194,5 +203,13 @@ mod tests {
             assert_eq!(normal .chars().count(), 1, "UTF_REDUCE_MAP['{}'] != 1", normal);
             assert_eq!(reduced.chars().count(), 1, "UTF_REDUCE_MAP['{}'].len() != 1", reduced);
         }
+    }
+
+    #[test]
+    fn get_char_class() {
+        let lang = lang_english();
+        assert_eq!(lang.get_char_class('a'), Some(CharClass::Vowel));
+        assert_eq!(lang.get_char_class('n'), Some(CharClass::Consonant));
+        assert_eq!(lang.get_char_class('%'), None);
     }
 }

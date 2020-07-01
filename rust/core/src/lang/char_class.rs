@@ -7,7 +7,7 @@ pub trait CharPattern: fmt::Debug {
 }
 
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CharClass {
     Control,
     Whitespace,
@@ -17,16 +17,25 @@ pub enum CharClass {
     Vowel,
 }
 
+use CharClass::{
+    Control,
+    Whitespace,
+    Punctuation,
+    NotAlphaNum,
+    Consonant,
+    Vowel,
+};
+
 
 impl CharPattern for CharClass {
     fn matches(&self, ch: char, lang: &Option<Lang>) -> Option<bool> {
         match self {
-            CharClass::Whitespace  => Some(ch.is_whitespace()),
-            CharClass::Punctuation => Some(ch.is_ascii_punctuation()),
-            CharClass::Control     => Some(ch.is_control()),
-            CharClass::NotAlphaNum => Some(!ch.is_alphanumeric()),
-            CharClass::Consonant   => None,
-            CharClass::Vowel       => None,
+            Whitespace  => Some(ch.is_whitespace()),
+            Punctuation => Some(ch.is_ascii_punctuation()),
+            Control     => Some(ch.is_control()),
+            NotAlphaNum => Some(!ch.is_alphanumeric()),
+            Consonant   => Some(lang.as_ref()?.get_char_class(ch)? == Consonant),
+            Vowel       => Some(lang.as_ref()?.get_char_class(ch)? == Vowel),
         }
     }
 }
@@ -59,17 +68,19 @@ impl<P: CharPattern> CharPattern for [P; 5] { fn matches(&self, ch: char, lang: 
 
 #[cfg(test)]
 mod tests {
-    use super::{CharClass, CharPattern};
+    use super::{CharClass, CharPattern, Lang};
 
     use CharClass::{
         Whitespace,
         Punctuation,
         Control,
         NotAlphaNum,
+        Consonant,
+        Vowel,
     };
 
     #[test]
-    fn control() {
+    fn pattern_matches_control() {
         assert_eq!(Control.matches('\0', &None), Some(true));
         assert_eq!(Control.matches('2',  &None), Some(false));
         assert_eq!(Control.matches('f',  &None), Some(false));
@@ -78,7 +89,7 @@ mod tests {
     }
 
     #[test]
-    fn whitespaces() {
+    fn pattern_matches_whitespaces() {
         assert_eq!(Whitespace.matches(' ',  &None), Some(true));
         assert_eq!(Whitespace.matches('\t', &None), Some(true));
         assert_eq!(Whitespace.matches('\n', &None), Some(true));
@@ -89,7 +100,7 @@ mod tests {
     }
 
     #[test]
-    fn punctuation() {
+    fn pattern_matches_punctuation() {
         assert_eq!(Punctuation.matches(';',  &None), Some(true));
         assert_eq!(Punctuation.matches('.',  &None), Some(true));
         assert_eq!(Punctuation.matches(',',  &None), Some(true));
@@ -100,10 +111,10 @@ mod tests {
     }
 
     #[test]
-    fn non_alphanum() {
+    fn pattern_matches_non_alphanum() {
         assert_eq!(NotAlphaNum.matches('2',  &None), Some(false));
         assert_eq!(NotAlphaNum.matches('f',  &None), Some(false));
-        assert_eq!(NotAlphaNum.matches('й',  &None), Some(false));
+        assert_eq!(NotAlphaNum.matches('ы',  &None), Some(false));
         assert_eq!(NotAlphaNum.matches('も', &None), Some(false));
         assert_eq!(NotAlphaNum.matches(';',  &None), Some(true));
         assert_eq!(NotAlphaNum.matches('.',  &None), Some(true));
@@ -113,7 +124,7 @@ mod tests {
     }
 
     #[test]
-    fn slice() {
+    fn pattern_matches_slice() {
         let pattern = &[Whitespace, Punctuation][..];
 
         assert_eq!(pattern.matches(' ',  &None), Some(true));
@@ -124,7 +135,7 @@ mod tests {
     }
 
     #[test]
-    fn array_2() {
+    fn pattern_matches_array_2() {
         let pattern = [Whitespace, Punctuation];
 
         assert_eq!(pattern.matches(' ',  &None), Some(true));
@@ -132,5 +143,67 @@ mod tests {
         assert_eq!(pattern.matches('f',  &None), Some(false));
         assert_eq!(pattern.matches('2',  &None), Some(false));
         assert_eq!(pattern.matches('\0', &None), Some(false));
+    }
+
+    #[test]
+    fn pattern_matches_vowel_no_lang() {
+        assert_eq!(Vowel.matches('2',  &None), None);
+        assert_eq!(Vowel.matches('f',  &None), None);
+        assert_eq!(Vowel.matches('ы',  &None), None);
+        assert_eq!(Vowel.matches('も', &None), None);
+        assert_eq!(Vowel.matches(';',  &None), None);
+        assert_eq!(Vowel.matches('.',  &None), None);
+        assert_eq!(Vowel.matches(',',  &None), None);
+        assert_eq!(Vowel.matches(' ',  &None), None);
+        assert_eq!(Vowel.matches('\0', &None), None);
+    }
+
+    #[test]
+    fn pattern_matches_vowel_with_lang() {
+        let mut lang = Lang::new();
+        lang.add_char_class('f', Consonant);
+        lang.add_char_class('ы', Vowel);
+        let lang = Some(lang);
+
+        assert_eq!(Vowel.matches('2',  &lang), None);
+        assert_eq!(Vowel.matches('f',  &lang), Some(false));
+        assert_eq!(Vowel.matches('ы',  &lang), Some(true));
+        assert_eq!(Vowel.matches('も', &lang), None);
+        assert_eq!(Vowel.matches(';',  &lang), None);
+        assert_eq!(Vowel.matches('.',  &lang), None);
+        assert_eq!(Vowel.matches(',',  &lang), None);
+        assert_eq!(Vowel.matches(' ',  &lang), None);
+        assert_eq!(Vowel.matches('\0', &lang), None);
+    }
+
+    #[test]
+    fn pattern_matches_consonant_no_lang() {
+        assert_eq!(Consonant.matches('2',  &None), None);
+        assert_eq!(Consonant.matches('f',  &None), None);
+        assert_eq!(Consonant.matches('ы',  &None), None);
+        assert_eq!(Consonant.matches('も', &None), None);
+        assert_eq!(Consonant.matches(';',  &None), None);
+        assert_eq!(Consonant.matches('.',  &None), None);
+        assert_eq!(Consonant.matches(',',  &None), None);
+        assert_eq!(Consonant.matches(' ',  &None), None);
+        assert_eq!(Consonant.matches('\0', &None), None);
+    }
+
+    #[test]
+    fn pattern_matches_consonant_with_lang() {
+        let mut lang = Lang::new();
+        lang.add_char_class('f', Consonant);
+        lang.add_char_class('ы', Vowel);
+        let lang = Some(lang);
+
+        assert_eq!(Consonant.matches('2',  &lang), None);
+        assert_eq!(Consonant.matches('f',  &lang), Some(true));
+        assert_eq!(Consonant.matches('ы',  &lang), Some(false));
+        assert_eq!(Consonant.matches('も', &lang), None);
+        assert_eq!(Consonant.matches(';',  &lang), None);
+        assert_eq!(Consonant.matches('.',  &lang), None);
+        assert_eq!(Consonant.matches(',',  &lang), None);
+        assert_eq!(Consonant.matches(' ',  &lang), None);
+        assert_eq!(Consonant.matches('\0', &lang), None);
     }
 }

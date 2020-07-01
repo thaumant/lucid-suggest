@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use fnv::{FnvHashMap as HashMap};
 use rust_stemmers::Stemmer;
 use crate::utils::to_vec;
-use super::PartOfSpeech;
+use super::{CharClass, PartOfSpeech};
 use super::normalize::Normalize;
 
 const BUFFER_CAPACITY: usize = 20;
@@ -10,6 +10,7 @@ const BUFFER_CAPACITY: usize = 20;
 
 pub struct Lang {
     stemmer:      Option<Stemmer>,
+    char_map:     HashMap<char, CharClass>,
     pos_map:      HashMap<Vec<char>, PartOfSpeech>,
     compose_map:  HashMap<Vec<char>, Vec<char>>,
     reduce_map:   HashMap<Vec<char>, Vec<char>>,
@@ -23,6 +24,7 @@ impl Lang {
     pub fn new() -> Self {
         Self {
             stemmer:      None,
+            char_map:     HashMap::default(),
             pos_map:      HashMap::default(),
             compose_map:  HashMap::default(),
             reduce_map:   HashMap::default(),
@@ -34,6 +36,10 @@ impl Lang {
 
     pub fn set_stemmer(&mut self, stemmer: Option<Stemmer>) {
         self.stemmer = stemmer;
+    }
+
+    pub fn add_char_class(&mut self, ch: char, class: CharClass) {
+        self.char_map.insert(ch, class);
     }
 
     pub fn add_pos(&mut self, word: &str, pos: PartOfSpeech) {
@@ -70,6 +76,10 @@ impl Lang {
 
     pub fn get_pos(&self, word: &[char]) -> Option<PartOfSpeech> {
         self.pos_map.get(word).cloned()
+    }
+
+    pub fn get_char_class(&self, ch: char) -> Option<CharClass> {
+        self.char_map.get(&ch).cloned()
     }
 
     pub fn unicode_compose(&self, word: &[char]) -> Option<Vec<char>> {
@@ -114,7 +124,7 @@ impl Lang {
 mod tests {
     use insta::assert_debug_snapshot;
     use crate::utils::to_vec;
-    use super::super::PartOfSpeech;
+    use super::super::{CharClass, PartOfSpeech};
     use super::Lang;
 
     fn get_lang() -> Lang {
@@ -123,6 +133,8 @@ mod tests {
         lang.add_unicode_reduction("ó", "o");
         lang.add_unicode_reduction("õ", "oo");
         lang.add_pos("fóo", PartOfSpeech::Particle);
+        lang.add_char_class('x', CharClass::Consonant);
+        lang.add_char_class('y', CharClass::Vowel);
         lang
     }
 
@@ -180,5 +192,19 @@ mod tests {
         let input = to_vec("bar");
         let pos   = get_lang().get_pos(&input);
         assert_eq!(pos, None);
+    }
+
+    #[test]
+    fn get_char_class_known() {
+        let class_x = get_lang().get_char_class('x');
+        let class_y = get_lang().get_char_class('y');
+        assert_eq!(class_x, Some(CharClass::Consonant));
+        assert_eq!(class_y, Some(CharClass::Vowel));
+    }
+
+    #[test]
+    fn get_char_class_unknown() {
+        let class_z = get_lang().get_char_class('z');
+        assert_eq!(class_z, None);
     }
 }

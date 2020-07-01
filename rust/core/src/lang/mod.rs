@@ -1,3 +1,4 @@
+mod constants;
 mod char_class;
 mod normalize;
 mod pos;
