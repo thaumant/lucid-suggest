@@ -21,6 +21,8 @@ const COST_DEFAULT:   f64 = 1.0;
 pub struct DamerauLevenshtein {
     pub dists: RefCell<DistMatrix>,
     last_i1: RefCell<HashMap<char, usize>>,
+    costs1:  RefCell<Vec<f64>>,
+    costs2:  RefCell<Vec<f64>>,
 }
 
 
@@ -28,7 +30,9 @@ impl DamerauLevenshtein {
     pub fn new() -> Self {
         let dists   = RefCell::new(DistMatrix::new(DEFAULT_CAPACITY + 2));
         let last_i1 = RefCell::new(HashMap::with_capacity_and_hasher(DEFAULT_CAPACITY, Default::default()));
-        Self { dists, last_i1 }
+        let costs1  = RefCell::new(Vec::with_capacity(DEFAULT_CAPACITY));
+        let costs2  = RefCell::new(Vec::with_capacity(DEFAULT_CAPACITY));
+        Self { dists, last_i1, costs1, costs2 }
     }
 
     fn get_cost(class: &CharClass) -> f64 {
@@ -43,8 +47,13 @@ impl DamerauLevenshtein {
     pub fn distance(&self, word1: &WordView, word2: &WordView) -> f64 {
         let chars1 = word1.chars();
         let chars2 = word2.chars();
-        let costs1 = word1.classes().iter().map(Self::get_cost).collect::<Vec<_>>();
-        let costs2 = word2.classes().iter().map(Self::get_cost).collect::<Vec<_>>();
+
+        let costs1 = &mut *self.costs1.borrow_mut();
+        let costs2 = &mut *self.costs2.borrow_mut();
+        costs1.clear();
+        costs2.clear();
+        costs1.extend(word1.classes().iter().map(Self::get_cost));
+        costs2.extend(word2.classes().iter().map(Self::get_cost));
 
         let dists = &mut *self.dists.borrow_mut();
         dists.prepare(&costs1, &costs2);
