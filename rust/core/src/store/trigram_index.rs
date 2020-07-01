@@ -121,7 +121,7 @@ impl TrigramIndex {
         if len > grams.capacity() {
             grams.reserve(len - grams.capacity());
         }
-        for word in &text.words {
+        for word in text.words {
             let chars = word.view(text.chars.as_ref());
             for gram in Trigrams::new(chars) {
                 grams.insert(gram);

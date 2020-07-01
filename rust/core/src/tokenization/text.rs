@@ -5,15 +5,19 @@ use super::Word;
 
 
 #[derive(PartialEq)]
-pub struct Text<T: AsRef<[char]>, U: AsRef<[CharClass]>> {
-    pub words:   Vec<Word>,
+pub struct Text<W, T, C> where
+    W: AsRef<[Word]>,
+    T: AsRef<[char]>,
+    C: AsRef<[CharClass]>
+{
+    pub words:   W,
     pub source:  T,
     pub chars:   T,
-    pub classes: U,
+    pub classes: C,
 }
 
-pub type TextOwn     = Text<Vec<char>, Vec<CharClass>>;
-pub type TextRef<'a> = Text<&'a [char], &'a [CharClass]>;
+pub type TextOwn     = Text<Vec<Word>, Vec<char>, Vec<CharClass>>;
+pub type TextRef<'a> = Text<&'a [Word], &'a [char], &'a [CharClass]>;
 
 
 impl TextOwn {
@@ -21,7 +25,7 @@ impl TextOwn {
         let len     = source.len();
         let chars   = source.clone();
         let classes = chars.iter().map(|_| CharClass::Any).collect::<Vec<_>>();
-        Text {
+        Self {
             words: vec![Word::new(len)],
             source,
             chars,
@@ -30,15 +34,15 @@ impl TextOwn {
     }
 
     pub fn from_str(source: &str) -> TextOwn {
-        Text::from_vec(to_vec(source))
+        Self::from_vec(to_vec(source))
     }
 }
 
 
 impl TextOwn {
-    pub fn to_ref<'a>(&'a self) -> Text<&'a [char], &'a [CharClass]> {
-        Text {
-            words:   self.words.clone(),
+    pub fn to_ref<'a>(&'a self) -> TextRef<'a> {
+        TextRef {
+            words:   &self.words,
             source:  &self.source,
             chars:   &self.chars,
             classes: &self.classes,
@@ -49,8 +53,8 @@ impl TextOwn {
 
 impl<'a> TextRef<'a> {
     pub fn to_own(&'a self) -> TextOwn {
-        Text {
-            words:   self.words.clone(),
+        TextOwn {
+            words:   self.words.to_vec(),
             source:  self.source.to_vec(),
             chars:   self.chars.to_vec(),
             classes: self.classes.to_vec(),
@@ -59,7 +63,18 @@ impl<'a> TextRef<'a> {
 }
 
 
-impl<T: AsRef<[char]>, U: AsRef<[CharClass]>> Text<T, U> {
+impl<W, T, C> Text<W, T, C> where
+    W: AsRef<[Word]>,
+    T: AsRef<[char]>,
+    C: AsRef<[CharClass]>
+{
+    pub fn is_empty(&self) -> bool {
+        self.words.as_ref().is_empty()
+    }
+}
+
+
+impl TextOwn {
     pub fn fin(mut self, fin: bool) -> Self {
         if let Some(word) = self.words.last_mut() {
             word.fin = fin;
@@ -67,13 +82,6 @@ impl<T: AsRef<[char]>, U: AsRef<[CharClass]>> Text<T, U> {
         self
     }
 
-    pub fn is_empty(&self) -> bool {
-        self.words.is_empty()
-    }
-}
-
-
-impl TextOwn {
     pub fn normalize(mut self, lang: &Option<Lang>) -> Self {
         if let Some(lang) = lang {
             if self.words.len() == 0 {
@@ -162,10 +170,14 @@ impl TextOwn {
 }
 
 
-impl<T: AsRef<[char]>, U: AsRef<[CharClass]>> fmt::Debug for Text<T, U> {
+impl<W, T, C> fmt::Debug for Text<W, T, C> where
+    W: AsRef<[Word]>,
+    T: AsRef<[char]>,
+    C: AsRef<[CharClass]>
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Text {{")?;
-        for word in &self.words {
+        for word in self.words.as_ref() {
             let chars = word.view(self.chars.as_ref());
             write!(f, " \"")?;
             for (i, ch) in chars.iter().enumerate() {
