@@ -1,13 +1,13 @@
 ---
-source: src/lang/mod.rs
+source: src/lang/lang.rs
 expression: output
 ---
 Some(
     (
         [
             'f',
-            'o',
-            'ó',
+            'õ',
+            '\u{0}',
             'b',
             'a',
             'r',

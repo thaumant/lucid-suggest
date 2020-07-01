@@ -1,5 +1,5 @@
 ---
-source: src/lang/mod.rs
+source: src/lang/lang.rs
 expression: output
 ---
 None
