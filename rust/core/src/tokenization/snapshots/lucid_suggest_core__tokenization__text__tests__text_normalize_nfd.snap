@@ -25,7 +25,7 @@ expression: "(&text.source, &text.chars, &text.words[0])"
         'a',
         'o',
     ],
-    Word {
+    WordShape {
         ix: 0,
         place: (
             0,

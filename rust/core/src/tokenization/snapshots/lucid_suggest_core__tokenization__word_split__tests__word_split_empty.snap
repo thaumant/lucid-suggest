@@ -1,0 +1,5 @@
+---
+source: src/tokenization/word_split.rs
+expression: split
+---
+[]

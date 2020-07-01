@@ -1,33 +1,36 @@
-mod pos;
-mod pattern;
 mod word;
+mod word_shape;
+mod word_split;
+mod word_view;
 mod text;
 
-use crate::lang::Lang;
-pub use pos::PartOfSpeech;
+use crate::lang::{Lang, CharClass};
 pub use word::Word;
-pub use text::Text;
-pub use pattern::{Chars, CharPattern};
+pub use word_view::WordView;
+pub use word_shape::WordShape;
+pub use text::{Text, TextOwn, TextRef};
 
 
-pub fn tokenize_query(source: &str, lang: &Option<Lang>) -> Text<Vec<char>> {
+pub fn tokenize_query(source: &str, lang: &Lang) -> TextOwn {
     Text::from_str(source)
         .normalize(lang)
         .fin(false)
-        .split(&[Chars::Whitespaces, Chars::Control, Chars::Punctuation])
-        .strip(&[Chars::NotAlphaNum])
+        .split(&[CharClass::Whitespace, CharClass::Control, CharClass::Punctuation], lang)
+        .strip(&[CharClass::NotAlphaNum], lang)
         .lower()
-        .mark_pos(lang)
-        .stem(lang)
+        .set_pos(lang)
+        .set_char_classes(lang)
+        .set_stem(lang)
 }
 
 
-pub fn tokenize_record(source: &str, lang: &Option<Lang>) -> Text<Vec<char>> {
+pub fn tokenize_record(source: &str, lang: &Lang) -> TextOwn {
      Text::from_str(source)
         .normalize(lang)
-        .split(&[Chars::Whitespaces, Chars::Control, Chars::Punctuation])
-        .strip(&[Chars::NotAlphaNum])
+        .split(&[CharClass::Whitespace, CharClass::Control, CharClass::Punctuation], lang)
+        .strip(&[CharClass::NotAlphaNum], lang)
         .lower()
-        .mark_pos(lang)
-        .stem(lang)
+        .set_pos(lang)
+        .set_char_classes(lang)
+        .set_stem(lang)
 }

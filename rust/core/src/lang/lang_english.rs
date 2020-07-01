@@ -1,127 +1,135 @@
 #![allow(dead_code)]
 
 use rust_stemmers::{Algorithm, Stemmer};
-use crate::tokenization::PartOfSpeech;
+use super::{CharClass, PartOfSpeech};
 use super::Lang;
+use super::constants::CHAR_CLASSES_LATIN;
+
+use PartOfSpeech::{
+    Article,
+    Preposition,
+    Conjunction,
+    Particle,
+};
 
 
-const ARTICLES: &[&'static str] = &[
-    "a",
-    "an",
-    "the",
+const FUNCTION_WORDS: &[(PartOfSpeech, &'static str)] = &[
+    // Articles
+    (Article, "a"),
+    (Article, "an"),
+    (Article, "the"),
+
+    (Preposition, "at"),
+    (Preposition, "by"),
+    (Preposition, "for"),
+    (Preposition, "from"),
+    (Preposition, "in"),
+    (Preposition, "of"),
+    (Preposition, "on"),
+    (Preposition, "to"),
+    (Preposition, "since"),
+    (Preposition, "before"),
+    (Preposition, "till"),
+    (Preposition, "untill"),
+    (Preposition, "beside"),
+    (Preposition, "under"),
+    (Preposition, "below"),
+    (Preposition, "over"),
+    (Preposition, "above"),
+    (Preposition, "across"),
+    (Preposition, "through"),
+    (Preposition, "into"),
+    (Preposition, "towards"),
+    (Preposition, "onto"),
+    (Preposition, "off"),
+    (Preposition, "out"),
+    (Preposition, "about"),
+
+    (Conjunction, "after"),
+    (Conjunction, "although"),
+    (Conjunction, "as"),
+    (Conjunction, "because"),
+    (Conjunction, "before"),
+    (Conjunction, "but"),
+    (Conjunction, "either"),
+    (Conjunction, "for"),
+    (Conjunction, "how"),
+    (Conjunction, "if"),
+    (Conjunction, "lest"),
+    (Conjunction, "nor"),
+    (Conjunction, "once"),
+    (Conjunction, "once"),
+    (Conjunction, "or"),
+    (Conjunction, "since"),
+    (Conjunction, "since"),
+    (Conjunction, "since"),
+    (Conjunction, "so"),
+    (Conjunction, "than"),
+    (Conjunction, "that"),
+    (Conjunction, "that"),
+    (Conjunction, "though"),
+    (Conjunction, "till"),
+    (Conjunction, "unless"),
+    (Conjunction, "until"),
+    (Conjunction, "until"),
+    (Conjunction, "until"),
+    (Conjunction, "what"),
+    (Conjunction, "whatever"),
+    (Conjunction, "when"),
+    (Conjunction, "when"),
+    (Conjunction, "whenever"),
+    (Conjunction, "where"),
+    (Conjunction, "whereas"),
+    (Conjunction, "whereas"),
+    (Conjunction, "wherever"),
+    (Conjunction, "whether"),
+    (Conjunction, "which"),
+    (Conjunction, "whichever"),
+    (Conjunction, "while"),
+    (Conjunction, "while"),
+    (Conjunction, "while"),
+    (Conjunction, "whilst"),
+    (Conjunction, "who"),
+    (Conjunction, "whoever"),
+    (Conjunction, "whom"),
+    (Conjunction, "whomever"),
+    (Conjunction, "whose"),
+    (Conjunction, "why"),
+    (Conjunction, "yet"),
+    (Conjunction, "and"),
+    // (Conjunction, "as if"),
+    // (Conjunction, "as long as"),
+    // (Conjunction, "as much as"),
+    // (Conjunction, "as soon as"),
+    // (Conjunction, "as though"),
+    // (Conjunction, "assuming that"),
+    // (Conjunction, "by the time"),
+    // (Conjunction, "even if"),
+    // (Conjunction, "even though"),
+    // (Conjunction, "in case that"),
+    // (Conjunction, "in case"),
+    // (Conjunction, "in order that"),
+    // (Conjunction, "in order"),
+    // (Conjunction, "now that"),
+    // (Conjunction, "only if"),
+    // (Conjunction, "provided that"),
+    // (Conjunction, "rather than"),
+    // (Conjunction, "so that"),
+
+    (Particle, "by"),
+    (Particle, "in"),
+    (Particle, "not"),
+    (Particle, "on"),
+    (Particle, "to"),
+    (Particle, "oh"),
 ];
 
-const PREPOSITIONS: &[&'static str] = &[
-    "at",
-    "by",
-    "for",
-    "from",
-    "in",
-    "of",
-    "on",
-    "to",
-    "since",
-    "before",
-    "till",
-    "untill",
-    "beside",
-    "under",
-    "below",
-    "over",
-    "above",
-    "across",
-    "through",
-    "into",
-    "towards",
-    "onto",
-    "off",
-    "out",
-    "about",
-];
 
-const CONJUNCTIONS: &[&'static str] = &[
-    "after",
-    "although",
-    "as",
-    "because",
-    "before",
-    "but",
-    "either",
-    "for",
-    "how",
-    "if",
-    "lest",
-    "nor",
-    "once",
-    "once",
-    "or",
-    "since",
-    "since",
-    "since",
-    "so",
-    "than",
-    "that",
-    "that",
-    "though",
-    "till",
-    "unless",
-    "until",
-    "until",
-    "until",
-    "what",
-    "whatever",
-    "when",
-    "when",
-    "whenever",
-    "where",
-    "whereas",
-    "whereas",
-    "wherever",
-    "whether",
-    "which",
-    "whichever",
-    "while",
-    "while",
-    "while",
-    "whilst",
-    "who",
-    "whoever",
-    "whom",
-    "whomever",
-    "whose",
-    "why",
-    "yet",
-    "and",
-    // "as if",
-    // "as long as",
-    // "as much as",
-    // "as soon as",
-    // "as though",
-    // "assuming that",
-    // "by the time",
-    // "even if",
-    // "even though",
-    // "in case that",
-    // "in case",
-    // "in order that",
-    // "in order",
-    // "now that",
-    // "only if",
-    // "provided that",
-    // "rather than",
-    // "so that",
-];
+const CHAR_CLASSES: &[(CharClass, char)] = &[];
 
-const PARTICLES: &[&'static str] = &[
-    "by",
-    "in",
-    "not",
-    "on",
-    "to",
-    "oh",
-];
 
 const UTF_COMPOSE_MAP: &[(&'static str, &'static str)] = &[];
+
 
 const UTF_REDUCE_MAP: &[(&'static str, &'static str)] = &[];
 
@@ -134,10 +142,10 @@ pub fn lang_english() -> Lang {
     for (from, to) in UTF_COMPOSE_MAP { lang.add_unicode_composition(from, to); }
     for (from, to) in UTF_REDUCE_MAP  { lang.add_unicode_reduction(from, to); }
 
-    for word in ARTICLES     { lang.add_pos(word, PartOfSpeech::Article); }
-    for word in PREPOSITIONS { lang.add_pos(word, PartOfSpeech::Preposition); }
-    for word in CONJUNCTIONS { lang.add_pos(word, PartOfSpeech::Conjunction); }
-    for word in PARTICLES    { lang.add_pos(word, PartOfSpeech::Particle); }
+    for &(pos, word) in FUNCTION_WORDS { lang.add_pos(word, pos); }
+
+    for &(class, ch) in CHAR_CLASSES_LATIN { lang.add_char_class(ch, class); }
+    for &(class, ch) in CHAR_CLASSES       { lang.add_char_class(ch, class); }
 
     lang
 }
@@ -146,7 +154,7 @@ pub fn lang_english() -> Lang {
 #[cfg(test)]
 mod tests {
     use crate::utils::to_vec;
-    use crate::tokenization::PartOfSpeech;
+    use super::{PartOfSpeech, CharClass};
     use super::{lang_english, UTF_COMPOSE_MAP, UTF_REDUCE_MAP};
 
     #[test]
@@ -195,5 +203,13 @@ mod tests {
             assert_eq!(normal .chars().count(), 1, "UTF_REDUCE_MAP['{}'] != 1", normal);
             assert_eq!(reduced.chars().count(), 1, "UTF_REDUCE_MAP['{}'].len() != 1", reduced);
         }
+    }
+
+    #[test]
+    fn get_char_class() {
+        let lang = lang_english();
+        assert_eq!(lang.get_char_class('a'), Some(CharClass::Vowel));
+        assert_eq!(lang.get_char_class('n'), Some(CharClass::Consonant));
+        assert_eq!(lang.get_char_class('%'), None);
     }
 }

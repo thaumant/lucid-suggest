@@ -1,4 +1,4 @@
-use crate::tokenization::Word;
+use crate::tokenization::{Word, WordView};
 use super::WordMatch;
 use super::damlev::DamerauLevenshtein;
 use super::jaccard::Jaccard;
@@ -6,31 +6,29 @@ use super::jaccard::Jaccard;
 
 const LENGTH_THRESHOLD:  f64 = 0.26;
 const JACCARD_THRESHOLD: f64 = 0.41;
-const DAMLEV_THRESHOLD:  f64 = 0.26;
+const DAMLEV_THRESHOLD:  f64 = 0.21;
 
 thread_local! {
-    static DAMLEV:  DamerauLevenshtein<char> = DamerauLevenshtein::new();
-    static JACCARD: Jaccard<char>            = Jaccard::new();
+    static DAMLEV:  DamerauLevenshtein = DamerauLevenshtein::new();
+    static JACCARD: Jaccard<char>      = Jaccard::new();
 }
 
 
-pub fn word_match(rword: &Word, qword: &Word, rchars: &[char], qchars: &[char]) -> Option<WordMatch> {
+pub fn word_match(rword: &WordView, qword: &WordView) -> Option<WordMatch> {
     if qword.is_empty() || rword.is_empty() {
         return None;
     }
     if !length_check(rword, qword) {
         return None;
     }
-    if !jaccard_check(rword, qword, rchars, qchars) {
+    if !jaccard_check(rword, qword) {
         return None;
     }
 
-    let rchars = rword.view(rchars);
-    let qchars = qword.view(qchars);
     let mut best_match: Option<WordMatch> = None;
 
     DAMLEV.with(|damlev| {
-        damlev.distance(qchars, rchars);
+        damlev.distance(qword, rword);
         let dists = &*damlev.dists.borrow();
 
         let left  = if qword.fin { max!(qword.stem, rword.stem) } else { qword.stem } - 1;
@@ -54,8 +52,8 @@ pub fn word_match(rword: &Word, qword: &Word, rchars: &[char], qchars: &[char]) 
                 if (qlen as isize - rlen as isize).abs() > 1 { continue; }
 
                 let dist = dists.get(qlen + 1, rlen + 1);
-                let rel  = dist as f64 / max!(qlen, rlen, 1) as f64;
 
+                let rel = dist / max!(qlen, rlen, 1) as f64;
                 if rel > DAMLEV_THRESHOLD { continue; }
 
                 best_match = best_match
@@ -69,7 +67,7 @@ pub fn word_match(rword: &Word, qword: &Word, rchars: &[char], qchars: &[char]) 
                         dist,
                     )));
 
-                if dist == 0 {
+                if dist <= std::f64::EPSILON {
                     break;
                 }
             }
@@ -80,7 +78,7 @@ pub fn word_match(rword: &Word, qword: &Word, rchars: &[char], qchars: &[char]) 
 }
 
 
-pub fn length_check(rword: &Word, qword: &Word) -> bool {
+pub fn length_check(rword: &WordView, qword: &WordView) -> bool {
     let qlen  = qword.len();
     let rlen  = if qword.fin { rword.len() } else { min!(qlen, rword.len()) };
 
@@ -96,11 +94,9 @@ pub fn length_check(rword: &Word, qword: &Word) -> bool {
 }
 
 
-pub fn jaccard_check(rword: &Word, qword: &Word, rchars: &[char], qchars: &[char]) -> bool {
-    let rchars = rword.view(rchars);
-    let qchars = qword.view(qchars);
-    let rslice = if qword.fin { &rchars } else { &rchars[.. min!(qword.len(), rword.len())] };
-    let dist   = JACCARD.with(|j| j.rel_dist(&rslice, &qchars));
+pub fn jaccard_check(rword: &WordView, qword: &WordView) -> bool {
+    let rslice = if qword.fin { rword.chars() } else { &rword.chars()[.. min!(qword.len(), rword.len())] };
+    let dist   = JACCARD.with(|j| j.rel_dist(rslice, qword.chars()));
     dist < JACCARD_THRESHOLD
 }
 
@@ -108,14 +104,14 @@ pub fn jaccard_check(rword: &Word, qword: &Word, rchars: &[char], qchars: &[char
 #[cfg(test)]
 mod tests {
     use insta::assert_debug_snapshot;
-    use crate::utils::to_vec;
-    use crate::tokenization::{Chars, Word, Text};
-    use crate::lang::lang_english;
+    use crate::tokenization::TextOwn;
+    use crate::lang::{Lang, CharClass, lang_english};
     use super::{length_check, jaccard_check, word_match};
 
 
-    fn text(s: &str) -> Text<Vec<char>> {
-        Text::from_str(s).split(&Chars::Whitespaces)
+    fn text(s: &str) -> TextOwn {
+        let lang = Lang::new();
+        TextOwn::from_str(s).split(&CharClass::Whitespace, &lang)
     }
 
     #[test]
@@ -132,7 +128,7 @@ mod tests {
         for &(expect, query) in sample.iter() {
             let rtext  = text("mail");
             let qtext  = text(query);
-            let result = length_check(&rtext.words[0], &qtext.words[0]);
+            let result = length_check(&rtext.view(0), &qtext.view(0));
             assert_eq!(result, expect, "Failed length_check(\"mail\", \"{}\") == {}", query, expect);
         }
     }
@@ -154,7 +150,7 @@ mod tests {
         for &(expect, query) in sample.iter() {
             let rtext  = text("mailbox");
             let qtext  = text(query);
-            let result = length_check(&rtext.words[0], &qtext.words[0]);
+            let result = length_check(&rtext.view(0), &qtext.view(0));
             assert_eq!(result, expect, "Failed length_check(\"mailbox\", \"{}\") == {}", query, expect);
         }
     }
@@ -171,7 +167,7 @@ mod tests {
         for &(expect, query) in sample.iter() {
             let rtext  = text("mail");
             let qtext  = text(query);
-            let result = jaccard_check(&rtext.words[0], &qtext.words[0], &rtext.chars, &qtext.chars);
+            let result = jaccard_check(&rtext.view(0), &qtext.view(0));
             assert_eq!(result, expect, "Failed jaccard_check(\"mail\", \"{}\") == {}", query, expect);
         }
     }
@@ -188,7 +184,7 @@ mod tests {
         for &(expect, query) in sample.iter() {
             let rtext  = text("mailbox");
             let qtext  = text(query);
-            let result = jaccard_check(&rtext.words[0], &qtext.words[0], &rtext.chars, &qtext.chars);
+            let result = jaccard_check(&rtext.view(0), &qtext.view(0));
             assert_eq!(result, expect, "Failed jaccard_check(\"mailbox\", \"{}\") == {}", query, expect);
         }
     }
@@ -205,7 +201,7 @@ mod tests {
         for &(expect, query) in sample.iter() {
             let rtext  = text("mailbox");
             let qtext  = text(query);
-            let result = jaccard_check(&rtext.words[0], &qtext.words[0], &rtext.chars, &qtext.chars);
+            let result = jaccard_check(&rtext.view(0), &qtext.view(0));
             assert_eq!(result, expect, "Failed jaccard_check(\"mailbox\", \"{}\") == {}", query, expect);
         }
     }
@@ -224,7 +220,7 @@ mod tests {
         for &(expect, query) in sample.iter() {
             let rtext  = text("mail");
             let qtext  = text(query).fin(false);
-            let result = jaccard_check(&rtext.words[0], &qtext.words[0], &rtext.chars, &qtext.chars);
+            let result = jaccard_check(&rtext.view(0), &qtext.view(0));
             assert_eq!(result, expect, "Failed jaccard_check(\"mail\", \"{}\") == {}", query, expect);
         }
     }
@@ -243,7 +239,7 @@ mod tests {
         for &(expect, query) in sample.iter() {
             let rtext  = text("mail");
             let qtext  = text(query).fin(false);
-            let result = length_check(&rtext.words[0], &qtext.words[0]);
+            let result = length_check(&rtext.view(0), &qtext.view(0));
             assert_eq!(result, expect, "Failed length_check(\"mail\", \"{}\") == {}", query, expect);
         }
     }
@@ -253,31 +249,25 @@ mod tests {
 
     #[test]
     fn match_word_empty_both() {
-        let qchars = to_vec("");
-        let rchars = to_vec("");
-        let qword  = Word::new(qchars.len()).fin(false);
-        let rword  = Word::new(rchars.len());
-        assert_eq!(word_match(&rword, &qword, &rchars[..], &qchars[..]), None);
+        let qtext  = TextOwn::from_str("");
+        let rtext  = TextOwn::from_str("");
+        assert_eq!(word_match(&rtext.view(0), &qtext.view(0)), None);
     }
 
 
     #[test]
     fn match_word_empty_record() {
-        let qchars = to_vec("mailbox");
-        let rchars = to_vec("");
-        let qword  = Word::new(qchars.len()).fin(false);
-        let rword  = Word::new(rchars.len());
-        assert_eq!(word_match(&rword, &qword, &rchars[..], &qchars[..]), None);
+        let qtext  = TextOwn::from_str("mailbox").fin(false);
+        let rtext  = TextOwn::from_str("");
+        assert_eq!(word_match(&rtext.view(0), &qtext.view(0)), None);
     }
 
 
     #[test]
     fn match_word_empty_query() {
-        let qchars = to_vec("");
-        let rchars = to_vec("mailbox");
-        let qword  = Word::new(qchars.len()).fin(false);
-        let rword  = Word::new(rchars.len());
-        assert_eq!(word_match(&rword, &qword, &rchars[..], &qchars[..]), None);
+        let qtext  = TextOwn::from_str("").fin(false);
+        let rtext  = TextOwn::from_str("mailbox");
+        assert_eq!(word_match(&rtext.view(0), &qtext.view(0)), None);
     }
 
 
@@ -286,71 +276,53 @@ mod tests {
 
     #[test]
     fn match_word_full_strict() {
-        let qchars = to_vec("mailbox");
-        let rchars = to_vec("mailbox");
-        let qword  = Word::new(qchars.len()).fin(false);
-        let rword  = Word::new(rchars.len());
-        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
+        let qtext  = TextOwn::from_str("mailbox").fin(false);
+        let rtext  = TextOwn::from_str("mailbox");
+        assert_debug_snapshot!(word_match(&rtext.view(0), &qtext.view(0)));
     }
 
 
     #[test]
     fn match_word_full_fuzzy_insertion() {
-        let qchars = to_vec("mailybox");
-        let rchars = to_vec("mailbox");
-        let qword  = Word::new(qchars.len()).fin(false);
-        let rword  = Word::new(rchars.len());
-        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
+        let qtext  = TextOwn::from_str("mailybox").fin(false);
+        let rtext  = TextOwn::from_str("mailbox");
+        assert_debug_snapshot!(word_match(&rtext.view(0), &qtext.view(0)));
     }
 
 
     #[test]
     fn match_word_full_fuzzy_deletion() {
-        let qchars = to_vec("mailox");
-        let rchars = to_vec("mailbox");
-        let qword  = Word::new(qchars.len()).fin(false);
-        let rword  = Word::new(rchars.len());
-        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
+        let qtext  = TextOwn::from_str("mailox").fin(false);
+        let rtext  = TextOwn::from_str("mailbox");
+        assert_debug_snapshot!(word_match(&rtext.view(0), &qtext.view(0)));
     }
 
 
     #[test]
     fn match_word_full_fuzzy_transposition() {
-        let qchars = to_vec("maiblox");
-        let rchars = to_vec("mailbox");
-        let qword  = Word::new(qchars.len()).fin(false);
-        let rword  = Word::new(rchars.len());
-        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
+        let qtext  = TextOwn::from_str("maiblox").fin(false);
+        let rtext  = TextOwn::from_str("mailbox");
+        assert_debug_snapshot!(word_match(&rtext.view(0), &qtext.view(0)));
     }
 
 
     #[test]
     fn match_word_full_query_too_long() {
-        let qchars1 = to_vec("mailboxes");
-        let qchars2 = to_vec("mailboxes");
-        let rchars  = to_vec("mail");
-        let qword1  = Word::new(qchars1.len()).fin(true);
-        let qword2  = Word::new(qchars2.len()).fin(false);
-        let rword   = Word::new(rchars.len());
-        assert_debug_snapshot!(word_match(&rword, &qword1, &rchars[..], &qchars1[..]));
-        assert_debug_snapshot!(word_match(&rword, &qword2, &rchars[..], &qchars2[..]));
+        let qtext1 = TextOwn::from_str("mailboxes").fin(true);
+        let qtext2 = TextOwn::from_str("mailboxes").fin(false);
+        let rtext  = TextOwn::from_str("mail");
+        assert_debug_snapshot!(word_match(&rtext.view(0), &qtext1.view(0)));
+        assert_debug_snapshot!(word_match(&rtext.view(0), &qtext2.view(0)));
     }
 
     #[test]
     fn match_word_full_stem() {
-        let     rchars  = to_vec("universe");
-        let     qchars1 = to_vec("university");
-        let     qchars2 = to_vec("university");
-        let mut rword   = Word::new(rchars.len());
-        let mut qword1  = Word::new(qchars1.len());
-        let     qword2  = Word::new(qchars2.len());
-
-        let lang = lang_english();
-        qword1.stem(&qchars1[..], &lang);
-        rword .stem(&rchars[..],  &lang);
-
-        assert_debug_snapshot!(word_match(&rword, &qword1, &rchars[..], &qchars1[..]));
-        assert_debug_snapshot!(word_match(&rword, &qword2, &rchars[..], &qchars2[..]));
+        let lang   = lang_english();
+        let qtext1 = TextOwn::from_str("university").set_stem(&lang);
+        let qtext2 = TextOwn::from_str("university");
+        let rtext  = TextOwn::from_str("universe").set_stem(&lang);
+        assert_debug_snapshot!(word_match(&rtext.view(0), &qtext1.view(0)));
+        assert_debug_snapshot!(word_match(&rtext.view(0), &qtext2.view(0)));
     }
 
 
@@ -359,40 +331,32 @@ mod tests {
 
     #[test]
     fn match_word_partial_strict() {
-        let qchars = to_vec("mailb");
-        let rchars = to_vec("mailbox");
-        let qword = Word::new(qchars.len()).fin(false);
-        let rword = Word::new(rchars.len());
-        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
+        let qtext  = TextOwn::from_str("mailb").fin(false);
+        let rtext  = TextOwn::from_str("mailbox");
+        assert_debug_snapshot!(word_match(&rtext.view(0), &qtext.view(0)));
     }
 
 
     #[test]
     fn match_word_partial_fuzzy_insertion() {
-        let qchars = to_vec("maiylb");
-        let rchars = to_vec("mailbox");
-        let qword  = Word::new(qchars.len()).fin(false);
-        let rword  = Word::new(rchars.len());
-        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
+        let qtext  = TextOwn::from_str("maiylb").fin(false);
+        let rtext  = TextOwn::from_str("mailbox");
+        assert_debug_snapshot!(word_match(&rtext.view(0), &qtext.view(0)));
     }
 
 
     #[test]
     fn match_word_partial_fuzzy_deletion() {
-        let qchars = to_vec("maib");
-        let rchars = to_vec("mailbox");
-        let qword  = Word::new(qchars.len()).fin(false);
-        let rword  = Word::new(rchars.len());
-        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
+        let qtext  = TextOwn::from_str("maib").fin(false);
+        let rtext  = TextOwn::from_str("mailbox");
+        assert_debug_snapshot!(word_match(&rtext.view(0), &qtext.view(0)));
     }
 
 
     #[test]
     fn match_word_partial_fuzzy_transposition() {
-        let qchars = to_vec("malib");
-        let rchars = to_vec("mailbox");
-        let qword  = Word::new(qchars.len()).fin(false);
-        let rword  = Word::new(rchars.len());
-        assert_debug_snapshot!(word_match(&rword, &qword, &rchars[..], &qchars[..]));
+        let qtext  = TextOwn::from_str("malib").fin(false);
+        let rtext  = TextOwn::from_str("mailbox");
+        assert_debug_snapshot!(word_match(&rtext.view(0), &qtext.view(0)));
     }
 }

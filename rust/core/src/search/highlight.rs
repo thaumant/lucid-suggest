@@ -47,7 +47,7 @@ mod tests {
     use crate::matching::{WordMatch, MatchSide};
     use crate::store::Record;
     use crate::search::Hit;
-    use crate::lang::{lang_german, lang_portuguese};
+    use crate::lang::{Lang, lang_german, lang_portuguese};
     use super::highlight;
 
     const L: &[char] = &['['];
@@ -57,14 +57,15 @@ mod tests {
         WordMatch {
             query:  MatchSide { ix:  0, len: size, slice: (0, size), function: false },
             record: MatchSide { ix: ix, len: size, slice: (0, size), function: false },
-            typos:  0,
+            typos:  0.0,
             fin:    false,
         }
     }
 
     #[test]
     fn highlight_basic() {
-        let record = Record::new(10, "metal detector", 0, &None);
+        let lang   = Lang::new();
+        let record = Record::new(10, "metal detector", 0, &lang);
 
         let mut hit = Hit::from_record(&record);
         hit.matches.push(mock_match(1, 6));
@@ -77,7 +78,8 @@ mod tests {
 
     #[test]
     fn highlight_stripped() {
-        let record = Record::new(10, "'metal' mailbox!", 0, &None);
+        let lang   = Lang::new();
+        let record = Record::new(10, "'metal' mailbox!", 0, &lang);
 
         let mut hit = Hit::from_record(&record);
         hit.matches.push(mock_match(0, 5));
@@ -90,7 +92,8 @@ mod tests {
 
     #[test]
     fn highlight_multichar_dividers() {
-        let record = Record::new(10, "metal detector", 0, &None);
+        let lang   = Lang::new();
+        let record = Record::new(10, "metal detector", 0, &lang);
 
         let mut hit = Hit::from_record(&record);
         hit.matches.push(mock_match(1, 6));
@@ -106,7 +109,8 @@ mod tests {
 
     #[test]
     fn highlight_utf_padded() {
-        let record = Record::new(10, "Passstraße", 0, &Some(lang_german()));
+        let lang   = lang_german();
+        let record = Record::new(10, "Passstraße", 0, &lang);
 
         let mut hit = Hit::from_record(&record);
         hit.matches.push(mock_match(0, 9));
@@ -119,7 +123,8 @@ mod tests {
 
     #[test]
     fn highlight_utf_nfd() {
-        let record = Record::new(10, "Passstraße", 0, &Some(lang_portuguese()));
+        let lang   = lang_portuguese();
+        let record = Record::new(10, "Passstraße", 0, &lang);
 
         let mut hit = Hit::from_record(&record);
         hit.matches.push(mock_match(0, 9));

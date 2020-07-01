@@ -1,133 +1,137 @@
 #![allow(dead_code)]
 
 use rust_stemmers::{Algorithm, Stemmer};
-use crate::tokenization::PartOfSpeech;
+use super::{CharClass, PartOfSpeech};
 use super::Lang;
+use super::constants::CHAR_CLASSES_LATIN;
+
+use PartOfSpeech::{
+    Article,
+    Preposition,
+    Conjunction,
+};
 
 
-const ARTICLES: &[&'static str] = &[
-    "o",
-    "a",
-    "os",
-    "as",
-    "um",
-    "uma",
-    "uns",
-    "umas",
+const FUNCTION_WORDS: &[(PartOfSpeech, &'static str)] = &[
+    (Article, "o"),
+    (Article, "a"),
+    (Article, "os"),
+    (Article, "as"),
+    (Article, "um"),
+    (Article, "uma"),
+    (Article, "uns"),
+    (Article, "umas"),
+
+    (Preposition, "abaixo"),
+    (Preposition, "acima"),
+    (Preposition, "além"),
+    (Preposition, "antes"),
+    (Preposition, "aproximadamente"),
+    (Preposition, "aquela"),
+    (Preposition, "aquele"),
+    (Preposition, "aqueles"),
+    (Preposition, "até"),
+    (Preposition, "atrás"),
+    (Preposition, "com"),
+    (Preposition, "como"),
+    (Preposition, "conforme"),
+    (Preposition, "contra"),
+    (Preposition, "de"),
+    (Preposition, "depois"),
+    (Preposition, "desde"),
+    (Preposition, "distante"),
+    (Preposition, "durante"),
+    (Preposition, "em"),
+    (Preposition, "entre"),
+    (Preposition, "esta"),
+    (Preposition, "estas"),
+    (Preposition, "este"),
+    (Preposition, "estes"),
+    (Preposition, "exceto"),
+    (Preposition, "fora"),
+    (Preposition, "mais"),
+    (Preposition, "mas"),
+    (Preposition, "oposto"),
+    (Preposition, "para"),
+    (Preposition, "perto"),
+    (Preposition, "por"),
+    (Preposition, "próximo"),
+    (Preposition, "que"),
+    (Preposition, "sem"),
+    (Preposition, "sob"),
+    (Preposition, "sobre"),
+    (Preposition, "via"),
+    // (Preposition, "além de"),
+    // (Preposition, "antes de"),
+    // (Preposition, "ao lado de"),
+    // (Preposition, "apesar de"),
+    // (Preposition, "apesar de"),
+    // (Preposition, "através de"),
+    // (Preposition, "através de"),
+    // (Preposition, "bem como"),
+    // (Preposition, "dentro de"),
+    // (Preposition, "dentro de"),
+    // (Preposition, "dentro de"),
+    // (Preposition, "devido a"),
+    // (Preposition, "diferente de"),
+    // (Preposition, "em cima de"),
+    // (Preposition, "em direção a"),
+    // (Preposition, "em nome de"),
+    // (Preposition, "em torno de"),
+    // (Preposition, "em vez de"),
+    // (Preposition, "fora de"),
+    // (Preposition, "fora de"),
+    // (Preposition, "longe de"),
+    // (Preposition, "na frente de"),
+    // (Preposition, "para baixo"),
+    // (Preposition, "para cima"),
+    // (Preposition, "perto de"),
+    // (Preposition, "por causa de"),
+    // (Preposition, "próximo a"),
+    // (Preposition, "próximo de"),
+    // (Preposition, "tanto quanto"),
+
+    (Conjunction, "agora"),
+    (Conjunction, "como"),
+    (Conjunction, "contudo"),
+    (Conjunction, "e"),
+    (Conjunction, "enquanto"),
+    (Conjunction, "então"),
+    (Conjunction, "logo"),
+    (Conjunction, "mas"),
+    (Conjunction, "nem"),
+    (Conjunction, "ou"),
+    (Conjunction, "para"),
+    (Conjunction, "pois"),
+    (Conjunction, "por"),
+    (Conjunction, "porém"),
+    (Conjunction, "porque"),
+    (Conjunction, "portanto"),
+    (Conjunction, "quando"),
+    (Conjunction, "se"),
+    (Conjunction, "todavia"),
+    // (Conjunction, "a fim de"),
+    // (Conjunction, "ainda assim"),
+    // (Conjunction, "ainda que"),
+    // (Conjunction, "apesar disso"),
+    // (Conjunction, "assim que"),
+    // (Conjunction, "como se"),
+    // (Conjunction, "enquanto que"),
+    // (Conjunction, "não só ... como também"),
+    // (Conjunction, "no entanto"),
+    // (Conjunction, "ora ... ora"),
+    // (Conjunction, "ou ... ou"),
+    // (Conjunction, "por conseguinte"),
+    // (Conjunction, "por isso"),
+    // (Conjunction, "quer ... quer"),
+    // (Conjunction, "sempre que"),
+    // (Conjunction, "tanto ... como"),
+    // (Conjunction, "visto que"),
 ];
 
-const PREPOSITIONS: &[&'static str] = &[
-    "abaixo",
-    "acima",
-    "além",
-    "antes",
-    "aproximadamente",
-    "aquela",
-    "aquele",
-    "aqueles",
-    "até",
-    "atrás",
-    "com",
-    "como",
-    "conforme",
-    "contra",
-    "de",
-    "depois",
-    "desde",
-    "distante",
-    "durante",
-    "em",
-    "entre",
-    "esta",
-    "estas",
-    "este",
-    "estes",
-    "exceto",
-    "fora",
-    "mais",
-    "mas",
-    "oposto",
-    "para",
-    "perto",
-    "por",
-    "próximo",
-    "que",
-    "sem",
-    "sob",
-    "sobre",
-    "via",
-    // "além de",
-    // "antes de",
-    // "ao lado de",
-    // "apesar de",
-    // "apesar de",
-    // "através de",
-    // "através de",
-    // "bem como",
-    // "dentro de",
-    // "dentro de",
-    // "dentro de",
-    // "devido a",
-    // "diferente de",
-    // "em cima de",
-    // "em direção a",
-    // "em nome de",
-    // "em torno de",
-    // "em vez de",
-    // "fora de",
-    // "fora de",
-    // "longe de",
-    // "na frente de",
-    // "para baixo",
-    // "para cima",
-    // "perto de",
-    // "por causa de",
-    // "próximo a",
-    // "próximo de",
-    // "tanto quanto",
-];
 
-const CONJUNCTIONS: &[&'static str] = &[
-    "agora",
-    "como",
-    "contudo",
-    "e",
-    "enquanto",
-    "então",
-    "logo",
-    "mas",
-    "nem",
-    "ou",
-    "para",
-    "pois",
-    "por",
-    "porém",
-    "porque",
-    "portanto",
-    "quando",
-    "se",
-    "todavia",
-    // "a fim de",
-    // "ainda assim",
-    // "ainda que",
-    // "apesar disso",
-    // "assim que",
-    // "como se",
-    // "enquanto que",
-    // "não só ... como também",
-    // "no entanto",
-    // "ora ... ora",
-    // "ou ... ou",
-    // "por conseguinte",
-    // "por isso",
-    // "quer ... quer",
-    // "sempre que",
-    // "tanto ... como",
-    // "visto que",
-];
+const CHAR_CLASSES: &[(CharClass, char)] = &[];
 
-const PARTICLES: &[&'static str] = &[
-];
 
 const UTF_COMPOSE_MAP: &[(&'static str, &'static str)] = &[
     ("Ç", "Ç"), // cedilla
@@ -163,6 +167,7 @@ const UTF_COMPOSE_MAP: &[(&'static str, &'static str)] = &[
     ("ò", "ò"),
     ("ù", "ù"),
 ];
+
 
 const UTF_REDUCE_MAP: &[(&'static str, &'static str)] = &[
     ("Ç", "C"), // cedilla
@@ -208,10 +213,10 @@ pub fn lang_portuguese() -> Lang {
     for (from, to) in UTF_COMPOSE_MAP { lang.add_unicode_composition(from, to); }
     for (from, to) in UTF_REDUCE_MAP  { lang.add_unicode_reduction(from, to); }
 
-    for word in ARTICLES     { lang.add_pos(word, PartOfSpeech::Article); }
-    for word in PREPOSITIONS { lang.add_pos(word, PartOfSpeech::Preposition); }
-    for word in CONJUNCTIONS { lang.add_pos(word, PartOfSpeech::Conjunction); }
-    for word in PARTICLES    { lang.add_pos(word, PartOfSpeech::Particle); }
+    for &(pos, word) in FUNCTION_WORDS { lang.add_pos(word, pos); }
+
+    for &(class, ch) in CHAR_CLASSES_LATIN { lang.add_char_class(ch, class); }
+    for &(class, ch) in CHAR_CLASSES       { lang.add_char_class(ch, class); }
 
     lang
 }
@@ -220,7 +225,7 @@ pub fn lang_portuguese() -> Lang {
 #[cfg(test)]
 mod tests {
     use crate::utils::{to_vec, to_str};
-    use crate::tokenization::PartOfSpeech;
+    use super::{PartOfSpeech, CharClass};
     use super::{lang_portuguese, UTF_COMPOSE_MAP, UTF_REDUCE_MAP};
 
     #[test]
@@ -282,5 +287,13 @@ mod tests {
             assert_eq!(normal .chars().count(), 1, "UTF_REDUCE_MAP['{}'] != 1", normal);
             assert_eq!(reduced.chars().count(), 1, "UTF_REDUCE_MAP['{}'].len() != 1", reduced);
         }
+    }
+
+    #[test]
+    fn get_char_class() {
+        let lang = lang_portuguese();
+        assert_eq!(lang.get_char_class('a'), Some(CharClass::Vowel));
+        assert_eq!(lang.get_char_class('n'), Some(CharClass::Consonant));
+        assert_eq!(lang.get_char_class('%'), None);
     }
 }

@@ -5,7 +5,7 @@ mod highlight;
 
 use std::default::Default;
 use crate::utils::LimitSortIterator;
-use crate::tokenization::Text;
+use crate::tokenization::TextRef;
 use crate::matching::WordMatch;
 use crate::store::{Store, Record};
 
@@ -13,7 +13,7 @@ use crate::store::{Store, Record};
 #[derive(Debug)]
 pub struct Hit<'a> {
     pub id:      usize,
-    pub title:   Text<&'a [char]>,
+    pub title:   TextRef<'a>,
     pub rating:  usize,
     pub matches: Vec<WordMatch>,
     pub scores:  Scores,
@@ -93,7 +93,7 @@ pub struct SearchResult {
 impl Store {
     pub fn search<'a>(
         &'a self,
-        query: &'a Text<&'a [char]>,
+        query: &'a TextRef<'a>,
     ) -> Vec<SearchResult> {
         let dividers = self.dividers();
 
@@ -133,7 +133,7 @@ mod tests {
     use crate::lang::{Lang, lang_english, lang_german};
     use crate::store::{Store, Record};
 
-    fn check(name: &str, lang: Option<Lang>, queries: &[&str]) {
+    fn check(name: &str, lang: Lang, queries: &[&str]) {
         let mut store = Store::new();
         store.lang = lang;
         store.add(Record::new(10, "brown plush bear",     10, &store.lang));
@@ -152,17 +152,17 @@ mod tests {
 
     #[test]
     fn search_empty() {
-        check("empty", None, &[""]);
+        check("empty", Lang::new(), &[""]);
     }
 
     #[test]
     fn search_equal() {
-        check("equal", None, &["yelow metall maiblox"]);
+        check("equal", Lang::new(), &["yelow metall maiblox"]);
     }
 
     #[test]
     fn search_partial() {
-        check("partial", None, &[
+        check("partial", Lang::new(), &[
             "brown plush bear",
             "metal detector",
             "yellow metal mailbox",
@@ -171,7 +171,7 @@ mod tests {
 
     #[test]
     fn search_intersection() {
-        check("intersection", None, &[
+        check("intersection", Lang::new(), &[
             "red wooden mailbox",
             "red wooden mail",
         ]);
@@ -179,7 +179,7 @@ mod tests {
 
     #[test]
     fn search_min_match() {
-        check("min_match", None, &[
+        check("min_match", Lang::new(), &[
             "wooden mai",
             "wooden mail",
         ]);
@@ -187,7 +187,7 @@ mod tests {
 
     #[test]
     fn search_transpositions() {
-        check("transpositions", None, &[
+        check("transpositions", Lang::new(), &[
             "metal mailbox",
             "mailbox metal",
         ]);
@@ -196,11 +196,12 @@ mod tests {
 
     #[test]
     fn search_stemming() {
+        let empty_lang = Lang::new();
         let mut store = Store::new();
-        store.lang = Some(lang_english());
+        store.lang = lang_english();
         store.add(Record::new(30, "universe", 30, &store.lang));
 
-        let query1   = tokenize_query("university", &None);
+        let query1   = tokenize_query("university", &empty_lang);
         let query2   = tokenize_query("university", &store.lang);
         let query1   = query1.to_ref();
         let query2   = query2.to_ref();
@@ -213,22 +214,22 @@ mod tests {
 
     #[test]
     fn search_particles() {
-        check("particles_nolang", None, &[
+        check("particles_nolang", Lang::new(), &[
             "the",
         ]);
 
-        check("particles", Some(lang_english()), &[
+        check("particles", lang_english(), &[
             "the",
         ]);
     }
 
     #[test]
     fn search_joined() {
-        check("joined_query", None, &[
+        check("joined_query", Lang::new(), &[
             "wifi",
         ]);
 
-        check("joined_record", None, &[
+        check("joined_record", Lang::new(), &[
             "the saurus",
         ]);
     }
@@ -237,7 +238,7 @@ mod tests {
     #[test]
     fn search_utf_normalization() {
         let mut store = Store::new();
-        store.lang = Some(lang_german());
+        store.lang = lang_german();
         store.add(Record::new(10, "Mitteltöner", 10, &store.lang));
         store.add(Record::new(20, "Passstraße",  20, &store.lang));
 

@@ -1,0 +1,23 @@
+---
+source: src/tokenization/text.rs
+expression: text.classes
+---
+[
+    Any,
+    Any,
+    Any,
+    NotAlpha,
+    Any,
+    Any,
+    Any,
+    Any,
+    Any,
+    Any,
+    Any,
+    Any,
+    NotAlpha,
+    NotAlpha,
+    NotAlpha,
+    NotAlpha,
+    NotAlpha,
+]

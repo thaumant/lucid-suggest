@@ -1,8 +1,8 @@
 ---
-source: src/tokenization/word.rs
+source: src/tokenization/word_shape.rs
 expression: "&word"
 ---
-Word {
+WordShape {
     ix: 0,
     place: (
         1,

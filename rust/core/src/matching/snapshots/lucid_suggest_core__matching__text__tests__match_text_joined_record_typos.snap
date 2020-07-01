@@ -22,7 +22,7 @@ expression: "text_match(&rtext.to_ref(), &qtext.to_ref())"
             ),
             function: false,
         },
-        typos: 1,
+        typos: 0.7,
         fin: true,
     },
     WordMatch {
@@ -44,7 +44,7 @@ expression: "text_match(&rtext.to_ref(), &qtext.to_ref())"
             ),
             function: false,
         },
-        typos: 2,
+        typos: 0.8,
         fin: false,
     },
 ]

@@ -1,9 +1,9 @@
-use crate::tokenization::Text;
+use crate::tokenization::{Word, TextRef};
 use crate::matching::text_match;
 use crate::search::{Hit, ScoreType};
 
 
-pub fn score(query: &Text<&[char]>, hit: &mut Hit) {
+pub fn score(query: &TextRef, hit: &mut Hit) {
     hit.matches = text_match(&hit.title, &query);
 
     hit.scores[ScoreType::SameWords]   = score_words_up(hit);
@@ -31,11 +31,13 @@ pub fn score_nonfunction_up(hit: &Hit) -> isize {
 
 
 pub fn score_typos_down(hit: &Hit) -> isize {
-    let mut typos = 0;
+    let mut all_typos: f64 = 0.0;
     for m in &hit.matches {
-        typos += m.typos + m.record.slice.0 + (m.record.len - m.record.slice.1);
+        let typos = m.typos;
+        let tail  = (m.record.slice.0 + (m.record.len - m.record.slice.1)) as f64;
+        all_typos += typos + tail;
     }
-    -(typos as isize)
+    -(all_typos.ceil() as isize)
 }
 
 
@@ -92,6 +94,7 @@ pub fn score_char_len_down(hit: &Hit) -> isize {
 
 #[cfg(test)]
 mod tests {
+    use crate::lang::Lang;
     use crate::tokenization::tokenize_query;
     use crate::store::Record;
     use crate::search::{Hit, ScoreType};
@@ -99,30 +102,32 @@ mod tests {
 
     #[test]
     fn test_score_typos() {
-        let r      = Record::new(10, "small yellow metal mailbox", 0, &None);
+        let lang   = Lang::new();
+        let r      = Record::new(10, "small yellow metal mailbox", 0, &lang);
         let mut h1 = Hit::from_record(&r);
         let mut h2 = Hit::from_record(&r);
         let mut h3 = Hit::from_record(&r);
-        let q1     = tokenize_query("yellow mailbox", &None);
-        let q2     = tokenize_query("yelow maiblox", &None);
-        let q3     = tokenize_query("yellow mail", &None);
+        let q1     = tokenize_query("yellow mailbox", &lang);
+        let q2     = tokenize_query("yelow maiblox", &lang);
+        let q3     = tokenize_query("yellow mail", &lang);
         score(&q1.to_ref(), &mut h1);
         score(&q2.to_ref(), &mut h2);
         score(&q3.to_ref(), &mut h3);
         assert_eq!(h1.scores[ScoreType::Typos], -0);
-        assert_eq!(h2.scores[ScoreType::Typos], -2);
+        assert_eq!(h2.scores[ScoreType::Typos], -1);
         assert_eq!(h3.scores[ScoreType::Typos], -3);
     }
 
     #[test]
     fn test_score_offset() {
-        let r      = Record::new(10, "small yellow metal mailbox", 0, &None);
+        let lang   = Lang::new();
+        let r      = Record::new(10, "small yellow metal mailbox", 0, &lang);
         let mut h1 = Hit::from_record(&r);
         let mut h2 = Hit::from_record(&r);
         let mut h3 = Hit::from_record(&r);
-        let q1     = tokenize_query("smal mailbox", &None);
-        let q2     = tokenize_query("yelow mailbox", &None);
-        let q3     = tokenize_query("metol maiblox", &None);
+        let q1     = tokenize_query("smal mailbox", &lang);
+        let q2     = tokenize_query("yelow mailbox", &lang);
+        let q3     = tokenize_query("metol maiblox", &lang);
         score(&q1.to_ref(), &mut h1);
         score(&q2.to_ref(), &mut h2);
         score(&q3.to_ref(), &mut h3);

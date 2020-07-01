@@ -1,7 +1,7 @@
-use crate::tokenization::Text;
+use crate::tokenization::TextRef;
 use crate::search::Hit;
 
-pub fn hit_matches(query: &Text<&[char]>, hit: &Hit) -> bool {
+pub fn hit_matches(query: &TextRef, hit: &Hit) -> bool {
     if query.is_empty() { return true; }
     if hit.matches.len() == 0 { return false; }
     if hit.matches.len() == 1 && query.words.len() > 1 {

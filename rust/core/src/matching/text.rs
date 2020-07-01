@@ -1,12 +1,10 @@
 use fnv::{FnvHashSet as HashSet};
-use crate::tokenization::Text;
+use crate::tokenization::{Word, TextRef};
 use super::WordMatch;
 use super::word::word_match;
 
 
-pub fn text_match(rtext: &Text<&[char]>, qtext: &Text<&[char]>) -> Vec<WordMatch> {
-    let rchars   = &rtext.chars;
-    let qchars   = &qtext.chars;
+pub fn text_match(rtext: &TextRef, qtext: &TextRef) -> Vec<WordMatch> {
     let capacity = min!(rtext.words.len(), qtext.words.len());
     let mut rtaken: HashSet<usize>  = HashSet::with_capacity_and_hasher(capacity, Default::default());
     let mut qtaken: HashSet<usize>  = HashSet::with_capacity_and_hasher(capacity, Default::default());
@@ -14,31 +12,33 @@ pub fn text_match(rtext: &Text<&[char]>, qtext: &Text<&[char]>) -> Vec<WordMatch
 
     for qword in qtext.words.iter() {
         if qtaken.contains(&qword.ix) { continue; }
+        let qword = qword.to_view(qtext);
 
         let mut candidate: Option<(WordMatch, Option<WordMatch>)> = None;
 
         for rword in rtext.words.iter() {
             if rtaken.contains(&rword.ix) { continue; }
+            let rword = rword.to_view(rtext);
 
             let new_candidate = None
                 .or_else(|| {
-                    let rnext = rtext.words.get(rword.ix + 1)?;
-                    if qword.len() <= rword.len() + rword.dist(rnext) { return None; }
+                    let rnext = rtext.words.get(rword.ix + 1)?.to_view(rtext);
+                    if qword.len() <= rword.len() + rword.dist(&rnext) { return None; }
                     if rtaken.contains(&(rword.ix + 1)) { return None; }
-                    let m        = word_match(&rword.join(rnext), qword, rchars, qchars)?;
-                    let (m1, m2) = m.split_record(rword, rnext);
+                    let m        = word_match(&rword.join(&rnext), &qword)?;
+                    let (m1, m2) = m.split_record(&rword, &rnext);
                     Some((m1, Some(m2)))
                 })
                 .or_else(|| {
-                    let qnext = qtext.words.get(qword.ix + 1)?;
-                    if rword.len() <= qword.len() + qword.dist(qnext) { return None; }
+                    let qnext = qtext.words.get(qword.ix + 1)?.to_view(qtext);
+                    if rword.len() <= qword.len() + qword.dist(&qnext) { return None; }
                     if qtaken.contains(&(qword.ix + 1)) { return None; }
-                    let m        = word_match(rword, &qword.join(qnext), rchars, qchars)?;
-                    let (m1, m2) = m.split_query(qword, qnext);
+                    let m        = word_match(&rword, &qword.join(&qnext))?;
+                    let (m1, m2) = m.split_query(&qword, &qnext);
                     Some((m1, Some(m2)))
                 })
                 .or_else(|| {
-                    let m = word_match(rword, qword, rchars, qchars)?;
+                    let m = word_match(&rword, &qword)?;
                     Some((m, None))
                 });
 
@@ -73,13 +73,16 @@ pub fn text_match(rtext: &Text<&[char]>, qtext: &Text<&[char]>) -> Vec<WordMatch
 #[cfg(test)]
 mod tests {
     use insta::assert_debug_snapshot;
-    use crate::tokenization::{Chars, Text};
-    use crate::lang::lang_english;
+    use crate::tokenization::{Text, TextOwn};
+    use crate::lang::{CharClass, lang_basic, lang_english};
     use super::{text_match};
 
 
-    fn text(s: &str) -> Text<Vec<char>> {
-        Text::from_str(s).split(&[Chars::Punctuation, Chars::Whitespaces])
+    fn text(s: &str) -> TextOwn {
+        let lang = lang_basic();
+        Text::from_str(s)
+            .split(&[CharClass::Punctuation, CharClass::Whitespace], &lang)
+            .set_char_classes(&lang)
     }
 
 
@@ -154,9 +157,9 @@ mod tests {
         let mut rtext = text("the theme");
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
 
-        let lang = Some(lang_english());
-        qtext = qtext.mark_pos(&lang);
-        rtext = rtext.mark_pos(&lang);
+        let lang = lang_english();
+        qtext = qtext.set_pos(&lang);
+        rtext = rtext.set_pos(&lang);
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
@@ -200,7 +203,6 @@ mod tests {
     fn match_text_joined_record_typos() {
         let qtext = text("mcrobiology").fin(false);
         let rtext = text("micro biology");
-        dbg!(text_match(&rtext.to_ref(), &qtext.to_ref()));
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 

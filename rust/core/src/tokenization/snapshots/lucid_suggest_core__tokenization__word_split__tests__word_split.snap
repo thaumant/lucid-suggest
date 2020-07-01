@@ -1,9 +1,9 @@
 ---
-source: src/tokenization/word.rs
+source: src/tokenization/word_split.rs
 expression: split
 ---
 [
-    Word {
+    WordShape {
         ix: 0,
         place: (
             1,
@@ -13,7 +13,7 @@ expression: split
         pos: None,
         fin: true,
     },
-    Word {
+    WordShape {
         ix: 1,
         place: (
             5,
@@ -23,7 +23,7 @@ expression: split
         pos: None,
         fin: true,
     },
-    Word {
+    WordShape {
         ix: 2,
         place: (
             10,

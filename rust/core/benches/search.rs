@@ -3,7 +3,7 @@ use std::fs;
 use std::cmp::min;
 use rand::prelude::*;
 use rand::distributions::WeightedIndex;
-use lucid_suggest_core::{Store, Record, lang, Text, tokenize_query};
+use lucid_suggest_core::{Word, Store, Record, Lang, TextOwn, tokenize_query, lang_english};
 
 
 fn search_benchmark(criterion: &mut Criterion) {
@@ -29,8 +29,8 @@ criterion_group!(benches, search_benchmark);
 criterion_main!(benches);
 
 
-#[derive(Debug)]
 struct SyntheticDataset {
+    pub lang:  Lang,
     pub chars: Vec<char>,
     pub words: Vec<String>,
     pub dist:  WeightedIndex<usize>,
@@ -54,14 +54,16 @@ impl SyntheticDataset {
             .collect::<Vec<_>>();
         let dist = WeightedIndex::new(weights).unwrap();
 
-        Self { chars, words, dist }
+        let lang = lang_english();
+
+        Self { chars, words, dist, lang }
     }
 
-    pub fn gen_data(&self, len: usize, min_words: usize, max_words: usize) -> (Store, Vec<Text<Vec<char>>>) {
+    pub fn gen_data(&self, len: usize, min_words: usize, max_words: usize) -> (Store, Vec<TextOwn>) {
         let mut records = self.gen_records(len, min_words, max_words);
         let queries = self.gen_queries(&records, 10000);
         let mut store = Store::new();
-        store.lang = Some(lang::lang_english());
+        store.lang = lang_english();
         for record in records.drain(..) {
             store.add(record);
         }
@@ -73,14 +75,14 @@ impl SyntheticDataset {
         let mut records = Vec::with_capacity(len);
         for _ in 0..len {
             let title  = self.gen_title(min_words, max_words);
-            let record = Record::new(id, &title, 0, &None);
+            let record = Record::new(id, &title, 0, &self.lang);
             records.push(record);
             id += 1;
         }
         records
     }
 
-    pub fn gen_queries(&self, records: &[Record], len: usize) -> Vec<Text<Vec<char>>> {
+    pub fn gen_queries(&self, records: &[Record], len: usize) -> Vec<TextOwn> {
         let mut queries = Vec::with_capacity(len);
         let mut rng     = thread_rng();
         for _ in 0..len {
@@ -94,7 +96,7 @@ impl SyntheticDataset {
             let query    = self.corrupt(&title.source);
             let query    = &query[0 .. min(qlen, query.len())];
             let query    = query.iter().collect::<String>();
-            queries.push(tokenize_query(&query, &None));
+            queries.push(tokenize_query(&query, &self.lang));
         }
         queries
     }

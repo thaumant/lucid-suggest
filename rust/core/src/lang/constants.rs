@@ -1,0 +1,31 @@
+use super::CharClass;
+use CharClass::{Consonant, Vowel};
+
+pub const CHAR_CLASSES_LATIN: &[(CharClass, char)] = &[
+    (Consonant, 'b'),
+    (Consonant, 'c'),
+    (Consonant, 'd'),
+    (Consonant, 'f'),
+    (Consonant, 'g'),
+    (Consonant, 'h'),
+    (Consonant, 'j'),
+    (Consonant, 'k'),
+    (Consonant, 'l'),
+    (Consonant, 'm'),
+    (Consonant, 'n'),
+    (Consonant, 'p'),
+    (Consonant, 'q'),
+    (Consonant, 'r'),
+    (Consonant, 's'),
+    (Consonant, 't'),
+    (Consonant, 'v'),
+    (Consonant, 'w'),
+    (Consonant, 'x'),
+    (Consonant, 'z'),
+    (Vowel, 'a'),
+    (Vowel, 'e'),
+    (Vowel, 'i'),
+    (Vowel, 'o'),
+    (Vowel, 'u'),
+    (Vowel, 'y'),
+];

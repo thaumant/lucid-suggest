@@ -1,14 +1,14 @@
 ---
-source: src/tokenization/word.rs
+source: src/tokenization/word_shape.rs
 expression: w1.join(&w2)
 ---
-Word {
+WordShape {
     ix: 0,
     place: (
-        0,
-        13,
+        3,
+        16,
     ),
     stem: 13,
     pos: None,
-    fin: false,
+    fin: true,
 }

@@ -1,105 +1,117 @@
 #![allow(dead_code)]
 
 use rust_stemmers::{Algorithm, Stemmer};
-use crate::tokenization::PartOfSpeech;
+use super::{CharClass, PartOfSpeech};
 use super::Lang;
+use super::constants::CHAR_CLASSES_LATIN;
+
+use CharClass::{
+    Consonant,
+};
+
+use PartOfSpeech::{
+    Article,
+    Preposition,
+    Conjunction,
+    Particle,
+};
 
 
-const ARTICLES: &[&'static str] = &[
-    "das",
-    "dem",
-    "den",
-    "der",
-    "des",
-    "die",
-    "ein",
-    "eine",
-    "einem",
-    "einen",
-    "einer",
-    "eines",
+const FUNCTION_WORDS: &[(PartOfSpeech, &'static str)] = &[
+    (Article, "das"),
+    (Article, "dem"),
+    (Article, "den"),
+    (Article, "der"),
+    (Article, "des"),
+    (Article, "die"),
+    (Article, "ein"),
+    (Article, "eine"),
+    (Article, "einem"),
+    (Article, "einen"),
+    (Article, "einer"),
+    (Article, "eines"),
+
+    (Preposition, "an"),
+    (Preposition, "auf"),
+    (Preposition, "aus"),
+    (Preposition, "bei"),
+    (Preposition, "bis"),
+    (Preposition, "durch"),
+    (Preposition, "entlang"),
+    (Preposition, "für"),
+    (Preposition, "gegen"),
+    (Preposition, "hinter"),
+    (Preposition, "in"),
+    (Preposition, "mit"),
+    (Preposition, "nach"),
+    (Preposition, "neben"),
+    (Preposition, "ohne"),
+    (Preposition, "seit"),
+    (Preposition, "um"),
+    (Preposition, "von"),
+    (Preposition, "zu"),
+
+    (Conjunction, "aber"),
+    (Conjunction, "als"),
+    (Conjunction, "als"),
+    (Conjunction, "anstatt"),
+    (Conjunction, "auch"),
+    (Conjunction, "bevor"),
+    (Conjunction, "bis"),
+    (Conjunction, "but"),
+    (Conjunction, "damit"),
+    (Conjunction, "dass"),
+    (Conjunction, "denn"),
+    (Conjunction, "entweder"),
+    (Conjunction, "nachdem"),
+    (Conjunction, "noch"),
+    (Conjunction, "ob"),
+    (Conjunction, "obwohl"),
+    (Conjunction, "oder"),
+    (Conjunction, "oder"),
+    (Conjunction, "seitdem"),
+    (Conjunction, "sobald"),
+    (Conjunction, "sofern"),
+    (Conjunction, "sondern"),
+    (Conjunction, "soweit"),
+    (Conjunction, "sowie"),
+    (Conjunction, "sowohl"),
+    (Conjunction, "sowohl"),
+    (Conjunction, "the"),
+    (Conjunction, "und"),
+    (Conjunction, "während"),
+    (Conjunction, "weder"),
+    (Conjunction, "weil"),
+    (Conjunction, "wenn"),
+    (Conjunction, "wie"),
+    (Conjunction, "wie"),
+    (Conjunction, "wo"),
+    (Conjunction, "zu"),
+
+    (Particle, "schon"),
+    (Particle, "ja"),
+    (Particle, "halt"),
+    (Particle, "wohl"),
+    (Particle, "doch"),
+    (Particle, "mal"),
+    (Particle, "aber"),
+    (Particle, "auch"),
+    (Particle, "bloß"),
+    (Particle, "denn"),
+    (Particle, "eben"),
+    (Particle, "etwas"),
+    (Particle, "nur"),
+    (Particle, "ruhig"),
+    (Particle, "shon"),
+    (Particle, "zwar"),
+    (Particle, "soweiso"),
 ];
 
-const PREPOSITIONS: &[&'static str] = &[
-    "an",
-    "auf",
-    "aus",
-    "bei",
-    "bis",
-    "durch",
-    "entlang",
-    "für",
-    "gegen",
-    "hinter",
-    "in",
-    "mit",
-    "nach",
-    "neben",
-    "ohne",
-    "seit",
-    "um",
-    "von",
-    "zu",
+
+const CHAR_CLASSES: &[(CharClass, char)] = &[
+    (Consonant, 'ß'),
 ];
 
-const CONJUNCTIONS: &[&'static str] = &[
-    "aber",
-    "als",
-    "als",
-    "anstatt",
-    "auch",
-    "bevor",
-    "bis",
-    "but",
-    "damit",
-    "dass",
-    "denn",
-    "entweder",
-    "nachdem",
-    "noch",
-    "ob",
-    "obwohl",
-    "oder",
-    "oder",
-    "seitdem",
-    "sobald",
-    "sofern",
-    "sondern",
-    "soweit",
-    "sowie",
-    "sowohl",
-    "sowohl",
-    "the",
-    "und",
-    "während",
-    "weder",
-    "weil",
-    "wenn",
-    "wie",
-    "wie",
-    "wo",
-    "zu",
-];
-
-const PARTICLES: &[&'static str] = &[
-    "schon",
-    "ja",
-    "halt",
-    "wohl",
-    "doch",
-    "mal",
-    "aber",
-    "auch",
-    "bloß",
-    "denn",
-    "eben",
-    "etwas",
-    "nur",
-    "ruhig",
-    "shon",
-    "zwar",
-    "soweiso",
-];
 
 const UTF_COMPOSE_MAP: &[(&'static str, &'static str)] = &[
     ("Ä", "Ä"),
@@ -130,10 +142,10 @@ pub fn lang_german() -> Lang {
     for (from, to) in UTF_COMPOSE_MAP { lang.add_unicode_composition(from, to); }
     for (from, to) in UTF_REDUCE_MAP  { lang.add_unicode_reduction(from, to); }
 
-    for word in ARTICLES     { lang.add_pos(word, PartOfSpeech::Article); }
-    for word in PREPOSITIONS { lang.add_pos(word, PartOfSpeech::Preposition); }
-    for word in CONJUNCTIONS { lang.add_pos(word, PartOfSpeech::Conjunction); }
-    for word in PARTICLES    { lang.add_pos(word, PartOfSpeech::Particle); }
+    for &(pos, word) in FUNCTION_WORDS { lang.add_pos(word, pos); }
+
+    for &(class, ch) in CHAR_CLASSES_LATIN { lang.add_char_class(ch, class); }
+    for &(class, ch) in CHAR_CLASSES       { lang.add_char_class(ch, class); }
 
     lang
 }
@@ -142,7 +154,7 @@ pub fn lang_german() -> Lang {
 #[cfg(test)]
 mod tests {
     use crate::utils::{to_vec, to_str};
-    use crate::tokenization::PartOfSpeech;
+    use super::{PartOfSpeech, CharClass};
     use super::{lang_german, UTF_COMPOSE_MAP, UTF_REDUCE_MAP};
 
     #[test]
@@ -206,5 +218,14 @@ mod tests {
             assert_eq!(normal .chars().count(), 1, "UTF_REDUCE_MAP['{}'] != 1", normal);
             assert_eq!(reduced.chars().count(), 1, "UTF_REDUCE_MAP['{}'].len() != 1", reduced);
         }
+    }
+
+    #[test]
+    fn get_char_class() {
+        let lang = lang_german();
+        assert_eq!(lang.get_char_class('a'), Some(CharClass::Vowel));
+        assert_eq!(lang.get_char_class('n'), Some(CharClass::Consonant));
+        assert_eq!(lang.get_char_class('ß'), Some(CharClass::Consonant));
+        assert_eq!(lang.get_char_class('%'), None);
     }
 }
