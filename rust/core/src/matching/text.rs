@@ -74,12 +74,12 @@ pub fn text_match(rtext: &Text<&[char]>, qtext: &Text<&[char]>) -> Vec<WordMatch
 mod tests {
     use insta::assert_debug_snapshot;
     use crate::tokenization::Text;
-    use crate::lang::{Chars, lang_english};
+    use crate::lang::{CharClass, lang_english};
     use super::{text_match};
 
 
     fn text(s: &str) -> Text<Vec<char>> {
-        Text::from_str(s).split(&[Chars::Punctuation, Chars::Whitespaces])
+        Text::from_str(s).split(&[CharClass::Punctuation, CharClass::Whitespace])
     }
 
 

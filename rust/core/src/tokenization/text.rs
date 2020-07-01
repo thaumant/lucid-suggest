@@ -170,11 +170,11 @@ impl<T: AsRef<[char]>> fmt::Debug for Text<T> {
 mod tests {
     use insta::assert_debug_snapshot;
     use crate::utils::to_vec;
-    use crate::lang::{Chars, PartOfSpeech, lang_english, lang_portuguese, lang_german};
+    use crate::lang::{CharClass, PartOfSpeech, lang_english, lang_portuguese, lang_german};
     use super::{Word, Text};
 
-    use Chars::{
-        Whitespaces,
+    use CharClass::{
+        Whitespace,
         Punctuation,
     };
 
@@ -192,20 +192,20 @@ mod tests {
 
     #[test]
     fn text_split() {
-        let text = Text::from_str(" Foo Bar, Baz; ").split(&[Whitespaces, Punctuation]);
+        let text = Text::from_str(" Foo Bar, Baz; ").split(&[Whitespace, Punctuation]);
         assert_debug_snapshot!(text);
     }
 
     #[test]
     fn text_split_empty() {
-        let text = Text::from_str(", ").split(&[Whitespaces, Punctuation]);
+        let text = Text::from_str(", ").split(&[Whitespace, Punctuation]);
         assert_debug_snapshot!(text);
     }
 
     #[test]
     fn text_split_unfinished() {
-        let text1 = Text::from_str(" Foo Bar, Baz"  ).fin(false).split(&[Whitespaces, Punctuation]);
-        let text2 = Text::from_str(" Foo Bar, Baz; ").fin(false).split(&[Whitespaces, Punctuation]);
+        let text1 = Text::from_str(" Foo Bar, Baz"  ).fin(false).split(&[Whitespace, Punctuation]);
+        let text2 = Text::from_str(" Foo Bar, Baz; ").fin(false).split(&[Whitespace, Punctuation]);
         assert_eq!(text1.words.last().unwrap().fin, false);
         assert_eq!(text2.words.last().unwrap().fin, true);
     }
@@ -222,7 +222,7 @@ mod tests {
                     Word { ix: 2, place: (8, 13), stem: 5, pos: None, fin: true },  // "Baz; "
                 ],
             }
-            .strip(&[Whitespaces, Punctuation]);
+            .strip(&[Whitespace, Punctuation]);
         assert_debug_snapshot!(text);
         assert_debug_snapshot!(text.words);
     }
@@ -239,7 +239,7 @@ mod tests {
                 ],
             }
             .fin(false)
-            .strip(&[Whitespaces, Punctuation]);
+            .strip(&[Whitespace, Punctuation]);
 
         let text2 = Text {
                 source: chars.clone(),
@@ -250,7 +250,7 @@ mod tests {
                 ],
             }
             .fin(false)
-            .strip(&[Whitespaces, Punctuation]);
+            .strip(&[Whitespace, Punctuation]);
 
         assert_eq!(text1.words.last().unwrap().fin, false);
         assert_eq!(text2.words.last().unwrap().fin, true);

@@ -110,12 +110,12 @@ mod tests {
     use insta::assert_debug_snapshot;
     use crate::utils::to_vec;
     use crate::tokenization::{Word, Text};
-    use crate::lang::{Chars, lang_english};
+    use crate::lang::{CharClass, lang_english};
     use super::{length_check, jaccard_check, word_match};
 
 
     fn text(s: &str) -> Text<Vec<char>> {
-        Text::from_str(s).split(&Chars::Whitespaces)
+        Text::from_str(s).split(&CharClass::Whitespace)
     }
 
     #[test]

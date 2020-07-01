@@ -1,4 +1,4 @@
-pub use crate::lang::{Lang, Chars, CharPattern, PartOfSpeech};
+pub use crate::lang::{Lang, CharClass, CharPattern, PartOfSpeech};
 
 
 #[derive(PartialEq, Debug, Clone)]
@@ -172,10 +172,10 @@ mod tests {
     use insta::assert_debug_snapshot;
     use crate::utils::to_vec;
     use crate::lang::lang_english;
-    use super::{Word, Chars, PartOfSpeech};
+    use super::{Word, CharClass, PartOfSpeech};
 
-    use Chars::{
-        Whitespaces,
+    use CharClass::{
+        Whitespace,
         Punctuation,
     };
 
@@ -275,7 +275,7 @@ mod tests {
     fn word_split() {
         let chars = to_vec(" Foo Bar, Baz; ");
         let word  = Word::new(chars.len());
-        let split = word.split(&chars[..], &[Whitespaces, Punctuation]).collect::<Vec<_>>();
+        let split = word.split(&chars[..], &[Whitespace, Punctuation]).collect::<Vec<_>>();
         assert_debug_snapshot!(split);
     }
 
@@ -283,7 +283,7 @@ mod tests {
     fn word_split_empty() {
         let chars = to_vec(" ,;");
         let word  = Word::new(chars.len());
-        let split = word.split(&chars[..], &[Whitespaces, Punctuation]).collect::<Vec<_>>();
+        let split = word.split(&chars[..], &[Whitespace, Punctuation]).collect::<Vec<_>>();
         assert_debug_snapshot!(split);
     }
 
@@ -293,8 +293,8 @@ mod tests {
         let chars2 = to_vec(" Foo Bar, Baz; ");
         let word1  = Word::new(chars1.len()).fin(false);
         let word2  = Word::new(chars2.len()).fin(false);
-        let split1 = word1.split(&chars1[..], &[Whitespaces, Punctuation]).collect::<Vec<_>>();
-        let split2 = word2.split(&chars2[..], &[Whitespaces, Punctuation]).collect::<Vec<_>>();
+        let split1 = word1.split(&chars1[..], &[Whitespace, Punctuation]).collect::<Vec<_>>();
+        let split2 = word2.split(&chars2[..], &[Whitespace, Punctuation]).collect::<Vec<_>>();
         assert_eq!(split1.last().unwrap().fin, false);
         assert_eq!(split2.last().unwrap().fin, true);
     }
@@ -303,7 +303,7 @@ mod tests {
     fn word_strip() {
         let chars = to_vec(" Foo; ");
         let mut word = Word::new(chars.len());
-        word.strip(&chars[..], &[Whitespaces, Punctuation]);
+        word.strip(&chars[..], &[Whitespace, Punctuation]);
         assert_debug_snapshot!(&word);
     }
 
@@ -311,7 +311,7 @@ mod tests {
     fn word_strip_empty() {
         let chars = to_vec(" ,;");
         let mut word = Word::new(chars.len());
-        word.strip(&chars[..], &[Whitespaces, Punctuation]);
+        word.strip(&chars[..], &[Whitespace, Punctuation]);
         assert_debug_snapshot!(word);
     }
 
@@ -321,8 +321,8 @@ mod tests {
         let chars2 = to_vec(" Foo Bar, Baz; ");
         let mut word1 = Word::new(chars1.len()).fin(false);
         let mut word2 = Word::new(chars2.len()).fin(false);
-        word1.strip(&chars1[..], &[Whitespaces, Punctuation]);
-        word2.strip(&chars2[..], &[Whitespaces, Punctuation]);
+        word1.strip(&chars1[..], &[Whitespace, Punctuation]);
+        word2.strip(&chars2[..], &[Whitespace, Punctuation]);
         assert_eq!(word1.fin, false);
         assert_eq!(word2.fin, true);
     }

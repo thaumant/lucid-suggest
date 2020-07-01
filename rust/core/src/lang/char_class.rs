@@ -7,21 +7,25 @@ pub trait CharPattern: fmt::Debug {
 
 
 #[derive(Clone, Copy, Debug)]
-pub enum Chars {
+pub enum CharClass {
     Control,
-    Whitespaces,
+    Whitespace,
     Punctuation,
     NotAlphaNum,
+    Consonant,
+    Vowel,
 }
 
 
-impl CharPattern for Chars {
+impl CharPattern for CharClass {
     fn matches(&self, ch: char) -> Option<bool> {
         match self {
-            Chars::Whitespaces  => Some(ch.is_whitespace()),
-            Chars::Punctuation  => Some(ch.is_ascii_punctuation()),
-            Chars::Control      => Some(ch.is_control()),
-            Chars::NotAlphaNum  => Some(!ch.is_alphanumeric()),
+            CharClass::Whitespace  => Some(ch.is_whitespace()),
+            CharClass::Punctuation => Some(ch.is_ascii_punctuation()),
+            CharClass::Control     => Some(ch.is_control()),
+            CharClass::NotAlphaNum => Some(!ch.is_alphanumeric()),
+            CharClass::Consonant   => None,
+            CharClass::Vowel       => None,
         }
     }
 }
@@ -54,10 +58,10 @@ impl<P: CharPattern> CharPattern for [P; 5] { fn matches(&self, ch: char) -> Opt
 
 #[cfg(test)]
 mod tests {
-    use super::{Chars, CharPattern};
+    use super::{CharClass, CharPattern};
 
-    use Chars::{
-        Whitespaces,
+    use CharClass::{
+        Whitespace,
         Punctuation,
         Control,
         NotAlphaNum,
@@ -74,13 +78,13 @@ mod tests {
 
     #[test]
     fn whitespaces() {
-        assert_eq!(Whitespaces.matches(' '),  Some(true));
-        assert_eq!(Whitespaces.matches('\t'), Some(true));
-        assert_eq!(Whitespaces.matches('\n'), Some(true));
-        assert_eq!(Whitespaces.matches('2'),  Some(false));
-        assert_eq!(Whitespaces.matches('f'),  Some(false));
-        assert_eq!(Whitespaces.matches(';'),  Some(false));
-        assert_eq!(Whitespaces.matches('\0'), Some(false));
+        assert_eq!(Whitespace.matches(' '),  Some(true));
+        assert_eq!(Whitespace.matches('\t'), Some(true));
+        assert_eq!(Whitespace.matches('\n'), Some(true));
+        assert_eq!(Whitespace.matches('2'),  Some(false));
+        assert_eq!(Whitespace.matches('f'),  Some(false));
+        assert_eq!(Whitespace.matches(';'),  Some(false));
+        assert_eq!(Whitespace.matches('\0'), Some(false));
     }
 
     #[test]
@@ -109,7 +113,7 @@ mod tests {
 
     #[test]
     fn slice() {
-        let pattern = &[Whitespaces, Punctuation][..];
+        let pattern = &[Whitespace, Punctuation][..];
 
         assert_eq!(pattern.matches(' '),  Some(true));
         assert_eq!(pattern.matches(';'),  Some(true));
@@ -120,7 +124,7 @@ mod tests {
 
     #[test]
     fn array_2() {
-        let pattern = [Whitespaces, Punctuation];
+        let pattern = [Whitespace, Punctuation];
 
         assert_eq!(pattern.matches(' '),  Some(true));
         assert_eq!(pattern.matches(';'),  Some(true));
