@@ -170,9 +170,8 @@ impl<T: AsRef<[char]>> fmt::Debug for Text<T> {
 mod tests {
     use insta::assert_debug_snapshot;
     use crate::utils::to_vec;
-    use crate::lang::{lang_english, lang_portuguese, lang_german};
+    use crate::lang::{Chars, PartOfSpeech, lang_english, lang_portuguese, lang_german};
     use super::{Word, Text};
-    use super::super::{Chars, PartOfSpeech};
 
     use Chars::{
         Whitespaces,

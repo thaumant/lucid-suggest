@@ -1,5 +1,6 @@
 mod chars;
 mod normalize;
+mod pos;
 mod lang_english;
 mod lang_german;
 mod lang_portuguese;
@@ -7,6 +8,7 @@ mod lang_russian;
 mod lang_spanish;
 
 pub use chars::{Chars, CharPattern};
+pub use pos::{PartOfSpeech};
 pub use lang_german::lang_german;
 pub use lang_english::lang_english;
 pub use lang_spanish::lang_spanish;
@@ -17,7 +19,6 @@ use std::cell::RefCell;
 use fnv::{FnvHashMap as HashMap};
 use rust_stemmers::Stemmer;
 use crate::utils::to_vec;
-use crate::tokenization::PartOfSpeech;
 use normalize::Normalize;
 
 
@@ -130,7 +131,7 @@ impl Lang {
 mod tests {
     use insta::assert_debug_snapshot;
     use crate::utils::to_vec;
-    use crate::tokenization::PartOfSpeech;
+    use super::PartOfSpeech;
     use super::Lang;
 
     fn get_lang() -> Lang {

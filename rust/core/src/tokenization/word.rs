@@ -1,5 +1,4 @@
-pub use crate::lang::{Lang, Chars, CharPattern};
-pub use super::pos::PartOfSpeech;
+pub use crate::lang::{Lang, Chars, CharPattern, PartOfSpeech};
 
 
 #[derive(PartialEq, Debug, Clone)]

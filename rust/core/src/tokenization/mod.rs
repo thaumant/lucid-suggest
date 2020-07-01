@@ -1,9 +1,7 @@
-mod pos;
 mod word;
 mod text;
 
 use crate::lang::{Lang, Chars, CharPattern};
-pub use pos::PartOfSpeech;
 pub use word::Word;
 pub use text::Text;
 

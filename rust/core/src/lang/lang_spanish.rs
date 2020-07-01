@@ -1,7 +1,7 @@
 #![allow(dead_code)]
 
 use rust_stemmers::{Algorithm, Stemmer};
-use crate::tokenization::PartOfSpeech;
+use super::PartOfSpeech;
 use super::Lang;
 
 use PartOfSpeech::{
@@ -169,7 +169,7 @@ pub fn lang_spanish() -> Lang {
 #[cfg(test)]
 mod tests {
     use crate::utils::{to_vec, to_str};
-    use crate::tokenization::PartOfSpeech;
+    use super::PartOfSpeech;
     use super::{lang_spanish, UTF_COMPOSE_MAP, UTF_REDUCE_MAP};
 
     #[test]
