@@ -1,12 +1,14 @@
 use std::fmt;
 use crate::utils::to_vec;
 use crate::lang::{Lang, CharPattern, CharClass};
-use super::Word;
+use super::word::Word;
+use super::word_shape::WordShape;
+use super::word_view::WordView;
 
 
 #[derive(PartialEq)]
 pub struct Text<W, T, C> where
-    W: AsRef<[Word]>,
+    W: AsRef<[WordShape]>,
     T: AsRef<[char]>,
     C: AsRef<[CharClass]>
 {
@@ -16,8 +18,8 @@ pub struct Text<W, T, C> where
     pub classes: C,
 }
 
-pub type TextOwn     = Text<Vec<Word>, Vec<char>, Vec<CharClass>>;
-pub type TextRef<'a> = Text<&'a [Word], &'a [char], &'a [CharClass]>;
+pub type TextOwn     = Text<Vec<WordShape>, Vec<char>, Vec<CharClass>>;
+pub type TextRef<'a> = Text<&'a [WordShape], &'a [char], &'a [CharClass]>;
 
 
 impl TextOwn {
@@ -26,7 +28,7 @@ impl TextOwn {
         let chars   = source.clone();
         let classes = chars.iter().map(|_| CharClass::Any).collect::<Vec<_>>();
         Self {
-            words: vec![Word::new(len)],
+            words: vec![WordShape::new(len)],
             source,
             chars,
             classes,
@@ -64,12 +66,16 @@ impl<'a> TextRef<'a> {
 
 
 impl<W, T, C> Text<W, T, C> where
-    W: AsRef<[Word]>,
+    W: AsRef<[WordShape]>,
     T: AsRef<[char]>,
     C: AsRef<[CharClass]>
 {
     pub fn is_empty(&self) -> bool {
         self.words.as_ref().is_empty()
+    }
+
+    pub fn view<'a>(&'a self, i: usize) -> WordView<'a> {
+        self.words.as_ref()[i].to_view(self)
     }
 }
 
@@ -131,25 +137,25 @@ impl TextOwn {
         self
     }
 
-    pub fn stem(mut self, lang: &Option<Lang>) -> Self {
+    pub fn set_stem(mut self, lang: &Option<Lang>) -> Self {
         if let Some(lang) = lang {
             for word in &mut self.words {
-                word.stem(&self.chars, lang);
+                word.set_stem(&self.chars, lang);
             }
         }
         self
     }
 
-    pub fn mark_pos(mut self, lang: &Option<Lang>) -> Self {
+    pub fn set_pos(mut self, lang: &Option<Lang>) -> Self {
         if let Some(lang) = lang {
             for word in &mut self.words {
-                word.mark_pos(&self.chars, lang);
+                word.set_pos(&self.chars, lang);
             }
         }
         self
     }
 
-    pub fn mark_char_classes(mut self, lang: &Option<Lang>) -> Self {
+    pub fn set_char_classes(mut self, lang: &Option<Lang>) -> Self {
         self.classes.resize(self.chars.len(), CharClass::Any);
         if let Some(lang) = lang {
             for (&ch, class) in &mut self.chars.iter().zip(&mut self.classes) {
@@ -171,16 +177,15 @@ impl TextOwn {
 
 
 impl<W, T, C> fmt::Debug for Text<W, T, C> where
-    W: AsRef<[Word]>,
+    W: AsRef<[WordShape]>,
     T: AsRef<[char]>,
     C: AsRef<[CharClass]>
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Text {{")?;
         for word in self.words.as_ref() {
-            let chars = word.view(self.chars.as_ref());
             write!(f, " \"")?;
-            for (i, ch) in chars.iter().enumerate() {
+            for (i, ch) in word.to_view(self).chars().iter().enumerate() {
                 write!(f, "{}", ch)?;
                 if i == word.stem - 1 && i != word.len() - 1 {
                     write!(f, "|")?;
@@ -200,7 +205,7 @@ mod tests {
     use insta::assert_debug_snapshot;
     use crate::utils::to_vec;
     use crate::lang::{CharClass, PartOfSpeech, lang_english, lang_portuguese, lang_german};
-    use super::{Word, Text};
+    use super::{WordShape, Text};
 
     use CharClass::{
         Whitespace,
@@ -244,9 +249,9 @@ mod tests {
         let chars = to_vec("-Foo- , Baz; ");
         let text  = Text {
                 words:  vec![
-                    Word { ix: 0, place: (0,  5), stem: 5, pos: None, fin: true },  // "-Foo-"
-                    Word { ix: 1, place: (6,  7), stem: 1, pos: None, fin: true },  // ","
-                    Word { ix: 2, place: (8, 13), stem: 5, pos: None, fin: true },  // "Baz; "
+                    WordShape { ix: 0, place: (0,  5), stem: 5, pos: None, fin: true },  // "-Foo-"
+                    WordShape { ix: 1, place: (6,  7), stem: 1, pos: None, fin: true },  // ","
+                    WordShape { ix: 2, place: (8, 13), stem: 5, pos: None, fin: true },  // "Baz; "
                 ],
                 source:  chars.clone(),
                 chars:   chars.clone(),
@@ -262,8 +267,8 @@ mod tests {
         let chars = to_vec("-Foo- Baz; ");
         let text1 = Text {
                 words:  vec![
-                    Word { ix: 0, place: (0, 5), stem: 5, pos: None, fin: true },  // "-Foo-"
-                    Word { ix: 1, place: (5, 8), stem: 3, pos: None, fin: true },  // "Baz"
+                    WordShape { ix: 0, place: (0, 5), stem: 5, pos: None, fin: true },  // "-Foo-"
+                    WordShape { ix: 1, place: (5, 8), stem: 3, pos: None, fin: true },  // "Baz"
                 ],
                 source:  chars.clone(),
                 chars:   chars.clone(),
@@ -274,8 +279,8 @@ mod tests {
 
         let text2 = Text {
                 words:  vec![
-                    Word { ix: 0, place: (0,  5), stem: 5, pos: None, fin: true },  // "-Foo-"
-                    Word { ix: 1, place: (5, 10), stem: 5, pos: None, fin: true },  // "Baz; "
+                    WordShape { ix: 0, place: (0,  5), stem: 5, pos: None, fin: true },  // "-Foo-"
+                    WordShape { ix: 1, place: (5, 10), stem: 5, pos: None, fin: true },  // "Baz; "
                 ],
                 source:  chars.clone(),
                 chars:   chars.clone(),
@@ -293,9 +298,9 @@ mod tests {
         let chars = to_vec("Foo, Bar Baz");
         let text  = Text {
                 words:  vec![
-                    Word { ix: 0, place: (0,  4), stem: 4, pos: None, fin: true }, // "Foo,"
-                    Word { ix: 1, place: (5,  8), stem: 3, pos: None, fin: true }, // "Bar"
-                    Word { ix: 2, place: (9, 12), stem: 3, pos: None, fin: true }, // "Baz"
+                    WordShape { ix: 0, place: (0,  4), stem: 4, pos: None, fin: true }, // "Foo,"
+                    WordShape { ix: 1, place: (5,  8), stem: 3, pos: None, fin: true }, // "Bar"
+                    WordShape { ix: 2, place: (9, 12), stem: 3, pos: None, fin: true }, // "Baz"
                 ],
                 source:  chars.clone(),
                 chars:   chars.clone(),
@@ -311,13 +316,13 @@ mod tests {
         let lang  = lang_english();
         let text  = Text {
                 words: vec![
-                    Word { ix: 0, place: (0,  5), stem: 5, pos: None, fin: true }, // "hello"
-                    Word { ix: 1, place: (6, 14), stem: 8, pos: None, fin: true }, // "universe"
+                    WordShape { ix: 0, place: (0,  5), stem: 5, pos: None, fin: true }, // "hello"
+                    WordShape { ix: 1, place: (6, 14), stem: 8, pos: None, fin: true }, // "universe"
                 ],
                 source:  chars.clone(),
                 chars:   chars.clone(),
                 classes: chars.iter().map(|_| CharClass::Any).collect(),
-            }.stem(&Some(lang));
+            }.set_stem(&Some(lang));
         assert_eq!(text.words[0].stem, 5);
         assert_eq!(text.words[1].stem, 7);
     }
@@ -328,13 +333,13 @@ mod tests {
         let lang  = lang_english();
         let text  = Text {
                 words: vec![
-                    Word { ix: 0, place: (0,  3), stem: 3, pos: None, fin: true }, // "hello"
-                    Word { ix: 1, place: (4, 12), stem: 8, pos: None, fin: true }, // "universe"
+                    WordShape { ix: 0, place: (0,  3), stem: 3, pos: None, fin: true }, // "hello"
+                    WordShape { ix: 1, place: (4, 12), stem: 8, pos: None, fin: true }, // "universe"
                 ],
                 source:  chars.clone(),
                 chars:   chars.clone(),
                 classes: chars.iter().map(|_| CharClass::Any).collect(),
-            }.mark_pos(&Some(lang));
+            }.set_pos(&Some(lang));
         assert_eq!(text.words[0].pos, Some(PartOfSpeech::Article));
         assert_eq!(text.words[1].pos, None);
     }
@@ -342,14 +347,14 @@ mod tests {
     #[test]
     fn text_mark_char_classes_no_lang() {
         let lang  = None;
-        let text  = Text::from_str("the universe, 123").mark_char_classes(&lang);
+        let text  = Text::from_str("the universe, 123").set_char_classes(&lang);
         assert_debug_snapshot!(text.classes);
     }
 
     #[test]
     fn text_mark_char_classes_lang_en() {
         let lang  = Some(lang_english());
-        let text  = Text::from_str("the universe, 123").mark_char_classes(&lang);
+        let text  = Text::from_str("the universe, 123").set_char_classes(&lang);
         assert_debug_snapshot!(text.classes);
     }
 }

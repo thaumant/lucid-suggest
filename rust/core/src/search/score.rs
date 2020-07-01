@@ -1,4 +1,4 @@
-use crate::tokenization::TextRef;
+use crate::tokenization::{Word, TextRef};
 use crate::matching::text_match;
 use crate::search::{Hit, ScoreType};
 

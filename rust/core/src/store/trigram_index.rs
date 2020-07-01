@@ -1,5 +1,5 @@
 use fnv::{FnvHashMap as HashMap, FnvHashSet as HashSet};
-use crate::tokenization::TextRef;
+use crate::tokenization::{Word, TextRef};
 use super::Record;
 use super::trigrams::Trigrams;
 
@@ -122,7 +122,7 @@ impl TrigramIndex {
             grams.reserve(len - grams.capacity());
         }
         for word in text.words {
-            let chars = word.view(text.chars.as_ref());
+            let chars = &text.chars[word.place.0 .. word.place.1];
             for gram in Trigrams::new(chars) {
                 grams.insert(gram);
             }

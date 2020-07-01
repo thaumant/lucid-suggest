@@ -3,7 +3,7 @@ use std::fs;
 use std::cmp::min;
 use rand::prelude::*;
 use rand::distributions::WeightedIndex;
-use lucid_suggest_core::{Store, Record, lang, TextOwn, tokenize_query};
+use lucid_suggest_core::{Word, Store, Record, lang, TextOwn, tokenize_query};
 
 
 fn search_benchmark(criterion: &mut Criterion) {

@@ -10,7 +10,7 @@ pub mod lang;
 use std::cell::RefCell;
 use fnv::{FnvHashMap as HashMap};
 
-pub use tokenization::{Word, Text, TextOwn, TextRef, tokenize_query};
+pub use tokenization::{Word, WordShape, WordView, Text, TextOwn, TextRef, tokenize_query};
 pub use store::{Record, Store, DEFAULT_LIMIT};
 pub use search::{SearchResult};
 pub use lang::Lang;

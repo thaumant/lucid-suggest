@@ -4,7 +4,7 @@ mod word;
 mod text;
 
 use std::fmt;
-use crate::tokenization::{Word};
+use crate::tokenization::{Word, WordView};
 pub use word::word_match;
 pub use text::text_match;
 
@@ -20,8 +20,8 @@ pub struct WordMatch {
 
 impl WordMatch {
     pub fn new(
-        qword: &Word,
-        rword: &Word,
+        qword: &WordView,
+        rword: &WordView,
         qlen:  usize,
         rlen:  usize,
         typos: f64
@@ -44,7 +44,7 @@ impl WordMatch {
         }
     }
 
-    pub fn split_query(&self, w1: &Word, w2: &Word) -> (Self, Self) {
+    pub fn split_query(&self, w1: &WordView, w2: &WordView) -> (Self, Self) {
         let (query1, query2) = self.query.split(w1, w2);
         let (typos1, typos2) = Self::split_typos(self.typos, w1.len(), w2.len());
         let part1  = Self {
@@ -62,7 +62,7 @@ impl WordMatch {
         (part1, part2)
     }
 
-    pub fn split_record(&self, w1: &Word, w2: &Word) -> (Self, Self) {
+    pub fn split_record(&self, w1: &WordView, w2: &WordView) -> (Self, Self) {
         let (record1, record2) = self.record.split(w1, w2);
         let (typos1, typos2)   = Self::split_typos(self.typos, w1.len(), w2.len());
         let part1  = Self {
@@ -101,7 +101,7 @@ pub struct MatchSide {
 }
 
 impl MatchSide {
-    pub fn split(&self, w1: &Word, w2: &Word) -> (Self, Self) {
+    pub fn split(&self, w1: &WordView, w2: &WordView) -> (Self, Self) {
         let part1  = Self {
             ix:      w1.ix,
             len:     w1.len(),

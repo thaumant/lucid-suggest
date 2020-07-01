@@ -1,14 +1,14 @@
 ---
-source: src/tokenization/word.rs
+source: src/tokenization/word_shape.rs
 expression: word
 ---
-Word {
+WordShape {
     ix: 0,
     place: (
-        0,
-        15,
+        3,
+        3,
     ),
-    stem: 15,
+    stem: 3,
     pos: None,
     fin: true,
 }
