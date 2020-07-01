@@ -1,23 +1,143 @@
-use criterion::{criterion_group, criterion_main, Criterion};
-use lucid_suggest_core::{Store, Record, lang, tokenization};
+use criterion::{criterion_group, criterion_main, Criterion, black_box};
+use std::fs;
+use std::cmp::min;
+use rand::prelude::*;
+use rand::distributions::WeightedIndex;
+use lucid_suggest_core::{Store, Record, lang, Text, tokenize_query};
 
-fn text_match_benchmark(criterion: &mut Criterion) {
-    criterion.bench_function("search", |bench| {
-        let mut store = Store::new();
-        store.lang = Some(lang::lang_english());
-        store.add(Record::new(10, "AA 1.5 Alkaline Batteries — Pack of 12", 10, &store.lang));
-        store.add(Record::new(20, "Lightning to USB A Cable",               20, &store.lang));
-        store.add(Record::new(30, "Electric Toothbrush",                    30, &store.lang));
-        store.add(Record::new(40, "Vacuum Compression Storage Bags",        40, &store.lang));
 
-        let query = tokenization::tokenize_query("compressing bag for clothes", &store.lang);
-        let query = query.to_ref();
+fn search_benchmark(criterion: &mut Criterion) {
+    let dataset = SyntheticDataset::new();
 
-        bench.iter(|| {
-            store.search(&query)
-        })
-    });
+    for &(min_words, max_words) in &[(2, 4), (4, 8)] {
+        for &n_records in &[100, 1000, 10_000] {
+            let bench_name = format!("search {} records, {}-{} words", n_records, min_words, max_words);
+            criterion.bench_function(&bench_name, |bench| {
+                let (store, queries) = dataset.gen_data(n_records, min_words, max_words);
+                let mut i = 0;
+                bench.iter(|| {
+                    let query = &queries[i].to_ref();
+                    store.search(black_box(query));
+                    i = (i + 1) % queries.len();
+                })
+            });
+        }
+    }
 }
 
-criterion_group!(benches, text_match_benchmark);
+criterion_group!(benches, search_benchmark);
 criterion_main!(benches);
+
+
+#[derive(Debug)]
+struct SyntheticDataset {
+    pub chars: Vec<char>,
+    pub words: Vec<String>,
+    pub dist:  WeightedIndex<usize>,
+}
+
+
+impl SyntheticDataset {
+    pub fn new() -> Self {
+        let chars = "abcdefghijklmnopqrstuvwxyz".chars().collect::<Vec<_>>();
+
+        let text  = fs::read_to_string("../../datasets/top_1000_words_en.csv").unwrap();
+        let words = text
+            .split("\n")
+            .map(|w| w.trim())
+            .filter(|w| w.len() > 0)
+            .map(|w| w.to_string())
+            .collect::<Vec<_>>();
+
+        let weights = (0..words.len())
+            .map(|i| (words.len() - i) / 100 + 1) // linear from 10x to 1x
+            .collect::<Vec<_>>();
+        let dist = WeightedIndex::new(weights).unwrap();
+
+        Self { chars, words, dist }
+    }
+
+    pub fn gen_data(&self, len: usize, min_words: usize, max_words: usize) -> (Store, Vec<Text<Vec<char>>>) {
+        let mut records = self.gen_records(len, min_words, max_words);
+        let queries = self.gen_queries(&records, 10000);
+        let mut store = Store::new();
+        store.lang = Some(lang::lang_english());
+        for record in records.drain(..) {
+            store.add(record);
+        }
+        (store, queries)
+    }
+
+    pub fn gen_records(&self, len: usize, min_words: usize, max_words: usize) -> Vec<Record> {
+        let mut id = 1;
+        let mut records = Vec::with_capacity(len);
+        for _ in 0..len {
+            let title  = self.gen_title(min_words, max_words);
+            let record = Record::new(id, &title, 0, &None);
+            records.push(record);
+            id += 1;
+        }
+        records
+    }
+
+    pub fn gen_queries(&self, records: &[Record], len: usize) -> Vec<Text<Vec<char>>> {
+        let mut queries = Vec::with_capacity(len);
+        let mut rng     = thread_rng();
+        for _ in 0..len {
+            let record   = &records[rng.gen_range(0, records.len())];
+            let title    = &record.title;
+            let qlen_max = title.words[..min(3, title.words.len())]
+                .iter()
+                .map(|w| w.len())
+                .sum::<usize>();
+            let qlen     = rng.gen_range(0, qlen_max);
+            let query    = self.corrupt(&title.source);
+            let query    = &query[0 .. min(qlen, query.len())];
+            let query    = query.iter().collect::<String>();
+            queries.push(tokenize_query(&query, &None));
+        }
+        queries
+    }
+
+    pub fn gen_title(&self, min_words: usize, max_words: usize) -> String {
+        let mut rng   = thread_rng();
+        let n_words   = rng.gen_range(min_words, max_words);
+        let mut title = String::with_capacity(n_words * 10);
+        for _ in 0..n_words {
+            title.push_str(self.random_word());
+            if rng.gen::<f64>() < 0.5 { title.push(','); }
+            title.push(' ');
+        }
+        title.pop();
+        if let Some(',') = title.chars().last() {
+            title.pop();
+        }
+        title
+    }
+
+    pub fn corrupt(&self, source: &[char]) -> Vec<char> {
+        let mut chars = source.to_vec();
+        let mut rng = thread_rng();
+        let n_typos = rng.gen_range(0, chars.len() / 10 + 1);
+        for _ in 0..n_typos {
+            if chars.len() <= 1 {
+                break;
+            }
+            let mut ix = 0;
+            while ix == 0 || chars[ix - 1] == ' ' {
+                ix = rng.gen_range(0, chars.len());
+            }
+            let ch = self.chars[rng.gen_range(0, self.chars.len())];
+            let choice = rng.gen_range(0, 3);
+            if choice == 0 { chars[ix] = ch; }
+            if choice == 1 { chars.remove(ix); }
+            if choice == 2 { chars.insert(ix + 1, ch); }
+        }
+        chars
+    }
+
+    pub fn random_word(&self) -> &str {
+        let mut rng = thread_rng();
+        &self.words[self.dist.sample(&mut rng)]
+    }
+}
