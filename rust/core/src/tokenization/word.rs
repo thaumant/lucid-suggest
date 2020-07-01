@@ -82,11 +82,11 @@ impl Word {
     pub fn strip<P: CharPattern>(&mut self, chars: &[char], pattern: &P) -> &mut Self {
         let chars = self.view(chars);
         let left  = chars.iter()
-            .take_while(|&&ch| pattern.matches(ch))
+            .take_while(|&&ch| pattern.matches(ch).unwrap_or(false))
             .count();
         let right = chars.iter()
             .rev()
-            .take_while(|&&ch| pattern.matches(ch))
+            .take_while(|&&ch| pattern.matches(ch).unwrap_or(false))
             .take(chars.len() - left)
             .count();
         self.place.0 += left;
@@ -140,12 +140,12 @@ impl<'a, 'b, P: CharPattern> Iterator for WordSplit<'a, 'b, P> {
 
         *offset += chars[*offset ..]
             .iter()
-            .take_while(|&&ch| pattern.matches(ch))
+            .take_while(|&&ch| pattern.matches(ch).unwrap_or(false))
             .count();
 
         let len = chars[*offset ..]
             .iter()
-            .take_while(|&&ch| !pattern.matches(ch))
+            .take_while(|&&ch| !pattern.matches(ch).unwrap_or(false))
             .count();
 
         if len == 0 {
