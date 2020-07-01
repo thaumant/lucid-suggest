@@ -11,7 +11,7 @@ pub use word_shape::WordShape;
 pub use text::{Text, TextOwn, TextRef};
 
 
-pub fn tokenize_query(source: &str, lang: &Option<Lang>) -> TextOwn {
+pub fn tokenize_query(source: &str, lang: &Lang) -> TextOwn {
     Text::from_str(source)
         .normalize(lang)
         .fin(false)
@@ -24,7 +24,7 @@ pub fn tokenize_query(source: &str, lang: &Option<Lang>) -> TextOwn {
 }
 
 
-pub fn tokenize_record(source: &str, lang: &Option<Lang>) -> TextOwn {
+pub fn tokenize_record(source: &str, lang: &Lang) -> TextOwn {
      Text::from_str(source)
         .normalize(lang)
         .split(&[CharClass::Whitespace, CharClass::Control, CharClass::Punctuation], lang)

@@ -105,12 +105,13 @@ pub fn jaccard_check(rword: &WordView, qword: &WordView) -> bool {
 mod tests {
     use insta::assert_debug_snapshot;
     use crate::tokenization::TextOwn;
-    use crate::lang::{CharClass, lang_english};
+    use crate::lang::{Lang, CharClass, lang_english};
     use super::{length_check, jaccard_check, word_match};
 
 
     fn text(s: &str) -> TextOwn {
-        TextOwn::from_str(s).split(&CharClass::Whitespace, &None)
+        let lang = Lang::new();
+        TextOwn::from_str(s).split(&CharClass::Whitespace, &lang)
     }
 
     #[test]
@@ -316,7 +317,7 @@ mod tests {
 
     #[test]
     fn match_word_full_stem() {
-        let lang   = Some(lang_english());
+        let lang   = lang_english();
         let qtext1 = TextOwn::from_str("university").set_stem(&lang);
         let qtext2 = TextOwn::from_str("university");
         let rtext  = TextOwn::from_str("universe").set_stem(&lang);

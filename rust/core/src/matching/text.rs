@@ -74,14 +74,14 @@ pub fn text_match(rtext: &TextRef, qtext: &TextRef) -> Vec<WordMatch> {
 mod tests {
     use insta::assert_debug_snapshot;
     use crate::tokenization::{Text, TextOwn};
-    use crate::lang::{CharClass, lang_empty, lang_english};
+    use crate::lang::{CharClass, lang_basic, lang_english};
     use super::{text_match};
 
 
     fn text(s: &str) -> TextOwn {
-        let lang = Some(lang_empty());
+        let lang = lang_basic();
         Text::from_str(s)
-            .split(&[CharClass::Punctuation, CharClass::Whitespace], &None)
+            .split(&[CharClass::Punctuation, CharClass::Whitespace], &lang)
             .set_char_classes(&lang)
     }
 
@@ -157,7 +157,7 @@ mod tests {
         let mut rtext = text("the theme");
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
 
-        let lang = Some(lang_english());
+        let lang = lang_english();
         qtext = qtext.set_pos(&lang);
         rtext = rtext.set_pos(&lang);
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));

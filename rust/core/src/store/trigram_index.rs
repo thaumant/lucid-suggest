@@ -134,17 +134,19 @@ impl TrigramIndex {
 #[cfg(test)]
 mod tests {
     use insta::{assert_debug_snapshot, assert_snapshot};
+    use crate::lang::Lang;
     use crate::tokenization::tokenize_query;
     use super::Record;
     use super::TrigramIndex;
 
     fn get_index() -> (TrigramIndex, [Record; 5]) {
+        let lang    = Lang::new();
         let records = [
-            Record::new(10, "brown plush bear",     10, &None),
-            Record::new(20, "the metal detector",   20, &None),
-            Record::new(30, "yellow metal mailbox", 30, &None),
-            Record::new(40, "thesaurus",            40, &None),
-            Record::new(50, "wi-fi router",         50, &None),
+            Record::new(10, "brown plush bear",     10, &lang),
+            Record::new(20, "the metal detector",   20, &lang),
+            Record::new(30, "yellow metal mailbox", 30, &lang),
+            Record::new(40, "thesaurus",            40, &lang),
+            Record::new(50, "wi-fi router",         50, &lang),
         ];
         let mut index = TrigramIndex::new();
         for record in &records {
@@ -174,9 +176,10 @@ mod tests {
     }
 
     fn check_prepare(name: &str, size: usize, queries: &[&str]) {
+        let lang = Lang::new();
         let (mut index, _) = get_index();
         for (i, query) in queries.iter().enumerate() {
-            let query = tokenize_query(query, &None);
+            let query = tokenize_query(query, &lang);
             let query = query.to_ref();
             index.prepare(&query, size);
             let mut sorted = index.ids_indexed.iter().collect::<Vec<_>>();
@@ -187,16 +190,18 @@ mod tests {
 
     #[test]
     fn add_first() {
+        let lang = Lang::new();
         let mut index = TrigramIndex::new();
-        index.add(&Record::new(10, "Foo Bar", 10, &None));
+        index.add(&Record::new(10, "Foo Bar", 10, &lang));
         assert_snapshot!(export_tree(&index));
     }
 
     #[test]
     fn add_second() {
+        let lang = Lang::new();
         let mut index = TrigramIndex::new();
-        index.add(&Record::new(10, "Foo Bar", 10, &None));
-        index.add(&Record::new(20, "Bar Baz", 20, &None));
+        index.add(&Record::new(10, "Foo Bar", 10, &lang));
+        index.add(&Record::new(20, "Bar Baz", 20, &lang));
         assert_snapshot!(export_tree(&index));
     }
 
@@ -249,8 +254,9 @@ mod tests {
 
     #[test]
     fn matches_basic() {
+        let lang = Lang::new();
         let (mut index, records) = get_index();
-        let query = tokenize_query("metal", &None);
+        let query = tokenize_query("metal", &lang);
         let query = query.to_ref();
         index.prepare(&query, 10);
         assert_eq!(index.matches(&records[0]), false);

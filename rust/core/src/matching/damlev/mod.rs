@@ -254,7 +254,7 @@ mod tests {
 
     #[test]
     pub fn add_del_lang_consonant() {
-        let lang   = Some(lang_english());
+        let lang   = lang_english();
         let damlev = DamerauLevenshtein::new();
         let text   = |s| Text::from_str(s).set_char_classes(&lang);
         let sample = [
@@ -277,7 +277,7 @@ mod tests {
 
     #[test]
     pub fn add_del_lang_vowel() {
-        let lang   = Some(lang_english());
+        let lang   = lang_english();
         let damlev = DamerauLevenshtein::new();
         let text   = |s| Text::from_str(s).set_char_classes(&lang);
         let sample = [
@@ -300,7 +300,7 @@ mod tests {
 
     #[test]
     fn sub_lang() {
-        let lang   = Some(lang_english());
+        let lang   = lang_english();
         let damlev = DamerauLevenshtein::new();
         let text   = |s| Text::from_str(s).set_char_classes(&lang);
         let sample = [
@@ -318,7 +318,7 @@ mod tests {
 
     #[test]
     fn add_del_double_lang() {
-        let lang   = Some(lang_english());
+        let lang   = lang_english();
         let damlev = DamerauLevenshtein::new();
         let text   = |s| Text::from_str(s).set_char_classes(&lang);
         let sample = [
@@ -343,7 +343,7 @@ mod tests {
 
     #[test]
     fn sub_double_lang() {
-        let lang   = Some(lang_english());
+        let lang   = lang_english();
         let damlev = DamerauLevenshtein::new();
         let text   = |s| Text::from_str(s).set_char_classes(&lang);
         let sample = [
@@ -374,7 +374,7 @@ mod tests {
 
     #[test]
     fn notalpha_lang() {
-        let lang   = Some(lang_english());
+        let lang   = lang_english();
         let damlev = DamerauLevenshtein::new();
         let text   = |s| Text::from_str(s).set_char_classes(&lang);
         let sample = [

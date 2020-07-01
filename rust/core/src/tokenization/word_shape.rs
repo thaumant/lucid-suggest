@@ -58,13 +58,11 @@ impl WordShape {
         self
     }
 
-    pub fn split<'a, 'b, P: CharPattern>(&'a self, chars: &'a [char], pattern: &'b P, lang: &'a Option<Lang>) -> WordSplit<'a, 'b, P> {
+    pub fn split<'a, 'b, P: CharPattern>(&'a self, chars: &'a [char], pattern: &'b P, lang: &'a Lang) -> WordSplit<'a, 'b, P> {
         WordSplit::new(self, chars, pattern, lang)
     }
 
-    pub fn strip<P: CharPattern>(&mut self, chars: &[char], pattern: &P, lang: &Option<Lang>) -> &mut Self {
-        let empty_lang = Lang::new();
-        let lang  = lang.as_ref().unwrap_or(&empty_lang);
+    pub fn strip<P: CharPattern>(&mut self, chars: &[char], pattern: &P, lang: &Lang) -> &mut Self {
         let chars = &chars[self.place.0 .. self.place.1];
         let left  = chars.iter()
             .take_while(|&&ch| pattern.matches(ch, lang).unwrap_or(false))
@@ -108,7 +106,7 @@ impl WordShape {
 mod tests {
     use insta::assert_debug_snapshot;
     use crate::utils::to_vec;
-    use crate::lang::{CharClass, PartOfSpeech, lang_english};
+    use crate::lang::{Lang, CharClass, PartOfSpeech, lang_english};
     use super::{Word, WordShape};
 
     use CharClass::{
@@ -210,28 +208,31 @@ mod tests {
 
     #[test]
     fn word_strip() {
+        let lang   = Lang::new();
         let chars = to_vec(" Foo; ");
         let mut word = WordShape::new(chars.len());
-        word.strip(&chars[..], &[Whitespace, Punctuation], &None);
+        word.strip(&chars[..], &[Whitespace, Punctuation], &lang);
         assert_debug_snapshot!(&word);
     }
 
     #[test]
     fn word_strip_empty() {
+        let lang   = Lang::new();
         let chars = to_vec(" ,;");
         let mut word = WordShape::new(chars.len());
-        word.strip(&chars[..], &[Whitespace, Punctuation], &None);
+        word.strip(&chars[..], &[Whitespace, Punctuation], &lang);
         assert_debug_snapshot!(word);
     }
 
     #[test]
     fn word_strip_unfinished() {
+        let lang   = Lang::new();
         let chars1 = to_vec(" Foo Bar, Baz");
         let chars2 = to_vec(" Foo Bar, Baz; ");
         let mut word1 = WordShape::new(chars1.len()).set_fin(false);
         let mut word2 = WordShape::new(chars2.len()).set_fin(false);
-        word1.strip(&chars1[..], &[Whitespace, Punctuation], &None);
-        word2.strip(&chars2[..], &[Whitespace, Punctuation], &None);
+        word1.strip(&chars1[..], &[Whitespace, Punctuation], &lang);
+        word2.strip(&chars2[..], &[Whitespace, Punctuation], &lang);
         assert_eq!(word1.fin, false);
         assert_eq!(word2.fin, true);
     }

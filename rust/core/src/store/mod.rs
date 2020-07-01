@@ -20,7 +20,7 @@ pub struct Record {
 
 
 impl Record {
-    pub fn new(id: usize, source: &str, rating: usize, lang: &Option<Lang>) -> Record {
+    pub fn new(id: usize, source: &str, rating: usize, lang: &Lang) -> Record {
         Record {
             id,
             title: tokenize_record(source, lang),
@@ -33,7 +33,7 @@ impl Record {
 pub struct Store {
     pub records: Vec<Record>,
     pub limit:   usize,
-    pub lang:    Option<Lang>,
+    pub lang:    Lang,
     dividers:    (Vec<char>, Vec<char>),
     pub index:   RefCell<TrigramIndex>,
 }
@@ -44,7 +44,7 @@ impl Store {
         Self {
             records:  Vec::new(),
             limit:    DEFAULT_LIMIT,
-            lang:     None,
+            lang:     Lang::new(),
             dividers: (vec!['['], vec![']']),
             index:    RefCell::new(TrigramIndex::new()),
         }

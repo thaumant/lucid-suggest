@@ -88,31 +88,27 @@ impl TextOwn {
         self
     }
 
-    pub fn normalize(mut self, lang: &Option<Lang>) -> Self {
-        if let Some(lang) = lang {
-            if self.words.len() == 0 {
-                return self;
-            }
-            if self.words.len() > 1 {
-                panic!("Normalization should always be the first step");
-            }
-
-            if let Some(nfc) = lang.unicode_compose(&self.source) {
-                self.source           = nfc.clone();
-                self.chars            = nfc;
-                self.words[0].place.1 = self.chars.len();
-            }
-
-            if let Some((source, chars)) = lang.unicode_reduce(&self.chars) {
-                self.source           = source;
-                self.chars            = chars;
-                self.words[0].place.1 = self.chars.len();
-            }
+    pub fn normalize(mut self, lang: &Lang) -> Self {
+        if self.words.len() == 0 {
+            return self;
+        }
+        if self.words.len() > 1 {
+            panic!("Normalization should always be the first step");
+        }
+        if let Some(nfc) = lang.unicode_compose(&self.source) {
+            self.source           = nfc.clone();
+            self.chars            = nfc;
+            self.words[0].place.1 = self.chars.len();
+        }
+        if let Some((source, chars)) = lang.unicode_reduce(&self.chars) {
+            self.source           = source;
+            self.chars            = chars;
+            self.words[0].place.1 = self.chars.len();
         }
         self
     }
 
-    pub fn split<P: CharPattern>(mut self, pattern: &P, lang: &Option<Lang>) -> Self {
+    pub fn split<P: CharPattern>(mut self, pattern: &P, lang: &Lang) -> Self {
         let mut words = Vec::with_capacity(self.words.len());
         for word in &self.words {
             for splitted in word.split(&self.chars, pattern, lang) {
@@ -126,7 +122,7 @@ impl TextOwn {
         self
     }
 
-    pub fn strip<P: CharPattern>(mut self, pattern: &P, lang: &Option<Lang>) -> Self {
+    pub fn strip<P: CharPattern>(mut self, pattern: &P, lang: &Lang) -> Self {
         for word in &mut self.words {
             word.strip(&self.chars, pattern, lang);
         }
@@ -137,39 +133,33 @@ impl TextOwn {
         self
     }
 
-    pub fn set_stem(mut self, lang: &Option<Lang>) -> Self {
-        if let Some(lang) = lang {
-            for word in &mut self.words {
-                word.set_stem(&self.chars, lang);
-            }
+    pub fn set_stem(mut self, lang: &Lang) -> Self {
+        for word in &mut self.words {
+            word.set_stem(&self.chars, lang);
         }
         self
     }
 
-    pub fn set_pos(mut self, lang: &Option<Lang>) -> Self {
-        if let Some(lang) = lang {
-            for word in &mut self.words {
-                word.set_pos(&self.chars, lang);
-            }
+    pub fn set_pos(mut self, lang: &Lang) -> Self {
+        for word in &mut self.words {
+            word.set_pos(&self.chars, lang);
         }
         self
     }
 
-    pub fn set_char_classes(mut self, lang: &Option<Lang>) -> Self {
+    pub fn set_char_classes(mut self, lang: &Lang) -> Self {
         self.classes.resize(self.chars.len(), CharClass::Any);
-        if let Some(lang) = lang {
-            for (&ch, class) in &mut self.chars.iter().zip(&mut self.classes) {
-                *class = lang
-                    .get_char_class(ch)
-                    .or_else(|| {
-                        if CharClass::NotAlpha.matches(ch, lang)? {
-                            Some(CharClass::NotAlpha)
-                        } else {
-                            None
-                        }
-                    })
-                    .unwrap_or(CharClass::Any);
-            }
+        for (&ch, class) in &mut self.chars.iter().zip(&mut self.classes) {
+            *class = lang
+                .get_char_class(ch)
+                .or_else(|| {
+                    if CharClass::NotAlpha.matches(ch, lang)? {
+                        Some(CharClass::NotAlpha)
+                    } else {
+                        None
+                    }
+                })
+                .unwrap_or(CharClass::Any);
         }
         self
     }
@@ -213,7 +203,7 @@ impl<W, T, C> fmt::Debug for Text<W, T, C> where
 mod tests {
     use insta::assert_debug_snapshot;
     use crate::utils::to_vec;
-    use crate::lang::{CharClass, PartOfSpeech, lang_english, lang_portuguese, lang_german};
+    use crate::lang::{Lang, CharClass, PartOfSpeech, lang_english, lang_portuguese, lang_german};
     use super::{WordShape, Text};
 
     use CharClass::{
@@ -223,38 +213,44 @@ mod tests {
 
     #[test]
     fn text_normalize_nfd() {
-        let text = Text::from_str("Conceição").normalize(&Some(lang_portuguese()));
+        let lang = lang_portuguese();
+        let text = Text::from_str("Conceição").normalize(&lang);
         assert_debug_snapshot!((&text.source, &text.chars, &text.words[0]));
     }
 
     #[test]
     fn text_normalize_pad0() {
-        let text = Text::from_str("straße").normalize(&Some(lang_german()));
+        let lang = lang_german();
+        let text = Text::from_str("straße").normalize(&lang);
         assert_debug_snapshot!((&text.source, &text.chars, &text.words[0]));
     }
 
     #[test]
     fn text_split() {
-        let text = Text::from_str(" Foo Bar, Baz; ").split(&[Whitespace, Punctuation], &None);
+        let lang = Lang::new();
+        let text = Text::from_str(" Foo Bar, Baz; ").split(&[Whitespace, Punctuation], &lang);
         assert_debug_snapshot!(text);
     }
 
     #[test]
     fn text_split_empty() {
-        let text = Text::from_str(", ").split(&[Whitespace, Punctuation], &None);
+        let lang = Lang::new();
+        let text = Text::from_str(", ").split(&[Whitespace, Punctuation], &lang);
         assert_debug_snapshot!(text);
     }
 
     #[test]
     fn text_split_unfinished() {
-        let text1 = Text::from_str(" Foo Bar, Baz"  ).fin(false).split(&[Whitespace, Punctuation], &None);
-        let text2 = Text::from_str(" Foo Bar, Baz; ").fin(false).split(&[Whitespace, Punctuation], &None);
+        let lang = Lang::new();
+        let text1 = Text::from_str(" Foo Bar, Baz"  ).fin(false).split(&[Whitespace, Punctuation], &lang);
+        let text2 = Text::from_str(" Foo Bar, Baz; ").fin(false).split(&[Whitespace, Punctuation], &lang);
         assert_eq!(text1.words.last().unwrap().fin, false);
         assert_eq!(text2.words.last().unwrap().fin, true);
     }
 
     #[test]
     fn text_strip() {
+        let lang = Lang::new();
         let chars = to_vec("-Foo- , Baz; ");
         let text  = Text {
                 words:  vec![
@@ -266,13 +262,14 @@ mod tests {
                 chars:   chars.clone(),
                 classes: chars.iter().map(|_| CharClass::Any).collect(),
             }
-            .strip(&[Whitespace, Punctuation], &None);
+            .strip(&[Whitespace, Punctuation], &lang);
         assert_debug_snapshot!(text);
         assert_debug_snapshot!(text.words);
     }
 
     #[test]
     fn text_strip_unfinished() {
+        let lang = Lang::new();
         let chars = to_vec("-Foo- Baz; ");
         let text1 = Text {
                 words:  vec![
@@ -284,7 +281,7 @@ mod tests {
                 classes: chars.iter().map(|_| CharClass::Any).collect(),
             }
             .fin(false)
-            .strip(&[Whitespace, Punctuation], &None);
+            .strip(&[Whitespace, Punctuation], &lang);
 
         let text2 = Text {
                 words:  vec![
@@ -296,7 +293,7 @@ mod tests {
                 classes: chars.iter().map(|_| CharClass::Any).collect(),
             }
             .fin(false)
-            .strip(&[Whitespace, Punctuation], &None);
+            .strip(&[Whitespace, Punctuation], &lang);
 
         assert_eq!(text1.words.last().unwrap().fin, false);
         assert_eq!(text2.words.last().unwrap().fin, true);
@@ -331,7 +328,7 @@ mod tests {
                 source:  chars.clone(),
                 chars:   chars.clone(),
                 classes: chars.iter().map(|_| CharClass::Any).collect(),
-            }.set_stem(&Some(lang));
+            }.set_stem(&lang);
         assert_eq!(text.words[0].stem, 5);
         assert_eq!(text.words[1].stem, 7);
     }
@@ -348,21 +345,21 @@ mod tests {
                 source:  chars.clone(),
                 chars:   chars.clone(),
                 classes: chars.iter().map(|_| CharClass::Any).collect(),
-            }.set_pos(&Some(lang));
+            }.set_pos(&lang);
         assert_eq!(text.words[0].pos, Some(PartOfSpeech::Article));
         assert_eq!(text.words[1].pos, None);
     }
 
     #[test]
     fn text_mark_char_classes_no_lang() {
-        let lang  = None;
+        let lang  = Lang::new();
         let text  = Text::from_str("the universe, 123").set_char_classes(&lang);
         assert_debug_snapshot!(text.classes);
     }
 
     #[test]
     fn text_mark_char_classes_lang_en() {
-        let lang  = Some(lang_english());
+        let lang  = lang_english();
         let text  = Text::from_str("the universe, 123").set_char_classes(&lang);
         assert_debug_snapshot!(text.classes);
     }

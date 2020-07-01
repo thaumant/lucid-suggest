@@ -29,7 +29,7 @@ thread_local! {
 }
 
 
-pub fn create_store(id: usize, lang: Option<Lang>) {
+pub fn create_store(id: usize, lang: Lang) {
     STORES.with(|cell| {
         let stores = &mut *cell.borrow_mut();
         if stores.contains_key(&id) {
@@ -101,7 +101,7 @@ pub fn set_limit(store_id: usize, limit: usize)  {
 pub fn run_search(store_id: usize, query: &str) {
     using_store(store_id, |store| {
     using_results(store_id, |buffer| {
-        let query = tokenize_query(query, &None);
+        let query = tokenize_query(query, &store.lang);
         let query = query.to_ref();
         buffer.clear();
         for result in store.search(&query) {
