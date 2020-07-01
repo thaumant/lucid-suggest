@@ -15,14 +15,24 @@ impl DistMatrix {
         matrix
     }
 
-    pub fn grow(&mut self, size: usize) {
-        if size <= self.size {
-            return;
+    pub fn prepare(&mut self, coefs1: &[f64], coefs2: &[f64]) {
+        let size = max!(coefs1.len() + 2, coefs2.len() + 2);
+        if size > self.size {
+            let size = size + size / 2;
+            self.raw.resize(size * size, 0.0);
+            self.size = size;
+            self.init();
         }
-        let size = size + size / 2;
-        self.raw.resize(size * size, 0.0);
-        self.size = size;
-        self.init();
+        unsafe {
+            for (i1, coef) in coefs1.iter().enumerate() {
+                let prev = self.get_unchecked(i1 + 1, 1);
+                self.set_unchecked(i1 + 2, 1, prev + coef);
+            }
+            for (i2, coef) in coefs2.iter().enumerate() {
+                let prev = self.get_unchecked(1, i2 + 1);
+                self.set_unchecked(1, i2 + 2, prev + coef);
+            }
+        }
     }
 
     pub fn init(&mut self) {
@@ -64,9 +74,9 @@ impl fmt::Debug for DistMatrix {
         while jmax > 0 && self.get(2, jmax - 1) <= std::f64::EPSILON { jmax -= 1; }
 
         write!(f, "DistMatrix:\n")?;
-        for i in 2 .. imax {
-            for j in 2 .. jmax {
-                write!(f, "{:2} ", self.get(i, j))?;
+        for i in 0 .. imax {
+            for j in 0 .. jmax {
+                write!(f, "{:4}  ", self.get(i, j))?;
             }
             write!(f, "\n")?;
         }

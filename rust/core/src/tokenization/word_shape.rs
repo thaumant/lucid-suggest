@@ -63,6 +63,8 @@ impl WordShape {
     }
 
     pub fn strip<P: CharPattern>(&mut self, chars: &[char], pattern: &P, lang: &Option<Lang>) -> &mut Self {
+        let empty_lang = Lang::new();
+        let lang  = lang.as_ref().unwrap_or(&empty_lang);
         let chars = &chars[self.place.0 .. self.place.1];
         let left  = chars.iter()
             .take_while(|&&ch| pattern.matches(ch, lang).unwrap_or(false))

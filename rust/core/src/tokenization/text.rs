@@ -159,7 +159,16 @@ impl TextOwn {
         self.classes.resize(self.chars.len(), CharClass::Any);
         if let Some(lang) = lang {
             for (&ch, class) in &mut self.chars.iter().zip(&mut self.classes) {
-                *class = lang.get_char_class(ch).unwrap_or(CharClass::Any);
+                *class = lang
+                    .get_char_class(ch)
+                    .or_else(|| {
+                        if CharClass::NotAlpha.matches(ch, lang)? {
+                            Some(CharClass::NotAlpha)
+                        } else {
+                            None
+                        }
+                    })
+                    .unwrap_or(CharClass::Any);
             }
         }
         self

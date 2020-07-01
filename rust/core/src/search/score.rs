@@ -31,11 +31,13 @@ pub fn score_nonfunction_up(hit: &Hit) -> isize {
 
 
 pub fn score_typos_down(hit: &Hit) -> isize {
-    let mut typos = 0;
+    let mut all_typos: f64 = 0.0;
     for m in &hit.matches {
-        typos += m.typos as usize + m.record.slice.0 + (m.record.len - m.record.slice.1);
+        let typos = m.typos;
+        let tail  = (m.record.slice.0 + (m.record.len - m.record.slice.1)) as f64;
+        all_typos += typos + tail;
     }
-    -(typos as isize)
+    -(all_typos.ceil() as isize)
 }
 
 
@@ -110,7 +112,7 @@ mod tests {
         score(&q2.to_ref(), &mut h2);
         score(&q3.to_ref(), &mut h3);
         assert_eq!(h1.scores[ScoreType::Typos], -0);
-        assert_eq!(h2.scores[ScoreType::Typos], -2);
+        assert_eq!(h2.scores[ScoreType::Typos], -1);
         assert_eq!(h3.scores[ScoreType::Typos], -3);
     }
 

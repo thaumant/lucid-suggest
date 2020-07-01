@@ -1,6 +1,6 @@
 ---
 source: src/matching/word.rs
-expression: "word_match(&rword, &qword, &rchars[..], &qchars[..])"
+expression: "word_match(&rtext.view(0), &qtext.view(0))"
 ---
 Some(
     WordMatch {
@@ -22,7 +22,7 @@ Some(
             ),
             function: false,
         },
-        typos: 1.0,
+        typos: 0.5,
         fin: false,
     },
 )

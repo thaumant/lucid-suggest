@@ -30,6 +30,8 @@ impl<'a, 'b, P: CharPattern> Iterator for WordSplit<'a, 'b, P> {
 
     fn next(&mut self) -> Option<Self::Item> {
         let Self { word, ix, offset, pattern, lang, .. } = self;
+        let empty_lang = Lang::new();
+        let lang  = lang.as_ref().unwrap_or(&empty_lang);
         let chars = &self.chars[word.place.0 .. word.place.1];
 
         if *offset >= word.len() {
