@@ -25,16 +25,16 @@ pub fn text_match(rtext: &TextRef, qtext: &TextRef) -> Vec<WordMatch> {
                     let rnext = rtext.words.get(rword.ix + 1)?.to_view(rtext);
                     if qword.len() <= rword.len() + rword.dist(&rnext) { return None; }
                     if rtaken.contains(&(rword.ix + 1)) { return None; }
-                    let m        = word_match(&rword.join(&rnext), &qword)?;
-                    let (m1, m2) = m.split_record(&rword, &rnext);
+                    let m = word_match(&rword.join(&rnext), &qword)?;
+                    let (m1, m2) = m.split_record(&rword, &rnext)?;
                     Some((m1, Some(m2)))
                 })
                 .or_else(|| {
                     let qnext = qtext.words.get(qword.ix + 1)?.to_view(qtext);
                     if rword.len() <= qword.len() + qword.dist(&qnext) { return None; }
                     if qtaken.contains(&(qword.ix + 1)) { return None; }
-                    let m        = word_match(&rword, &qword.join(&qnext))?;
-                    let (m1, m2) = m.split_query(&qword, &qnext);
+                    let m = word_match(&rword, &qword.join(&qnext))?;
+                    let (m1, m2) = m.split_query(&qword, &qnext)?;
                     Some((m1, Some(m2)))
                 })
                 .or_else(|| {

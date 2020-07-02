@@ -44,8 +44,8 @@ impl WordMatch {
         }
     }
 
-    pub fn split_query(&self, w1: &WordView, w2: &WordView) -> (Self, Self) {
-        let (query1, query2) = self.query.split(w1, w2);
+    pub fn split_query(&self, w1: &WordView, w2: &WordView) -> Option<(Self, Self)> {
+        let (query1, query2) = self.query.split(w1, w2)?;
         let (typos1, typos2) = Self::split_typos(self.typos, w1.len(), w2.len());
         let part1  = Self {
             query:  query1,
@@ -59,11 +59,11 @@ impl WordMatch {
             typos:  typos2,
             fin:    self.fin,
         };
-        (part1, part2)
+        Some((part1, part2))
     }
 
-    pub fn split_record(&self, w1: &WordView, w2: &WordView) -> (Self, Self) {
-        let (record1, record2) = self.record.split(w1, w2);
+    pub fn split_record(&self, w1: &WordView, w2: &WordView) -> Option<(Self, Self)> {
+        let (record1, record2) = self.record.split(w1, w2)?;
         let (typos1, typos2)   = Self::split_typos(self.typos, w1.len(), w2.len());
         let part1  = Self {
             query:  self.query.clone(),
@@ -77,7 +77,7 @@ impl WordMatch {
             typos:  typos2,
             fin:    self.fin,
         };
-        (part1, part2)
+        Some((part1, part2))
     }
 
     fn split_typos(typos: f64, len1: usize, len2: usize) -> (f64, f64) {
@@ -101,7 +101,13 @@ pub struct MatchSide {
 }
 
 impl MatchSide {
-    pub fn split(&self, w1: &WordView, w2: &WordView) -> (Self, Self) {
+    pub fn split(&self, w1: &WordView, w2: &WordView) -> Option<(Self, Self)> {
+        if w2.place.0 <= w1.place.0 {
+            return None;
+        }
+        if self.slice.1 <= (w2.place.0 - w1.place.0) {
+            return None;
+        }
         let part1  = Self {
             ix:      w1.ix,
             len:     w1.len(),
@@ -114,7 +120,7 @@ impl MatchSide {
             slice:   (0, self.slice.1 - (w2.place.0 - w1.place.0)),
             function: w2.is_function(),
         };
-        (part1, part2)
+        Some((part1, part2))
     }
 }
 
