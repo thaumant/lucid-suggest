@@ -152,23 +152,23 @@ await suggest.search("ne")
 
 | lang | size | gzipped |
 | :--- | ---: | ------: |
-| de   | 167K |     66K |
-| en   | 169K |     66K |
-| es   | 172K |     67K |
-| pt   | 172K |     67K |
-| ru   | 168K |     66K |
+| de   | 187K |     73K |
+| en   | 189K |     73K |
+| es   | 192K |     74K |
+| pt   | 192K |     74K |
+| ru   | 190K |     73K |
 
 
 ## Performance
 
 At the moment LucidSuggest works best with shorter sentences, like shopping items or book titles. Using longer texts, like articles or movie descriptions, may lead to poor experience.
 
-For example, for 10000 records, each containing 4-8 common English words, you can expect a typical search to take about 1 ms, so you can simply call it at every keystroke, without throttling or Web Workers.
+For example, for 10000 records, each containing 4-8 common English words, you can expect a typical search to take about 2 ms, so you can simply call it at every keystroke, without throttling or Web Workers.
 
 Below are the detailed performance measurements, obtained using Node.js 14.3, Intel Core i7 (I7-9750H) 2.6 GHz.
 
 |               | 2-4 words | 4-8 words |
 | ------------: | --------: | --------: |
-|   100 records |   0.09 ms |   0.18 ms |
-|  1000 records |   0.16 ms |   0.26 ms |
-| 10000 records |   0.61 ms |   0.94 ms |
+|   100 records |   0.15 ms |   0.41 ms |
+|  1000 records |   0.48 ms |   0.88 ms |
+| 10000 records |   1.10 ms |   1.70 ms |
