@@ -2,6 +2,11 @@
   "name": "lucid-suggest",
   "version": "0.7.0",
   "description": "Fulltext search and autocomplete engine that works out of the box.",
+  "tags": [
+    "autocomplete",
+    "autosuggest",
+    "typeahead"
+  ],
   "files": [
     "*.js",
     "*.d.ts"
