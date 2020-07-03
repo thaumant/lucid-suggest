@@ -60,4 +60,12 @@ Array [
 ]
 `;
 
-exports[`Russian language Stemming 1`] = `Array []`;
+exports[`Russian language Stemming 1`] = `
+Array [
+  Object {
+    "id": 30,
+    "rating": 2,
+    "title": "Электрическая [зубн]ая щётка",
+  },
+]
+`;
