@@ -3,7 +3,6 @@ mod jaccard;
 mod word;
 mod text;
 
-use std::fmt;
 use crate::tokenization::{Word, WordView};
 pub use word::word_match;
 pub use text::text_match;
@@ -11,71 +10,65 @@ pub use text::text_match;
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct WordMatch {
-    pub query:  MatchSide,
-    pub record: MatchSide,
-    pub typos:  f64,
-    pub fin:    bool,
+    pub ix:    usize,
+    pub len:   usize,
+    pub slice: (usize, usize),
+    pub typos: f64,
+    pub func:  bool,
+    pub fin:   bool,
 }
 
 
 impl WordMatch {
-    pub fn new(
-        qword: &WordView,
+    pub fn new_pair(
         rword: &WordView,
-        qlen:  usize,
+        qword: &WordView,
         rlen:  usize,
+        qlen:  usize,
         typos: f64
-    ) -> Self {
-        Self {
-            query: MatchSide {
-                ix:       qword.ix,
-                len:      qword.len(),
-                slice:    (0, qlen),
-                function: qword.is_function(),
-            },
-            record: MatchSide {
-                ix:       rword.ix,
-                len:      rword.len(),
-                slice:    (0, rlen),
-                function: rword.is_function(),
-            },
+    ) -> (Self, Self) {
+        let fin = qword.fin || rword.len() == rlen;
+        let rmatch = WordMatch {
+            ix:    rword.ix,
+            len:   rword.len(),
+            slice: (0, rlen),
+            func:  rword.is_function(),
             typos,
-            fin: qword.fin || rword.len() == rlen,
+            fin,
+        };
+        let qmatch = WordMatch {
+            ix:     qword.ix,
+            len:    qword.len(),
+            slice:  (0, qlen),
+            func:   qword.is_function(),
+            typos,
+            fin,
+        };
+        (rmatch, qmatch)
+    }
+
+    pub fn split(&self, w1: &WordView, w2: &WordView) -> Option<(Self, Self)> {
+        debug_assert!(w2.place.0 > w1.place.0,              "Invalid word order in match split");
+        debug_assert!(w1.ix == self.ix || w2.ix == self.ix, "Invalid word ixs in match split");
+        if self.slice.1 <= (w2.place.0 - w1.place.0) {
+            return None;
         }
-    }
-
-    pub fn split_query(&self, w1: &WordView, w2: &WordView) -> Option<(Self, Self)> {
-        let (query1, query2) = self.query.split(w1, w2)?;
         let (typos1, typos2) = Self::split_typos(self.typos, w1.len(), w2.len());
-        let part1  = Self {
-            query:  query1,
-            record: self.record.clone(),
-            typos:  typos1,
-            fin:    true,
+        let part1 = Self {
+            ix:      w1.ix,
+            len:     w1.len(),
+            slice:   (0, w1.len()),
+            func:    w1.is_function(),
+            typos:   typos1,
+            fin:     true,
         };
         let part2 = Self {
-            query:  query2,
-            record: self.record.clone(),
-            typos:  typos2,
-            fin:    self.fin,
-        };
-        Some((part1, part2))
-    }
-
-    pub fn split_record(&self, w1: &WordView, w2: &WordView) -> Option<(Self, Self)> {
-        let (record1, record2) = self.record.split(w1, w2)?;
-        let (typos1, typos2)   = Self::split_typos(self.typos, w1.len(), w2.len());
-        let part1  = Self {
-            query:  self.query.clone(),
-            record: record1,
-            typos:  typos1,
-            fin:    true,
-        };
-        let part2 = Self {
-            query:  self.query.clone(),
-            record: record2,
-            typos:  typos2,
-            fin:    self.fin,
+            ix:      w2.ix,
+            len:     w2.len(),
+            slice:   (0, self.slice.1 - (w2.place.0 - w1.place.0)), // TODO Or minus part1.len()? Or compare double slice with...?
+            func:    w2.is_function(),
+            typos:   typos2,
+            fin:     self.fin,
         };
         Some((part1, part2))
     }
@@ -88,66 +81,6 @@ impl WordMatch {
         let split1 = (typos * len1 * 10.0 / (len1 + len2)).ceil() / 10.0;
         let split2 = ((typos - split1) * 10.0).round() / 10.0;
         (split1, split2)
-    }
-}
-
-
-#[derive(Clone, PartialEq, Debug)]
-pub struct MatchSide {
-    pub ix:      usize,
-    pub len:     usize,
-    pub slice:   (usize, usize),
-    pub function: bool,
-}
-
-impl MatchSide {
-    pub fn split(&self, w1: &WordView, w2: &WordView) -> Option<(Self, Self)> {
-        if w2.place.0 <= w1.place.0 {
-            return None;
-        }
-        if self.slice.1 <= (w2.place.0 - w1.place.0) {
-            return None;
-        }
-        let part1  = Self {
-            ix:      w1.ix,
-            len:     w1.len(),
-            slice:   (0, w1.len()),
-            function: w1.is_function(),
-        };
-        let part2 = Self {
-            ix:      w2.ix,
-            len:     w2.len(),
-            slice:   (0, self.slice.1 - (w2.place.0 - w1.place.0)),
-            function: w2.is_function(),
-        };
-        Some((part1, part2))
-    }
-}
-
-
-impl fmt::Display for WordMatch {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "WordMatch {{ ")?;
-
-        for i in 0 .. self.record.len {
-            if i == self.record.slice.0 { write!(f, "[")?; }
-            write!(f, "r")?;
-            if i + 1 == self.record.slice.1 { write!(f, "]")?; }
-        }
-
-        write!(f, " /{}/ ", self.typos)?;
-
-        for i in 0 .. self.query.len {
-            if i == self.query.slice.0 { write!(f, "[")?; }
-            write!(f, "q")?;
-            if i + 1 == self.query.slice.1 { write!(f, "]")?; }
-        }
-        if !self.fin {
-            write!(f, "..")?;
-        }
-
-        write!(f, " }}")?;
-        Ok(())
     }
 }
 

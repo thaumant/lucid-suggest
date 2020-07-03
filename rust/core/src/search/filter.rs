@@ -3,12 +3,12 @@ use crate::search::Hit;
 
 pub fn hit_matches(query: &TextRef, hit: &Hit) -> bool {
     if query.is_empty() { return true; }
-    if hit.matches.len() == 0 { return false; }
-    if hit.matches.len() == 1 && query.words.len() > 1 {
-        let word_match = &hit.matches[0];
-        let unfinished = !word_match.fin;
-        let first_half = (word_match.query.len * 2) < word_match.record.len;
-        if unfinished && first_half { return false; }
+    if hit.rmatches.len() == 0 { return false; }
+    if hit.rmatches.len() == 1 && hit.qmatches.len() == 1 && query.words.len() > 1 {
+        let rmatch     = &hit.rmatches[0];
+        let qmatch     = &hit.qmatches[0];
+        let first_half = (qmatch.len * 2) < rmatch.len;
+        if !rmatch.fin && first_half { return false; }
     }
     true
 }

@@ -6,38 +6,38 @@ expression: "text_match(&rtext.to_ref(), &qtext.to_ref())"
     [
         WordMatch {
             ix: 0,
-            len: 12,
+            len: 1,
             slice: (
                 0,
-                12,
+                1,
             ),
-            typos: 1.5,
-            func: false,
-            fin: true,
-        },
-    ],
-    [
-        WordMatch {
-            ix: 0,
-            len: 4,
-            slice: (
-                0,
-                4,
-            ),
-            typos: 0.6,
+            typos: 0.1,
             func: false,
             fin: true,
         },
         WordMatch {
             ix: 1,
-            len: 7,
+            len: 5,
             slice: (
                 0,
-                7,
+                2,
             ),
-            typos: 0.9,
+            typos: 0.4,
             func: false,
-            fin: true,
+            fin: false,
+        },
+    ],
+    [
+        WordMatch {
+            ix: 0,
+            len: 3,
+            slice: (
+                0,
+                3,
+            ),
+            typos: 0.5,
+            func: false,
+            fin: false,
         },
     ],
 )

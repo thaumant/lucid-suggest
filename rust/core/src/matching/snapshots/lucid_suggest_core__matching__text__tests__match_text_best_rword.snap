@@ -2,27 +2,31 @@
 source: src/matching/text.rs
 expression: "text_match(&rtext.to_ref(), &qtext.to_ref())"
 ---
-[
-    WordMatch {
-        query: MatchSide {
+(
+    [
+        WordMatch {
             ix: 0,
             len: 3,
             slice: (
                 0,
                 3,
             ),
-            function: false,
+            typos: 0.0,
+            func: false,
+            fin: true,
         },
-        record: MatchSide {
+    ],
+    [
+        WordMatch {
             ix: 0,
             len: 3,
             slice: (
                 0,
                 3,
             ),
-            function: false,
+            typos: 0.0,
+            func: false,
+            fin: true,
         },
-        typos: 0.0,
-        fin: true,
-    },
-]
+    ],
+)

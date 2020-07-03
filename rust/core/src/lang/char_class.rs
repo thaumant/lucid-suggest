@@ -37,7 +37,7 @@ impl CharPattern for CharClass {
             Any         => Some(true),
             Control     => Some(ch.is_control()),
             Whitespace  => Some(ch.is_whitespace()),
-            Punctuation => Some(ch.is_ascii_punctuation()),
+            Punctuation => Some(is_punctuation(ch)),
             NotAlpha    => Some(!ch.is_alphabetic()),
             NotAlphaNum => Some(!ch.is_alphanumeric()),
             Consonant   => Some(lang.get_char_class(ch)? == Consonant),
@@ -70,6 +70,21 @@ impl<P: CharPattern> CharPattern for [P; 2] { fn matches(&self, ch: char, lang: 
 impl<P: CharPattern> CharPattern for [P; 3] { fn matches(&self, ch: char, lang: &Lang) -> Option<bool> { self[..].matches(ch, lang) } }
 impl<P: CharPattern> CharPattern for [P; 4] { fn matches(&self, ch: char, lang: &Lang) -> Option<bool> { self[..].matches(ch, lang) } }
 impl<P: CharPattern> CharPattern for [P; 5] { fn matches(&self, ch: char, lang: &Lang) -> Option<bool> { self[..].matches(ch, lang) } }
+
+
+fn is_punctuation(ch: char) -> bool {
+    match ch {
+        // $ " # % ' @ _ ` ~
+        // \ | [ ] { } ^
+        // * +  / < = >
+        '&' | '(' | ')' => true,
+        ',' | ':' | ';' => true,
+        '.' | '!' | '?' => true,
+        '-' | '‑' | '‒' | '–' | '—' => true,
+        '…' | '‼' | '⁇' | '⁈' | '⁉' => true,
+        _ => false,
+    }
+}
 
 
 #[cfg(test)]

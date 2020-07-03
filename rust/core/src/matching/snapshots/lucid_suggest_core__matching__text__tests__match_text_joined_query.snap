@@ -2,71 +2,64 @@
 source: src/matching/text.rs
 expression: "text_match(&rtext.to_ref(), &qtext.to_ref())"
 ---
-[
-    WordMatch {
-        query: MatchSide {
-            ix: 0,
-            len: 2,
-            slice: (
-                0,
-                2,
-            ),
-            function: false,
-        },
-        record: MatchSide {
+(
+    [
+        WordMatch {
             ix: 0,
             len: 4,
             slice: (
                 0,
                 4,
             ),
-            function: false,
+            typos: 0.5,
+            func: false,
+            fin: true,
         },
-        typos: 0.3,
-        fin: true,
-    },
-    WordMatch {
-        query: MatchSide {
+        WordMatch {
+            ix: 1,
+            len: 6,
+            slice: (
+                0,
+                6,
+            ),
+            typos: 0.0,
+            func: false,
+            fin: true,
+        },
+    ],
+    [
+        WordMatch {
+            ix: 0,
+            len: 2,
+            slice: (
+                0,
+                2,
+            ),
+            typos: 0.3,
+            func: false,
+            fin: true,
+        },
+        WordMatch {
             ix: 1,
             len: 2,
             slice: (
                 0,
                 2,
             ),
-            function: false,
+            typos: 0.2,
+            func: false,
+            fin: true,
         },
-        record: MatchSide {
-            ix: 0,
-            len: 4,
-            slice: (
-                0,
-                4,
-            ),
-            function: false,
-        },
-        typos: 0.2,
-        fin: true,
-    },
-    WordMatch {
-        query: MatchSide {
+        WordMatch {
             ix: 2,
             len: 6,
             slice: (
                 0,
                 6,
             ),
-            function: false,
+            typos: 0.0,
+            func: false,
+            fin: true,
         },
-        record: MatchSide {
-            ix: 1,
-            len: 6,
-            slice: (
-                0,
-                6,
-            ),
-            function: false,
-        },
-        typos: 0.0,
-        fin: true,
-    },
-]
+    ],
+)

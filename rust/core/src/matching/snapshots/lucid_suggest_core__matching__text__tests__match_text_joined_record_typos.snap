@@ -2,49 +2,42 @@
 source: src/matching/text.rs
 expression: "text_match(&rtext.to_ref(), &qtext.to_ref())"
 ---
-[
-    WordMatch {
-        query: MatchSide {
-            ix: 0,
-            len: 11,
-            slice: (
-                0,
-                11,
-            ),
-            function: false,
-        },
-        record: MatchSide {
+(
+    [
+        WordMatch {
             ix: 0,
             len: 5,
             slice: (
                 0,
                 5,
             ),
-            function: false,
+            typos: 0.7,
+            func: false,
+            fin: true,
         },
-        typos: 0.7,
-        fin: true,
-    },
-    WordMatch {
-        query: MatchSide {
-            ix: 0,
-            len: 11,
-            slice: (
-                0,
-                11,
-            ),
-            function: false,
-        },
-        record: MatchSide {
+        WordMatch {
             ix: 1,
             len: 7,
             slice: (
                 0,
                 6,
             ),
-            function: false,
+            typos: 0.8,
+            func: false,
+            fin: false,
         },
-        typos: 0.8,
-        fin: false,
-    },
-]
+    ],
+    [
+        WordMatch {
+            ix: 0,
+            len: 11,
+            slice: (
+                0,
+                11,
+            ),
+            typos: 1.5,
+            func: false,
+            fin: false,
+        },
+    ],
+)

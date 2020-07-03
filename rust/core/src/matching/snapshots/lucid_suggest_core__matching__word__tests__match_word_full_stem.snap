@@ -1,28 +1,30 @@
 ---
 source: src/matching/word.rs
-expression: "word_match(&rword, &qword1, &rchars[..], &qchars1[..])"
+expression: "word_match(&rtext.view(0), &qtext1.view(0))"
 ---
 Some(
-    WordMatch {
-        query: MatchSide {
-            ix: 0,
-            len: 10,
-            slice: (
-                0,
-                7,
-            ),
-            function: false,
-        },
-        record: MatchSide {
+    (
+        WordMatch {
             ix: 0,
             len: 8,
             slice: (
                 0,
                 7,
             ),
-            function: false,
+            typos: 0.0,
+            func: false,
+            fin: true,
         },
-        typos: 0.0,
-        fin: true,
-    },
+        WordMatch {
+            ix: 0,
+            len: 10,
+            slice: (
+                0,
+                7,
+            ),
+            typos: 0.0,
+            func: false,
+            fin: true,
+        },
+    ),
 )

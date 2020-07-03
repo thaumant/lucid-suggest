@@ -1,30 +1,32 @@
 ---
-source: src/matching/word.rs
-expression: "word_match(&rtext.view(0), &qtext.view(0))"
+source: src/matching/text.rs
+expression: "text_match(&rtext.to_ref(), &qtext.to_ref())"
 ---
-Some(
-    (
+(
+    [
         WordMatch {
             ix: 0,
-            len: 7,
+            len: 4,
             slice: (
                 0,
-                7,
+                4,
             ),
-            typos: 1.0,
+            typos: 0.5,
             func: false,
             fin: true,
         },
+    ],
+    [
         WordMatch {
             ix: 0,
-            len: 8,
+            len: 3,
             slice: (
                 0,
-                8,
+                3,
             ),
-            typos: 1.0,
+            typos: 0.5,
             func: false,
             fin: true,
         },
-    ),
+    ],
 )

@@ -5,7 +5,7 @@ use super::jaccard::Jaccard;
 
 
 const LENGTH_THRESHOLD:  f64 = 0.26;
-const JACCARD_THRESHOLD: f64 = 0.41;
+const JACCARD_THRESHOLD: f64 = 0.51;
 const DAMLEV_THRESHOLD:  f64 = 0.21;
 
 thread_local! {
@@ -14,7 +14,7 @@ thread_local! {
 }
 
 
-pub fn word_match(rword: &WordView, qword: &WordView) -> Option<WordMatch> {
+pub fn word_match(rword: &WordView, qword: &WordView) -> Option<(WordMatch, WordMatch)> {
     if qword.is_empty() || rword.is_empty() {
         return None;
     }
@@ -25,7 +25,7 @@ pub fn word_match(rword: &WordView, qword: &WordView) -> Option<WordMatch> {
         return None;
     }
 
-    let mut best_match: Option<WordMatch> = None;
+    let mut best_match: Option<(WordMatch, WordMatch)> = None;
 
     DAMLEV.with(|damlev| {
         damlev.distance(qword, rword);
@@ -43,11 +43,11 @@ pub fn word_match(rword: &WordView, qword: &WordView) -> Option<WordMatch> {
                 // Out of bounds.
                 if qlen > qword.len() { continue; }
                 if rlen > rword.len() { continue; }
+                if qlen < qword.stem  { continue; }
                 // Left margin is for insertion/deletion, not for both prefixes at the same time.
                 if rlen == left && qlen == left  { continue; }
                 // Compare full words only if query is finished.
                 if qword.fin && rlen < rword.stem { break; }
-                if qword.fin && qlen < qword.stem { break; }
                 // Words with 2+ insertions/deletions are mismatched by default.
                 if (qlen as isize - rlen as isize).abs() > 1 { continue; }
 
@@ -58,12 +58,12 @@ pub fn word_match(rword: &WordView, qword: &WordView) -> Option<WordMatch> {
 
                 best_match = best_match
                     .take()
-                    .filter(|m| m.typos <= dist)
-                    .or_else(|| Some(WordMatch::new(
-                        qword,
+                    .filter(|m| m.0.typos <= dist)
+                    .or_else(|| Some(WordMatch::new_pair(
                         rword,
-                        qlen,
+                        qword,
                         rlen,
+                        qlen,
                         dist,
                     )));
 
@@ -95,7 +95,11 @@ pub fn length_check(rword: &WordView, qword: &WordView) -> bool {
 
 
 pub fn jaccard_check(rword: &WordView, qword: &WordView) -> bool {
-    let rslice = if qword.fin { rword.chars() } else { &rword.chars()[.. min!(qword.len(), rword.len())] };
+    let rslice = if qword.fin {
+        rword.chars()
+    } else {
+        &rword.chars()[.. min!(qword.len() + 1, rword.len())]
+    };
     let dist   = JACCARD.with(|j| j.rel_dist(rslice, qword.chars()));
     dist < JACCARD_THRESHOLD
 }
@@ -177,7 +181,7 @@ mod tests {
         let sample = [
             (true,  "mailbox"),
             (true,  "mailbot"),
-            (false, "railbot"),
+            (true,  "railbot"),
             (false, "raidbot"),
             (false, "roidbot"),
         ];
@@ -195,7 +199,7 @@ mod tests {
             (true,  "mailbox"),
             (true,  "mailbxx"),
             (true,  "mailxxx"),
-            (false, "maixxxx"),
+            (true,  "maixxxx"),
             (false, "maxxxxx"),
         ];
         for &(expect, query) in sample.iter() {
@@ -215,7 +219,9 @@ mod tests {
             (true,  "mail"),
             (true,  "mailb"),
             (true,  "mailbo"),
-            (false, "mailbox"),
+            (true,  "mailbox"),
+            (true,  "mailboxe"),
+            (false, "mailboxes"),
         ];
         for &(expect, query) in sample.iter() {
             let rtext  = text("mail");

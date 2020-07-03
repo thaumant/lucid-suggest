@@ -1,5 +1,4 @@
 use crate::tokenization::Text;
-use crate::matching::WordMatch;
 use crate::search::Hit;
 
 
@@ -7,7 +6,7 @@ pub fn highlight(hit: &Hit, dividers: (&[char], &[char])) -> String {
     let (div_left, div_right) = dividers;
     let Hit {
         title: Text { words, source, .. },
-        matches,
+        rmatches,
         ..
     } = hit;
 
@@ -19,10 +18,10 @@ pub fn highlight(hit: &Hit, dividers: (&[char], &[char])) -> String {
 
     let mut offset = 0;
     for (ix, word) in words.iter().enumerate() {
-        match matches.iter().find(|m| m.record.ix == ix) {
-            Some(WordMatch { record: m, .. }) => {
-                let match_start = word.place.0 + m.slice.0;
-                let match_end   = word.place.0 + m.slice.1;
+        match rmatches.iter().find(|m| m.ix == ix) {
+            Some(rmatch) => {
+                let match_start = word.place.0 + rmatch.slice.0;
+                let match_end   = word.place.0 + rmatch.slice.1;
                 highlighted.extend(&source[offset .. match_start]);
                 highlighted.extend(div_left);
                 highlighted.extend(&source[match_start .. match_end]);
@@ -44,7 +43,7 @@ pub fn highlight(hit: &Hit, dividers: (&[char], &[char])) -> String {
 
 #[cfg(test)]
 mod tests {
-    use crate::matching::{WordMatch, MatchSide};
+    use crate::matching::WordMatch;
     use crate::store::Record;
     use crate::search::Hit;
     use crate::lang::{Lang, lang_german, lang_portuguese};
@@ -53,13 +52,24 @@ mod tests {
     const L: &[char] = &['['];
     const R: &[char] = &[']'];
 
-    fn mock_match(ix: usize, size: usize) -> WordMatch {
-        WordMatch {
-            query:  MatchSide { ix:  0, len: size, slice: (0, size), function: false },
-            record: MatchSide { ix: ix, len: size, slice: (0, size), function: false },
-            typos:  0.0,
-            fin:    false,
-        }
+    fn mock_match(ix: usize, size: usize) -> (WordMatch, WordMatch) {
+        let rmatch = WordMatch {
+            ix:    ix,
+            len:   size,
+            slice: (0, size),
+            func:  false,
+            typos: 0.0,
+            fin:   false,
+        };
+        let qmatch = WordMatch {
+            ix:    0,
+            len:   size,
+            slice: (0, size),
+            func:  false,
+            typos: 0.0,
+            fin:   false,
+        };
+        (rmatch, qmatch)
     }
 
     #[test]
@@ -68,7 +78,9 @@ mod tests {
         let record = Record::new(10, "metal detector", 0, &lang);
 
         let mut hit = Hit::from_record(&record);
-        hit.matches.push(mock_match(1, 6));
+        let (rmatch, qmatch) = mock_match(1, 6);
+        hit.rmatches.push(rmatch);
+        hit.qmatches.push(qmatch);
 
         let expected = "metal [detect]or";
         let received = highlight(&hit, (L, R));
@@ -82,7 +94,9 @@ mod tests {
         let record = Record::new(10, "'metal' mailbox!", 0, &lang);
 
         let mut hit = Hit::from_record(&record);
-        hit.matches.push(mock_match(0, 5));
+        let (rmatch, qmatch) = mock_match(0, 5);
+        hit.rmatches.push(rmatch);
+        hit.qmatches.push(qmatch);
 
         let expected = "'[metal]' mailbox!";
         let received = highlight(&hit, (L, R));
@@ -96,7 +110,9 @@ mod tests {
         let record = Record::new(10, "metal detector", 0, &lang);
 
         let mut hit = Hit::from_record(&record);
-        hit.matches.push(mock_match(1, 6));
+        let (rmatch, qmatch) = mock_match(1, 6);
+        hit.rmatches.push(rmatch);
+        hit.qmatches.push(qmatch);
 
         let l: &[char] = &['{', '{'];
         let r: &[char] = &['}', '}'];
@@ -113,7 +129,9 @@ mod tests {
         let record = Record::new(10, "Passstraße", 0, &lang);
 
         let mut hit = Hit::from_record(&record);
-        hit.matches.push(mock_match(0, 9));
+        let (rmatch, qmatch) = mock_match(0, 9);
+        hit.rmatches.push(rmatch);
+        hit.qmatches.push(qmatch);
 
         let expected = "[Passstraß]e";
         let received = highlight(&hit, (L, R));
@@ -127,7 +145,9 @@ mod tests {
         let record = Record::new(10, "Passstraße", 0, &lang);
 
         let mut hit = Hit::from_record(&record);
-        hit.matches.push(mock_match(0, 9));
+        let (rmatch, qmatch) = mock_match(0, 9);
+        hit.rmatches.push(rmatch);
+        hit.qmatches.push(qmatch);
 
         let expected = "[Passstraß]e";
         let received = highlight(&hit, (L, R));

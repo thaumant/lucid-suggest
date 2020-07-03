@@ -1,72 +1,87 @@
-use fnv::{FnvHashSet as HashSet};
+use std::cell::RefCell;
+use fnv::{FnvHashMap as HashMap};
 use crate::tokenization::{Word, TextRef};
 use super::WordMatch;
 use super::word::word_match;
 
+thread_local! {
+    static RMATCHES: RefCell<HashMap<usize, WordMatch>> = RefCell::new(HashMap::with_capacity_and_hasher(10, Default::default()));
+    static QMATCHES: RefCell<HashMap<usize, WordMatch>> = RefCell::new(HashMap::with_capacity_and_hasher(10, Default::default()));
+}
 
-pub fn text_match(rtext: &TextRef, qtext: &TextRef) -> Vec<WordMatch> {
-    let capacity = min!(rtext.words.len(), qtext.words.len());
-    let mut rtaken: HashSet<usize>  = HashSet::with_capacity_and_hasher(capacity, Default::default());
-    let mut qtaken: HashSet<usize>  = HashSet::with_capacity_and_hasher(capacity, Default::default());
-    let mut matches: Vec<WordMatch> = Vec::with_capacity(capacity);
 
-    for qword in qtext.words.iter() {
-        if qtaken.contains(&qword.ix) { continue; }
-        let qword = qword.to_view(qtext);
+pub fn text_match(rtext: &TextRef, qtext: &TextRef) -> (Vec<WordMatch>, Vec<WordMatch>) {
+    RMATCHES.with(|rcell| {
+    QMATCHES.with(|qcell| {
+        let rmatches = &mut *rcell.borrow_mut();
+        let qmatches = &mut *qcell.borrow_mut();
+        rmatches.clear();
+        qmatches.clear();
 
-        let mut candidate: Option<(WordMatch, Option<WordMatch>)> = None;
+        for qword in qtext.words.iter() {
+            if qmatches.contains_key(&qword.ix) { continue; }
+            let qword = qword.to_view(qtext);
 
-        for rword in rtext.words.iter() {
-            if rtaken.contains(&rword.ix) { continue; }
-            let rword = rword.to_view(rtext);
+            let mut candidate: Option<(WordMatch, WordMatch)> = None;
 
-            let new_candidate = None
-                .or_else(|| {
-                    let rnext = rtext.words.get(rword.ix + 1)?.to_view(rtext);
-                    if qword.len() <= rword.len() + rword.dist(&rnext) { return None; }
-                    if rtaken.contains(&(rword.ix + 1)) { return None; }
-                    let m = word_match(&rword.join(&rnext), &qword)?;
-                    let (m1, m2) = m.split_record(&rword, &rnext)?;
-                    Some((m1, Some(m2)))
-                })
-                .or_else(|| {
-                    let qnext = qtext.words.get(qword.ix + 1)?.to_view(qtext);
-                    if rword.len() <= qword.len() + qword.dist(&qnext) { return None; }
-                    if qtaken.contains(&(qword.ix + 1)) { return None; }
-                    let m = word_match(&rword, &qword.join(&qnext))?;
-                    let (m1, m2) = m.split_query(&qword, &qnext)?;
-                    Some((m1, Some(m2)))
-                })
-                .or_else(|| {
-                    let m = word_match(&rword, &qword)?;
-                    Some((m, None))
-                });
+            for rword in rtext.words.iter() {
+                if rmatches.contains_key(&rword.ix) { continue; }
+                let rword = rword.to_view(rtext);
+                let mut stop = false;
 
-            if let Some(new_candidate) = new_candidate {
-                if !new_candidate.0.record.function || new_candidate.1.is_some() {
-                    candidate = Some(new_candidate);
+                None.or_else(|| {
+                        let rnext = rtext.words.get(rword.ix + 1)?.to_view(rtext);
+                        if qword.len() < rword.len() + rword.dist(&rnext) { return None; }
+                        if rmatches.contains_key(&(rword.ix + 1)) { return None; }
+                        let (rmatch,  qmatch)  = word_match(&rword.join(&rnext), &qword)?;
+                        let (rmatch1, rmatch2) = rmatch.split(&rword, &rnext)?;
+                        rmatches.insert(rmatch1.ix, rmatch1);
+                        rmatches.insert(rmatch2.ix, rmatch2);
+                        qmatches.insert(qmatch.ix,  qmatch);
+                        candidate.take();
+                        stop = true;
+                        Some(())
+                    })
+                    .or_else(|| {
+                        let qnext = qtext.words.get(qword.ix + 1)?.to_view(qtext);
+                        if rword.len() < qword.len() + qword.dist(&qnext) { return None; }
+                        if qmatches.contains_key(&(qword.ix + 1)) { return None; }
+                        let (rmatch,  qmatch)  = word_match(&rword, &qword.join(&qnext))?;
+                        let (qmatch1, qmatch2) = qmatch.split(&qword, &qnext)?;
+                        rmatches.insert(rmatch.ix,  rmatch);
+                        qmatches.insert(qmatch1.ix, qmatch1);
+                        qmatches.insert(qmatch2.ix, qmatch2);
+                        candidate.take();
+                        stop = true;
+                        Some(())
+                    })
+                    .or_else(|| {
+                        let (rmatch, qmatch) = word_match(&rword, &qword)?;
+                        if !candidate.is_some() || !rmatch.func {
+                            stop = !rmatch.func;
+                            candidate = Some((rmatch, qmatch));
+                        }
+                        Some(())
+                    });
+
+                if stop {
                     break;
                 }
-                if !candidate.is_some() {
-                    candidate = Some(new_candidate);
-                    continue;
-                }
+            }
+
+            if let Some((rmatch, qmatch)) = candidate {
+                rmatches.insert(rmatch.ix, rmatch);
+                qmatches.insert(qmatch.ix, qmatch);
             }
         }
 
-        if let Some((m1, m2)) = candidate {
-            qtaken.insert(m1.query.ix);
-            rtaken.insert(m1.record.ix);
-            matches.push(m1);
-            if let Some(m2) = m2 {
-                qtaken.insert(m2.query.ix);
-                rtaken.insert(m2.record.ix);
-                matches.push(m2);
-            }
-        }
-    }
+        let mut rmatches = rmatches.drain().map(|(_, m)| m).collect::<Vec<_>>();
+        let mut qmatches = qmatches.drain().map(|(_, m)| m).collect::<Vec<_>>();
+        rmatches.sort_by(|m1, m2| m1.ix.cmp(&m2.ix));
+        qmatches.sort_by(|m1, m2| m1.ix.cmp(&m2.ix));
 
-    matches
+        (rmatches, qmatches)
+    }) })
 }
 
 
@@ -88,16 +103,16 @@ mod tests {
 
     #[test]
     fn match_text_empty_both() {
-        let qtext = text("").fin(false);
         let rtext = text("");
+        let qtext = text("").fin(false);
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
 
     #[test]
     fn match_text_empty_one() {
-        let qtext = text("mailbox").fin(false);
         let rtext = text("");
+        let qtext = text("mailbox").fin(false);
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
         assert_debug_snapshot!(text_match(&qtext.to_ref(), &rtext.to_ref()));
     }
@@ -105,118 +120,134 @@ mod tests {
 
     #[test]
     fn match_text_singleton_equality() {
-        let qtext = text("mailbox").fin(false);
         let rtext = text("mailbox");
+        let qtext = text("mailbox").fin(false);
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
 
     #[test]
     fn match_text_singleton_typos() {
-        let qtext = text("maiblox").fin(false);
         let rtext = text("mailbox");
+        let qtext = text("maiblox").fin(false);
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
 
     #[test]
     fn match_text_pair_first() {
-        let qtext = text("yelow").fin(false);
         let rtext = text("yellow mailbox");
+        let qtext = text("yelow").fin(false);
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
 
     #[test]
     fn match_text_pair_second() {
-        let qtext = text("maiblox").fin(false);
         let rtext = text("yellow mailbox");
+        let qtext = text("maiblox").fin(false);
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
 
     #[test]
     fn match_text_pair_unfinished() {
-        let qtext = text("maiblox yel").fin(false);
         let rtext = text("yellow mailbox");
+        let qtext = text("maiblox yel").fin(false);
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
 
     #[test]
     fn match_text_intersection() {
-        let qtext = text("big malibox yelo").fin(false);
         let rtext = text("small yellow metal mailbox");
+        let qtext = text("big malibox yelo").fin(false);
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
 
     #[test]
     fn match_text_best_rword() {
-        let mut qtext = text("the").fin(false);
         let mut rtext = text("the theme");
+        let mut qtext = text("the").fin(false);
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
 
         let lang = lang_english();
-        qtext = qtext.set_pos(&lang);
         rtext = rtext.set_pos(&lang);
+        qtext = qtext.set_pos(&lang);
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
 
     #[test]
     fn match_text_regression_best_match() {
-        let qtext = text("sneak").fin(false);
         let rtext = text("sneaky");
+        let qtext = text("sneak").fin(false);
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
     #[test]
     fn match_text_joined_query() {
-        let qtext = text("wi fi router").fin(false);
         let rtext = text("wifi router");
+        let qtext = text("wi fi router").fin(false);
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
     #[test]
     fn match_text_joined_query_unfihished() {
-        let qtext = text("micro bio").fin(false);
         let rtext = text("microbiology");
+        let qtext = text("micro bio").fin(false);
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
     #[test]
     fn match_text_joined_query_typos() {
-        let qtext = text("mcro byology").fin(false);
         let rtext = text("microbiology");
+        let qtext = text("mcro byology").fin(false);
+        assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
+    }
+
+    #[test]
+    fn match_text_joined_query_short() {
+        let rtext = text("t-light");
+        let qtext = text("tli").fin(false);
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
     #[test]
     fn match_text_joined_record() {
-        let qtext = text("wifi router").fin(false);
         let rtext = text("wi fi router");
+        let qtext = text("wifi router").fin(false);
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
     #[test]
     fn match_text_joined_record_typos() {
-        let qtext = text("mcrobiology").fin(false);
         let rtext = text("micro biology");
+        let qtext = text("mcrobiology").fin(false);
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
     #[test]
     fn match_text_joined_record_unfinished() {
-        let qtext = text("microbio").fin(false);
         let rtext = text("micro biology");
+        let qtext = text("microbio").fin(false);
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
     #[test]
     fn match_text_joined_regression_1() {
-        let qtext = text("especiall").fin(false);
         let rtext = text("special, year");
+        let qtext = text("especiall").fin(false);
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
+    }
+
+    #[test]
+    fn match_text_joined_regression_2() {
+        let rtext1 = text("50's");
+        let rtext2 = text("500w");
+        let qtext  = text("50s").fin(false);
+        assert_debug_snapshot!(text_match(&rtext1.to_ref(), &qtext.to_ref()));
+        assert_debug_snapshot!(text_match(&rtext2.to_ref(), &qtext.to_ref()));
     }
 }

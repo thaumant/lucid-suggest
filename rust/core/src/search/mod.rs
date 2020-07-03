@@ -15,7 +15,8 @@ pub struct Hit<'a> {
     pub id:      usize,
     pub title:   TextRef<'a>,
     pub rating:  usize,
-    pub matches: Vec<WordMatch>,
+    pub rmatches: Vec<WordMatch>,
+    pub qmatches: Vec<WordMatch>,
     pub scores:  Scores,
 }
 
@@ -27,7 +28,8 @@ impl<'a> Hit<'a> {
             title:    record.title.to_ref(),
             rating:   record.rating,
             scores:   Default::default(),
-            matches:  Vec::new(),
+            rmatches: Vec::new(),
+            qmatches: Vec::new(),
         }
     }
 }
@@ -37,15 +39,15 @@ const SCORES_SIZE: usize = 9;
 
 
 pub enum ScoreType {
-    SameWords   = 0,
-    SameNonFunc = 1,
-    Typos       = 2,
-    Trans       = 3,
-    Fin         = 4,
-    Offset      = 5,
-    Rating      = 6,
-    WordLen     = 7,
-    CharLen     = 8,
+    Chars   = 0,
+    Words   = 1,
+    Tails   = 2,
+    Trans   = 3,
+    Fin     = 4,
+    Offset  = 5,
+    Rating  = 6,
+    WordLen = 7,
+    CharLen = 8,
 }
 
 
@@ -98,7 +100,7 @@ impl Store {
         let dividers = self.dividers();
 
         let index = &mut *self.index.borrow_mut();
-        index.prepare(&query, self.limit * 3);
+        index.prepare(&query, self.limit * 10);
 
         self.records.iter()
             .filter(|record| {
@@ -157,6 +159,7 @@ mod tests {
 
     #[test]
     fn search_equal() {
+        println!("*** Helllooooo!");
         check("equal", Lang::new(), &["yelow metall maiblox"]);
     }
 
@@ -225,11 +228,11 @@ mod tests {
 
     #[test]
     fn search_joined() {
-        check("joined_query", Lang::new(), &[
+        check("joined_query", lang_english(), &[
             "wifi",
         ]);
 
-        check("joined_record", Lang::new(), &[
+        check("joined_record", lang_english(), &[
             "the saurus",
         ]);
     }
