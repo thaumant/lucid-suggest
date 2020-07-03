@@ -2,7 +2,7 @@
   "name": "lucid-suggest",
   "version": "0.7.1",
   "description": "Fulltext search and autocomplete engine that works out of the box.",
-  "tags": [
+  "keywords": [
     "autocomplete",
     "autosuggest",
     "typeahead"
