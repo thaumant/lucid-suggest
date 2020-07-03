@@ -17,6 +17,6 @@
     "typescript": "^3.9.5"
   },
   "dependencies": {
-    "lucid-suggest": "^0.7.1"
+    "lucid-suggest": "^0.7.2"
   }
 }
