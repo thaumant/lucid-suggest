@@ -5,27 +5,27 @@ expression: "text_match(&rtext.to_ref(), &qtext.to_ref())"
 (
     [
         WordMatch {
-            ix: 0,
-            len: 3,
+            ix: 1,
+            len: 2,
             slice: (
                 0,
-                3,
+                2,
             ),
             typos: 0.0,
-            func: false,
+            func: true,
             fin: true,
         },
     ],
     [
         WordMatch {
             ix: 0,
-            len: 3,
+            len: 2,
             slice: (
                 0,
-                3,
+                2,
             ),
             typos: 0.0,
-            func: false,
+            func: true,
             fin: true,
         },
     ],

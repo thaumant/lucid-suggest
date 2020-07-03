@@ -1,0 +1,32 @@
+---
+source: src/matching/text.rs
+expression: "text_match(&rtext.to_ref(), &qtext.to_ref())"
+---
+(
+    [
+        WordMatch {
+            ix: 0,
+            len: 6,
+            slice: (
+                0,
+                3,
+            ),
+            typos: 0.0,
+            func: false,
+            fin: false,
+        },
+    ],
+    [
+        WordMatch {
+            ix: 0,
+            len: 3,
+            slice: (
+                0,
+                3,
+            ),
+            typos: 0.0,
+            func: false,
+            fin: false,
+        },
+    ],
+)

@@ -1,3 +1,4 @@
+use std::cmp::Ordering::{Equal, Less};
 use std::cell::RefCell;
 use fnv::{FnvHashMap as HashMap};
 use crate::tokenization::{Word, TextRef};
@@ -56,10 +57,21 @@ pub fn text_match(rtext: &TextRef, qtext: &TextRef) -> (Vec<WordMatch>, Vec<Word
                         Some(())
                     })
                     .or_else(|| {
-                        let (rmatch, qmatch) = word_match(&rword, &qword)?;
-                        if !candidate.is_some() || !rmatch.func {
-                            stop = !rmatch.func;
-                            candidate = Some((rmatch, qmatch));
+                        let (rmatch2, qmatch2) = word_match(&rword, &qword)?;
+                        let score2 = rmatch2.slice.1 - 2 * (rmatch2.typos.ceil() as usize);
+                        let score1 = candidate
+                            .as_ref()
+                            .map(|(rm, _)| rm.slice.1 - 2 * (rm.typos.ceil() as usize))
+                            .unwrap_or(0);
+                        let replace = match (candidate.as_ref(), score1.cmp(&score2)) {
+                            (None, _) => true,
+                            (Some(_), Less) => true,
+                            (Some(_), Equal) if !rmatch2.func => true,
+                            _ => false,
+                        };
+                        if replace {
+                            stop      = !rmatch2.func;
+                            candidate = Some((rmatch2, qmatch2));
                         }
                         Some(())
                     });
@@ -89,7 +101,7 @@ pub fn text_match(rtext: &TextRef, qtext: &TextRef) -> (Vec<WordMatch>, Vec<Word
 mod tests {
     use insta::assert_debug_snapshot;
     use crate::tokenization::{Text, TextOwn};
-    use crate::lang::{CharClass, lang_basic, lang_english};
+    use crate::lang::{CharClass, lang_basic, lang_english, lang_spanish};
     use super::{text_match};
 
 
@@ -167,14 +179,27 @@ mod tests {
 
 
     #[test]
-    fn match_text_best_rword() {
-        let mut rtext = text("the theme");
-        let mut qtext = text("the").fin(false);
+    fn match_text_best_rword_first() {
+        let rtext = text("theory theme");
+        let qtext = text("the").fin(false);
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
+    }
 
-        let lang = lang_english();
-        rtext = rtext.set_pos(&lang);
-        qtext = qtext.set_pos(&lang);
+
+    #[test]
+    fn match_text_best_rword_nonfunc() {
+        let lang  = lang_english();
+        let rtext = text("the theme").set_pos(&lang);
+        let qtext = text("the").fin(false).set_pos(&lang);
+        assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
+    }
+
+
+    #[test]
+    fn match_text_best_rword_typos() {
+        let lang  = lang_spanish();
+        let rtext = text("Cepillo de dientes").set_pos(&lang);
+        let qtext = text("de").fin(false).set_pos(&lang);
         assert_debug_snapshot!(text_match(&rtext.to_ref(), &qtext.to_ref()));
     }
 
