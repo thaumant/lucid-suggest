@@ -11,7 +11,6 @@ const DEFAULT_CAPACITY_COUNT: usize = 100;
 pub struct TrigramIndex {
     ids_by_gram:      HashMap<[char; 3], HashSet<usize>>,
     grams_by_id:      HashMap<usize, HashSet<[char; 3]>>,
-    ids_indexed:      HashSet<usize>,
     buffer_grams:     HashSet<[char; 3]>,
     buffer_count_map: HashMap<usize, usize>,
     buffer_count_vec: Vec<(usize, usize)>,
@@ -23,27 +22,26 @@ impl TrigramIndex {
         Self {
             ids_by_gram:      HashMap::default(),
             grams_by_id:      HashMap::default(),
-            ids_indexed:      HashSet::default(),
             buffer_grams:     HashSet::default(),
             buffer_count_map: HashMap::with_capacity_and_hasher(DEFAULT_CAPACITY_COUNT, Default::default()),
             buffer_count_vec: Vec::with_capacity(DEFAULT_CAPACITY_COUNT),
         }
     }
 
-    pub fn matches(&self, record: &Record) -> bool {
-        self.ids_indexed.contains(&record.id)
-    }
-
     pub fn add(&mut self, record: &Record) {
-        let Self { ids_by_gram, grams_by_id, .. } = self;
+        let Self {
+            ids_by_gram,
+            grams_by_id,
+            buffer_grams: grams,
+            ..
+        } = self;
         let Record { id, title, .. } = record;
 
         if grams_by_id.contains_key(id) {
             panic!("Duplicate id {}", id);
         }
 
-        let mut grams = HashSet::default();
-        Self::collect_grams(&title.to_ref(), &mut grams);
+        Self::collect_grams(&title.to_ref(), grams);
 
         for &gram in grams.iter() {
             ids_by_gram
@@ -65,14 +63,13 @@ impl TrigramIndex {
         &mut self,
         query:   &TextRef,
         size:    usize,
-    ) {
+    ) -> Vec<usize> {
         if query.words.len() == 0 {
-            return;
+            return Vec::new();
         }
 
         let Self {
             ids_by_gram,
-            ids_indexed,
             buffer_grams:     grams,
             buffer_count_vec: count_vec,
             buffer_count_map: count_map,
@@ -98,9 +95,9 @@ impl TrigramIndex {
                         .or_insert(1);
                 }
             }
-            if i > 0 && count_map.len() > size * 3 {
+            if i > 0 && count_map.len() > size * 50 {
                 sync_count_vec(count_map, count_vec);
-                while count_vec.len() > size * 2 {
+                while count_vec.len() > size * 25 {
                     let (id, _) = count_vec.pop().unwrap();
                     count_map.remove(&id);
                 }
@@ -108,11 +105,11 @@ impl TrigramIndex {
         }
 
         sync_count_vec(count_map, count_vec);
-
-        ids_indexed.clear();
-        for (id, _) in count_vec.iter().take(size) {
-            ids_indexed.insert(*id);
-        }
+        count_vec
+            .iter()
+            .take(size * 10)
+            .map(|(id, _)| *id)
+            .collect::<Vec<_>>()
     }
 
     fn collect_grams(text: &TextRef, grams: &mut HashSet<[char; 3]>) {
@@ -181,10 +178,10 @@ mod tests {
         for (i, query) in queries.iter().enumerate() {
             let query = tokenize_query(query, &lang);
             let query = query.to_ref();
-            index.prepare(&query, size);
-            let mut sorted = index.ids_indexed.iter().collect::<Vec<_>>();
-            sorted.sort();
-            assert_debug_snapshot!(format!("{}-{}", name, i), sorted);
+            let mut prepared = index.prepare(&query, size);
+            dbg!(&query);
+            prepared.sort();
+            assert_debug_snapshot!(format!("{}-{}", name, i), prepared);
         }
     }
 
@@ -208,15 +205,6 @@ mod tests {
     #[test]
     fn prepare_mismatch() {
         check_prepare("mismatch", 3, &["zzzap!"]);
-    }
-
-    #[test]
-    fn prepare_best_match() {
-        check_prepare("best_match", 1, &[
-            "metal detector",
-            "thesaurus",
-            "router",
-        ]);
     }
 
     #[test]
@@ -250,19 +238,5 @@ mod tests {
             "me",
             "th",
         ]);
-    }
-
-    #[test]
-    fn matches_basic() {
-        let lang = Lang::new();
-        let (mut index, records) = get_index();
-        let query = tokenize_query("metal", &lang);
-        let query = query.to_ref();
-        index.prepare(&query, 10);
-        assert_eq!(index.matches(&records[0]), false);
-        assert_eq!(index.matches(&records[1]), true);
-        assert_eq!(index.matches(&records[2]), true);
-        assert_eq!(index.matches(&records[3]), false);
-        assert_eq!(index.matches(&records[4]), false);
     }
 }

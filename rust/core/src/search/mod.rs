@@ -99,31 +99,55 @@ impl Store {
     ) -> Vec<SearchResult> {
         let dividers = self.dividers();
 
-        let index = &mut *self.index.borrow_mut();
-        index.prepare(&query, self.limit * 10);
+        let ids = if query.words.len() > 0 {
+            self.index.borrow_mut().prepare(&query, self.limit)
+        } else {
+            self.top_ids()
+        };
 
-        self.records.iter()
-            .filter(|record| {
-                query.words.len() == 0 || index.matches(&record)
+        ids.iter()
+            .map(|id| {
+                Hit::from_record(&self.records[&id])
             })
-            .map(|record| {
-                Hit::from_record(record)
-            })
-            .map(move |mut hit| {
+            .map(|mut hit| {
                 score::score(query, &mut hit);
                 hit
             })
-            .filter(move |hit| {
+            .filter(|hit| {
                 filter::hit_matches(query, hit)
             })
             .limit_sort(self.limit, sort::compare_hits)
-            .map(move |hit| {
+            .map(|hit| {
                 SearchResult {
                     id:    hit.id,
                     title: highlight::highlight(&hit, dividers),
                 }
             })
             .collect()
+    }
+
+    fn top_ids(&self) -> Vec<usize> {
+        let ids_ref = &mut *self.top_ids.borrow_mut();
+
+        if let Some(ids) = ids_ref {
+            return ids.clone();
+        }
+
+        let ids = self.records
+            .values()
+            .limit_sort(
+                self.limit,
+                |r1, r2| {
+                    r2.rating
+                        .cmp(&r1.rating)
+                        .then_with(|| r1.title.chars.cmp(&r2.title.chars))
+                },
+            )
+            .map(|r| r.id)
+            .collect::<Vec<_>>();
+
+        *ids_ref = Some(ids.clone());
+        ids
     }
 }
 
@@ -158,8 +182,18 @@ mod tests {
     }
 
     #[test]
+    fn search_empty_lexicographic() {
+        let mut store = Store::new();
+        store.add(Record::new(10, "brown plush bear",     10, &store.lang));
+        store.add(Record::new(20, "the metal detector",   10, &store.lang));
+        store.add(Record::new(30, "yellow metal mailbox", 10, &store.lang));
+        store.add(Record::new(40, "thesaurus",            10, &store.lang));
+        store.add(Record::new(50, "wi-fi router",         10, &store.lang));
+        assert_debug_snapshot!(store.top_ids());
+    }
+
+    #[test]
     fn search_equal() {
-        println!("*** Helllooooo!");
         check("equal", Lang::new(), &["yelow metall maiblox"]);
     }
 

@@ -1,0 +1,11 @@
+---
+source: src/search/mod.rs
+expression: store.top_ids()
+---
+[
+    10,
+    20,
+    40,
+    50,
+    30,
+]

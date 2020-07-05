@@ -1,6 +1,7 @@
 mod trigrams;
 mod trigram_index;
 
+use fnv::{FnvHashMap as HashMap};
 use std::cell::RefCell;
 use crate::utils::to_vec;
 use crate::tokenization::{TextOwn, tokenize_record};
@@ -31,28 +32,30 @@ impl Record {
 
 
 pub struct Store {
-    pub records: Vec<Record>,
-    pub limit:   usize,
-    pub lang:    Lang,
-    dividers:    (Vec<char>, Vec<char>),
-    pub index:   RefCell<TrigramIndex>,
+    pub records:  HashMap<usize, Record>,
+    pub limit:    usize,
+    pub lang:     Lang,
+    pub dividers: (Vec<char>, Vec<char>),
+    pub index:    RefCell<TrigramIndex>,
+    pub top_ids:  RefCell<Option<Vec<usize>>>,
 }
 
 
 impl Store {
     pub fn new() -> Self {
         Self {
-            records:  Vec::new(),
+            records:  HashMap::default(),
             limit:    DEFAULT_LIMIT,
             lang:     Lang::new(),
             dividers: (vec!['['], vec![']']),
             index:    RefCell::new(TrigramIndex::new()),
+            top_ids:  RefCell::new(None),
         }
     }
 
     pub fn add(&mut self, record: Record) {
         self.index.borrow_mut().add(&record);
-        self.records.push(record);
+        self.records.insert(record.id, record);
     }
 
     pub fn clear(&mut self) {

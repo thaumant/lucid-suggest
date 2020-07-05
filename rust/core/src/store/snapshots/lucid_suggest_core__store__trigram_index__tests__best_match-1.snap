@@ -1,7 +1,0 @@
----
-source: src/store/trigram_index.rs
-expression: sorted
----
-[
-    40,
-]

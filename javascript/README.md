@@ -169,6 +169,6 @@ Below are the detailed performance measurements, obtained using Node.js 14.3, In
 
 |               | 2-4 words | 4-8 words |
 | ------------: | --------: | --------: |
-|   100 records |   0.15 ms |   0.41 ms |
-|  1000 records |   0.48 ms |   0.88 ms |
-| 10000 records |   1.10 ms |   1.70 ms |
+|   100 records |   0.14 ms |   0.39 ms |
+|  1000 records |   0.46 ms |   0.81 ms |
+| 10000 records |   0.87 ms |   1.50 ms |
