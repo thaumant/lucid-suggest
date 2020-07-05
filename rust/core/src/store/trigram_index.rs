@@ -1,62 +1,48 @@
 use fnv::{FnvHashMap as HashMap, FnvHashSet as HashSet};
+use crate::utils::LimitSortIterator;
 use crate::tokenization::{Word, TextRef};
 use super::Record;
 use super::trigrams::Trigrams;
 
 
-const DEFAULT_CAPACITY_IDS:   usize = 10;
-const DEFAULT_CAPACITY_COUNT: usize = 100;
+const DEFAULT_CAPACITY_DICT: usize = 10;
 
 
 pub struct TrigramIndex {
-    ids_by_gram:      HashMap<[char; 3], HashSet<usize>>,
-    grams_by_id:      HashMap<usize, HashSet<[char; 3]>>,
-    buffer_grams:     HashSet<[char; 3]>,
-    buffer_count_map: HashMap<usize, usize>,
-    buffer_count_vec: Vec<(usize, usize)>,
+    dict:    HashMap<[char; 3], HashSet<usize>>,
+    counts:  HashMap<usize, usize>,
 }
 
 
 impl TrigramIndex {
     pub fn new() -> Self {
         Self {
-            ids_by_gram:      HashMap::default(),
-            grams_by_id:      HashMap::default(),
-            buffer_grams:     HashSet::default(),
-            buffer_count_map: HashMap::with_capacity_and_hasher(DEFAULT_CAPACITY_COUNT, Default::default()),
-            buffer_count_vec: Vec::with_capacity(DEFAULT_CAPACITY_COUNT),
+            dict:   HashMap::default(),
+            counts: HashMap::default(),
         }
     }
 
     pub fn add(&mut self, record: &Record) {
         let Self {
-            ids_by_gram,
-            grams_by_id,
-            buffer_grams: grams,
+            dict,
             ..
         } = self;
         let Record { id, title, .. } = record;
 
-        if grams_by_id.contains_key(id) {
-            panic!("Duplicate id {}", id);
-        }
-
-        Self::collect_grams(&title.to_ref(), grams);
+        let grams = Self::collect_grams(&title.to_ref());
 
         for &gram in grams.iter() {
-            ids_by_gram
+            dict
                 .entry(gram)
                 .and_modify(|ids| {
                     ids.insert(*id);
                 })
                 .or_insert_with(|| {
-                    let mut ids = HashSet::with_capacity_and_hasher(DEFAULT_CAPACITY_IDS, Default::default());
+                    let mut ids = HashSet::with_capacity_and_hasher(DEFAULT_CAPACITY_DICT, Default::default());
                     ids.insert(*id);
                     ids
                 });
         }
-
-        grams_by_id.insert(*id, grams.clone());
     }
 
     pub fn prepare(
@@ -68,62 +54,38 @@ impl TrigramIndex {
             return Vec::new();
         }
 
-        let Self {
-            ids_by_gram,
-            buffer_grams:     grams,
-            buffer_count_vec: count_vec,
-            buffer_count_map: count_map,
-            ..
-        } = self;
+        self.counts.clear();
 
-        count_map.clear();
+        let grams = Self::collect_grams(&query);
 
-        Self::collect_grams(&query, grams);
-
-        let sync_count_vec = |map: &HashMap<usize, usize>, vec: &mut Vec<(usize, usize)>| {
-            vec.clear();
-            vec.extend(map.iter().map(|(&id, &count)| (id, count)));
-            vec.sort_by(|(_, count1), (_, count2)| count2.cmp(count1));
-        };
-
-        for (i, gram) in grams.iter().enumerate() {
-            if let Some(ids) = ids_by_gram.get(gram) {
+        for gram in grams.iter() {
+            if let Some(ids) = self.dict.get(gram) {
                 for &id in ids {
-                    count_map
+                    self.counts
                         .entry(id)
                         .and_modify(|count| *count += 1)
                         .or_insert(1);
                 }
             }
-            if i > 0 && count_map.len() > size * 50 {
-                sync_count_vec(count_map, count_vec);
-                while count_vec.len() > size * 25 {
-                    let (id, _) = count_vec.pop().unwrap();
-                    count_map.remove(&id);
-                }
-            }
         }
 
-        sync_count_vec(count_map, count_vec);
-        count_vec
-            .iter()
-            .take(size * 10)
-            .map(|(id, _)| *id)
-            .collect::<Vec<_>>()
+        self.counts
+            .drain()
+            .limit_sort(size * 10, |(_, cout1), (_, count2)| count2.cmp(cout1))
+            .map(|(id, _)| id)
+            .collect()
     }
 
-    fn collect_grams(text: &TextRef, grams: &mut HashSet<[char; 3]>) {
-        grams.clear();
-        let len = text.words.iter().map(|w| w.len()).sum::<usize>();
-        if len > grams.capacity() {
-            grams.reserve(len - grams.capacity());
-        }
+    fn collect_grams(text: &TextRef) -> HashSet<[char; 3]> {
+        let cap       = text.words.iter().map(|w| w.len()).sum::<usize>();
+        let mut grams = HashSet::with_capacity_and_hasher(cap, Default::default());
         for word in text.words {
             let chars = &text.chars[word.place.0 .. word.place.1];
             for gram in Trigrams::new(chars) {
                 grams.insert(gram);
             }
         }
+        grams
     }
 }
 
@@ -153,7 +115,7 @@ mod tests {
     }
 
     fn export_tree(index: &TrigramIndex) -> String {
-        let mut ids = index.ids_by_gram
+        let mut ids = index.dict
             .iter()
             .map(|(gram, ids)| {
                 let gram    = gram.iter().cloned().collect::<String>();
