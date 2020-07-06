@@ -1,4 +1,3 @@
-mod trigrams;
 mod trigram_index;
 
 use fnv::{FnvHashMap as HashMap};

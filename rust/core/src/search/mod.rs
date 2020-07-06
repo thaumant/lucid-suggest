@@ -4,7 +4,7 @@ mod sort;
 mod highlight;
 
 use std::default::Default;
-use crate::utils::LimitSortIterator;
+use crate::utils::LimitSort;
 use crate::tokenization::TextRef;
 use crate::matching::WordMatch;
 use crate::store::{Store, Record};

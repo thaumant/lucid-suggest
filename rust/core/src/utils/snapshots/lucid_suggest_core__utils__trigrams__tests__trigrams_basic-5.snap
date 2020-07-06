@@ -1,5 +1,5 @@
 ---
-source: src/store/trigrams.rs
+source: src/utils/trigrams.rs
 expression: output
 ---
 [
@@ -17,5 +17,10 @@ expression: output
         'f',
         'o',
         'o',
+    ],
+    [
+        'o',
+        'o',
+        'b',
     ],
 ]

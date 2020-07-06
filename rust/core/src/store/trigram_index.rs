@@ -1,8 +1,7 @@
 use fnv::{FnvHashMap as HashMap, FnvHashSet as HashSet};
-use crate::utils::LimitSortIterator;
+use crate::utils::{Trigrams, LimitSort};
 use crate::tokenization::{Word, TextRef};
 use super::Record;
-use super::trigrams::Trigrams;
 
 
 const DEFAULT_CAPACITY_DICT: usize = 10;
@@ -81,7 +80,7 @@ impl TrigramIndex {
         let mut grams = HashSet::with_capacity_and_hasher(cap, Default::default());
         for word in text.words {
             let chars = &text.chars[word.place.0 .. word.place.1];
-            for gram in Trigrams::new(chars) {
+            for gram in chars.trigrams() {
                 grams.insert(gram);
             }
         }

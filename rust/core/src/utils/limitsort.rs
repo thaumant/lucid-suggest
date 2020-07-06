@@ -1,7 +1,22 @@
 use std::cmp::Ordering;
 
 
-pub struct LimitSort<T, I: Iterator<Item=T>, F: FnMut(&T, &T) -> Ordering> {
+pub trait LimitSort: Iterator + Sized {
+    fn limit_sort<F>(self, limit: usize, sort_fn: F) -> LimitSortIter<Self::Item, Self, F> where
+        F: (FnMut(&Self::Item, &Self::Item) -> Ordering)
+    {
+        LimitSortIter {
+            sort_fn,
+            source: self,
+            buffer: Vec::with_capacity(limit * 2),
+            limit,
+            done: false,
+        }
+    }
+}
+
+
+pub struct LimitSortIter<T, I: Iterator<Item=T>, F: FnMut(&T, &T) -> Ordering> {
     sort_fn: F,
     source:  I,
     buffer:  Vec<T>,
@@ -10,7 +25,7 @@ pub struct LimitSort<T, I: Iterator<Item=T>, F: FnMut(&T, &T) -> Ordering> {
 }
 
 
-impl<T, I: Iterator<Item=T>, F: FnMut(&T, &T) -> Ordering> Iterator for LimitSort<T, I, F> {
+impl<T, I: Iterator<Item=T>, F: FnMut(&T, &T) -> Ordering> Iterator for LimitSortIter<T, I, F> {
     type Item = T;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -36,19 +51,4 @@ impl<T, I: Iterator<Item=T>, F: FnMut(&T, &T) -> Ordering> Iterator for LimitSor
 }
 
 
-pub trait LimitSortIterator: Iterator + Sized {
-    fn limit_sort<F>(self, limit: usize, sort_fn: F) -> LimitSort<Self::Item, Self, F>
-    where F: (FnMut(&Self::Item, &Self::Item) -> Ordering)
-    {
-        LimitSort {
-            sort_fn,
-            source: self,
-            buffer: Vec::with_capacity(limit * 2),
-            limit,
-            done: false,
-        }
-    }
-}
-
-
-impl<I: Iterator> LimitSortIterator for I { }
+impl<I: Iterator> LimitSort for I { }

@@ -1,5 +1,5 @@
 ---
-source: src/store/trigrams.rs
+source: src/utils/trigrams.rs
 expression: output
 ---
 []

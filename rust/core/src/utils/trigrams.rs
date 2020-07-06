@@ -1,17 +1,29 @@
 
+pub trait Trigrams {
+    fn trigrams<'a>(&'a self) -> TrigramIter<'a>;
+}
+
+
+impl Trigrams for [char] {
+    fn trigrams<'a>(&'a self) -> TrigramIter<'a> {
+        TrigramIter::new(self)
+    }
+}
+
+
 #[derive(Debug)]
-pub struct Trigrams<'a> {
+pub struct TrigramIter<'a> {
     word: &'a [char],
     size: usize,
 }
 
-impl<'a> Trigrams<'a> {
+impl<'a> TrigramIter<'a> {
     pub fn new(word: &'a [char]) -> Self {
         Self { word, size: 1 }
     }
 }
 
-impl<'a> Iterator for Trigrams<'a> {
+impl<'a> Iterator for TrigramIter<'a> {
     type Item = [char; 3];
 
     #[inline]
@@ -39,7 +51,7 @@ impl<'a> Iterator for Trigrams<'a> {
     }
 }
 
-impl<'a> ExactSizeIterator for Trigrams<'a> { }
+impl<'a> ExactSizeIterator for TrigramIter<'a> { }
 
 
 #[cfg(test)]
@@ -53,7 +65,7 @@ mod tests {
         let input = to_vec("foobar");
         for len in 0 .. input.len() {
             let slice  = &input[..len];
-            let output = Trigrams::new(slice).collect::<Vec<_>>();
+            let output = slice.trigrams().collect::<Vec<_>>();
             assert_debug_snapshot!(output);
         }
     }
@@ -63,7 +75,7 @@ mod tests {
         let input = to_vec("foobar");
         for len in 0 .. input.len() {
             let slice  = &input[..len];
-            let output = Trigrams::new(slice).collect::<Vec<_>>();
+            let output = slice.trigrams().collect::<Vec<_>>();
             assert_eq!(output.len(), slice.len());
         }
     }

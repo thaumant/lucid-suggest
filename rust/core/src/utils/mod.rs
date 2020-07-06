@@ -1,9 +1,11 @@
 #![macro_use]
 
+mod trigrams;
 mod limitsort;
 mod fading_windows;
 
-pub use limitsort::{LimitSortIterator, LimitSort};
+pub use trigrams::{Trigrams, TrigramIter};
+pub use limitsort::{LimitSort, LimitSortIter};
 pub use fading_windows::FadingWindows;
 
 
