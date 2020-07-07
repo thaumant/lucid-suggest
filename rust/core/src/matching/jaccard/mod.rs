@@ -1,22 +1,52 @@
+use std::cmp::Ordering;
 use std::cell::RefCell;
-use std::hash::Hash;
-use fnv::{FnvHashSet as HashSet};
+
+use Ordering::{
+    Less,
+    Equal,
+    Greater,
+};
 
 
 const DEFAULT_CAPACITY: usize = 20;
 
 
-pub struct Jaccard<T: PartialEq + Copy + Ord + Hash> {
-    set1: RefCell<HashSet<T>>,
-    set2: RefCell<HashSet<T>>,
+pub fn simple_similarity<T: PartialEq + Copy + Ord>(set1: &[T], set2: &[T]) -> f64 {
+    let mut i1 = 0;
+    let mut i2 = 0;
+    let mut union = 0;
+    let mut intersection = 0;
+    while i1 < set1.len() && i2 < set2.len() {
+        let item1 = unsafe { *set1.get_unchecked(i1) };
+        let item2 = unsafe { *set2.get_unchecked(i2) };
+        union += 1;
+        match item1.cmp(&item2) {
+            Less    => i1 += 1,
+            Greater => i2 += 1,
+            Equal   => {
+                intersection += 1;
+                i1 += 1;
+                i2 += 1;
+            },
+        }
+    }
+    union += set1.len() - i1;
+    union += set2.len() - i2;
+    intersection as f64 / union as f64
 }
 
 
-impl<T: PartialEq + Copy + Ord + Hash> Jaccard<T> {
+pub struct Jaccard<T: PartialEq + Copy + Ord + Default> {
+    set1: RefCell<Vec<T>>,
+    set2: RefCell<Vec<T>>,
+}
+
+
+impl<T: PartialEq + Copy + Ord + Default> Jaccard<T> {
     pub fn new() -> Self {
         Self {
-            set1: RefCell::new(HashSet::with_capacity_and_hasher(DEFAULT_CAPACITY, Default::default())),
-            set2: RefCell::new(HashSet::with_capacity_and_hasher(DEFAULT_CAPACITY, Default::default())),
+            set1: RefCell::new(Vec::with_capacity(DEFAULT_CAPACITY)),
+            set2: RefCell::new(Vec::with_capacity(DEFAULT_CAPACITY)),
         }
     }
 
@@ -27,19 +57,17 @@ impl<T: PartialEq + Copy + Ord + Hash> Jaccard<T> {
             (_, 0) => return 0.0,
             (_, _) => { },
         }
-
         let set1 = &mut *self.set1.borrow_mut();
         let set2 = &mut *self.set2.borrow_mut();
-
-        set1.clear();
-        set2.clear();
-        for &item1 in slice1 { set1.insert(item1); }
-        for &item2 in slice2 { set2.insert(item2); }
-
-        let count_union        = set1.union(set2).count();
-        let count_intersection = set1.intersection(set2).count();
-
-        count_intersection as f64 / count_union as f64
+        set1.resize(slice1.len(), Default::default());
+        set2.resize(slice2.len(), Default::default());
+        set1.copy_from_slice(&slice1);
+        set2.copy_from_slice(&slice2);
+        set1.sort_unstable();
+        set2.sort_unstable();
+        set1.dedup();
+        set2.dedup();
+        simple_similarity(&set1, &set2)
     }
 
     pub fn rel_dist(&self, slice1: &[T], slice2: &[T]) -> f64 {
