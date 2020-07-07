@@ -79,7 +79,7 @@ impl TrigramIndex {
             .iter()
             .enumerate()
             .filter(|(_, &count)| count > 0)
-            .limit_sort(size * 10, |(_, count1), (_, count2)| count2.cmp(count1))
+            .limit_sort_unstable(size * 10, |(_, count1), (_, count2)| count2.cmp(count1))
             .map(|(ix, _)| ix)
             .collect()
     }

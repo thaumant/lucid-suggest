@@ -116,7 +116,7 @@ impl Store {
             .filter(|hit| {
                 filter::hit_matches(query, hit)
             })
-            .limit_sort(self.limit, sort::compare_hits)
+            .limit_sort_unstable(self.limit, sort::compare_hits)
             .map(|hit| {
                 SearchResult {
                     id:    hit.id,
@@ -135,7 +135,7 @@ impl Store {
 
         let ixs = self.records
             .iter()
-            .limit_sort(
+            .limit_sort_unstable(
                 self.limit,
                 |r1, r2| {
                     r2.rating
