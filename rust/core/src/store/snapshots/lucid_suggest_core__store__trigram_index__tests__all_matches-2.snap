@@ -1,7 +1,7 @@
 ---
 source: src/store/trigram_index.rs
-expression: sorted
+expression: prepared
 ---
 [
-    50,
+    4,
 ]

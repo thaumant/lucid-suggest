@@ -35,7 +35,7 @@ impl<'a> Hit<'a> {
 }
 
 
-const SCORES_SIZE: usize = 9;
+pub const SCORES_SIZE: usize = 9;
 
 
 pub enum ScoreType {
@@ -99,15 +99,15 @@ impl Store {
     ) -> Vec<SearchResult> {
         let dividers = self.dividers();
 
-        let ids = if query.words.len() > 0 {
+        let ixs = if query.words.len() > 0 {
             self.index.borrow_mut().prepare(&query, self.limit)
         } else {
-            self.top_ids()
+            self.top_ixs()
         };
 
-        ids.iter()
-            .map(|id| {
-                Hit::from_record(&self.records[&id])
+        ixs.iter()
+            .map(|&ix| {
+                Hit::from_record(&self.records[ix])
             })
             .map(|mut hit| {
                 score::score(query, &mut hit);
@@ -126,15 +126,15 @@ impl Store {
             .collect()
     }
 
-    fn top_ids(&self) -> Vec<usize> {
-        let ids_ref = &mut *self.top_ids.borrow_mut();
+    fn top_ixs(&self) -> Vec<usize> {
+        let top_ixs = &mut *self.top_ixs.borrow_mut();
 
-        if let Some(ids) = ids_ref {
-            return ids.clone();
+        if let Some(ixs) = top_ixs {
+            return ixs.clone();
         }
 
-        let ids = self.records
-            .values()
+        let ixs = self.records
+            .iter()
             .limit_sort(
                 self.limit,
                 |r1, r2| {
@@ -143,11 +143,11 @@ impl Store {
                         .then_with(|| r1.title.chars.cmp(&r2.title.chars))
                 },
             )
-            .map(|r| r.id)
+            .map(|r| r.ix)
             .collect::<Vec<_>>();
 
-        *ids_ref = Some(ids.clone());
-        ids
+        *top_ixs = Some(ixs.clone());
+        ixs
     }
 }
 
@@ -189,7 +189,7 @@ mod tests {
         store.add(Record::new(30, "yellow metal mailbox", 10, &store.lang));
         store.add(Record::new(40, "thesaurus",            10, &store.lang));
         store.add(Record::new(50, "wi-fi router",         10, &store.lang));
-        assert_debug_snapshot!(store.top_ids());
+        assert_debug_snapshot!(store.top_ixs());
     }
 
     #[test]

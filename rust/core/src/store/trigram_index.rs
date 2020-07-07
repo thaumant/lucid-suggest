@@ -1,46 +1,51 @@
-use fnv::{FnvHashMap as HashMap, FnvHashSet as HashSet};
+use std::cmp::Ordering;
+use fnv::{FnvHashMap as HashMap};
 use crate::utils::{Trigrams, LimitSort};
 use crate::tokenization::{Word, TextRef};
 use super::Record;
 
-
-const DEFAULT_CAPACITY_DICT: usize = 10;
+use Ordering::{
+    Less,
+    Equal,
+    Greater,
+};
 
 
 pub struct TrigramIndex {
-    dict:    HashMap<[char; 3], HashSet<usize>>,
-    counts:  HashMap<usize, usize>,
+    len:     usize,
+    dict:    HashMap<[char; 3], Vec<usize>>,
+    counts:  Vec<usize>,
 }
 
 
 impl TrigramIndex {
     pub fn new() -> Self {
         Self {
+            len:    0,
             dict:   HashMap::default(),
-            counts: HashMap::default(),
+            counts: Vec::new(),
         }
     }
 
     pub fn add(&mut self, record: &Record) {
-        let Self {
-            dict,
-            ..
-        } = self;
-        let Record { id, title, .. } = record;
-
+        let Self { dict, len, .. } = self;
+        let Record { ix, title, .. } = record;
         let grams = Self::collect_grams(&title.to_ref());
-
+        *len += 1;
         for &gram in grams.iter() {
             dict
                 .entry(gram)
-                .and_modify(|ids| {
-                    ids.insert(*id);
+                .and_modify(|ixs| {
+                    for i in 0..ixs.len() {
+                        match ix.cmp(unsafe { ixs.get_unchecked(i) }) {
+                            Greater => continue,
+                            Equal   => return,
+                            Less    => return ixs.insert(i, *ix),
+                        }
+                    }
+                    ixs.push(*ix);
                 })
-                .or_insert_with(|| {
-                    let mut ids = HashSet::with_capacity_and_hasher(DEFAULT_CAPACITY_DICT, Default::default());
-                    ids.insert(*id);
-                    ids
-                });
+                .or_insert_with(|| vec![*ix]);
         }
     }
 
@@ -49,41 +54,47 @@ impl TrigramIndex {
         query:   &TextRef,
         size:    usize,
     ) -> Vec<usize> {
+        let Self { counts, dict, .. } = self;
+
         if query.words.len() == 0 {
             return Vec::new();
         }
 
-        self.counts.clear();
+        counts.clear();
+        counts.resize(self.len, 0);
 
         let grams = Self::collect_grams(&query);
 
         for gram in grams.iter() {
-            if let Some(ids) = self.dict.get(gram) {
-                for &id in ids {
-                    self.counts
-                        .entry(id)
-                        .and_modify(|count| *count += 1)
-                        .or_insert(1);
+            if let Some(ixs) = dict.get(gram) {
+                for &ix in ixs {
+                    unsafe {
+                        *counts.get_unchecked_mut(ix) += 1;
+                    }
                 }
             }
         }
 
-        self.counts
-            .drain()
-            .limit_sort(size * 10, |(_, cout1), (_, count2)| count2.cmp(cout1))
-            .map(|(id, _)| id)
+        counts
+            .iter()
+            .enumerate()
+            .filter(|(_, &count)| count > 0)
+            .limit_sort(size * 10, |(_, count1), (_, count2)| count2.cmp(count1))
+            .map(|(ix, _)| ix)
             .collect()
     }
 
-    fn collect_grams(text: &TextRef) -> HashSet<[char; 3]> {
+    fn collect_grams(text: &TextRef) -> Vec<[char; 3]> {
         let cap       = text.words.iter().map(|w| w.len()).sum::<usize>();
-        let mut grams = HashSet::with_capacity_and_hasher(cap, Default::default());
+        let mut grams = Vec::with_capacity(cap);
         for word in text.words {
             let chars = &text.chars[word.place.0 .. word.place.1];
             for gram in chars.trigrams() {
-                grams.insert(gram);
+                grams.push(gram);
             }
         }
+        grams.sort_unstable();
+        grams.dedup();
         grams
     }
 }
@@ -98,8 +109,8 @@ mod tests {
     use super::TrigramIndex;
 
     fn get_index() -> (TrigramIndex, [Record; 5]) {
-        let lang    = Lang::new();
-        let records = [
+        let lang = Lang::new();
+        let mut records = [
             Record::new(10, "brown plush bear",     10, &lang),
             Record::new(20, "the metal detector",   20, &lang),
             Record::new(30, "yellow metal mailbox", 30, &lang),
@@ -107,28 +118,27 @@ mod tests {
             Record::new(50, "wi-fi router",         50, &lang),
         ];
         let mut index = TrigramIndex::new();
-        for record in &records {
+        for (ix, record) in records.iter_mut().enumerate() {
+            record.ix = ix;
             index.add(&record);
         }
         (index, records)
     }
 
-    fn export_tree(index: &TrigramIndex) -> String {
-        let mut ids = index.dict
+    fn export_dict(index: &TrigramIndex) -> String {
+        let mut dict = index.dict
             .iter()
-            .map(|(gram, ids)| {
-                let gram    = gram.iter().cloned().collect::<String>();
-                let mut ids = ids.iter().cloned().collect::<Vec<_>>();
-                ids.sort();
-                (gram, ids)
-            })
+            .map(|(gram, ixs)| (
+                gram.iter().cloned().collect::<String>(),
+                ixs.clone(),
+            ))
             .collect::<Vec<_>>();
 
-        ids.sort_by(|(g1, _), (g2, _)| g1.cmp(g2));
+        dict.sort_by(|(g1, _), (g2, _)| g1.cmp(g2));
 
         let mut result = String::new();
-        for (gram, ids) in &ids {
-            result.push_str(&format!("\"{:3}\" {:?}\n", gram, ids));
+        for (gram, ixs) in &dict {
+            result.push_str(&format!("\"{:3}\" {:?}\n", gram, ixs));
         }
         result
     }
@@ -148,19 +158,23 @@ mod tests {
 
     #[test]
     fn add_first() {
-        let lang = Lang::new();
-        let mut index = TrigramIndex::new();
+        let lang       = Lang::new();
+        let mut index  = TrigramIndex::new();
         index.add(&Record::new(10, "Foo Bar", 10, &lang));
-        assert_snapshot!(export_tree(&index));
+        assert_snapshot!(export_dict(&index));
     }
 
     #[test]
     fn add_second() {
-        let lang = Lang::new();
-        let mut index = TrigramIndex::new();
-        index.add(&Record::new(10, "Foo Bar", 10, &lang));
-        index.add(&Record::new(20, "Bar Baz", 20, &lang));
-        assert_snapshot!(export_tree(&index));
+        let lang        = Lang::new();
+        let mut index   = TrigramIndex::new();
+        let mut record1 = Record::new(10, "Foo Bar", 10, &lang);
+        let mut record2 = Record::new(20, "Bar Baz", 20, &lang);
+        record1.ix = 0;
+        record2.ix = 1;
+        index.add(&record1);
+        index.add(&record2);
+        assert_snapshot!(export_dict(&index));
     }
 
     #[test]
