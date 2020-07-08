@@ -1,4 +1,4 @@
-LANGS = de en es pt ru
+LANGS = de en es fr pt ru
 
 build:
 	make cleanup

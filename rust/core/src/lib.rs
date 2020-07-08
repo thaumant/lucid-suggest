@@ -17,6 +17,7 @@ pub use lang::Lang;
 pub use lang::{
     lang_german,
     lang_english,
+    lang_french,
     lang_portuguese,
     lang_russian,
     lang_spanish,

@@ -1,0 +1,91 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`French language Empty input 1`] = `
+Array [
+  Object {
+    "id": 10,
+    "rating": 4,
+    "title": "Piles alcalines 1,5 V AA - Lot de 12",
+  },
+  Object {
+    "id": 20,
+    "rating": 3,
+    "title": "Câble Lightning vers USB A",
+  },
+  Object {
+    "id": 30,
+    "rating": 2,
+    "title": "Brosse À Dents Électrique",
+  },
+  Object {
+    "id": 40,
+    "rating": 1,
+    "title": "Sacs de Rangement Sous Vide",
+  },
+]
+`;
+
+exports[`French language Equality 1`] = `
+Array [
+  Object {
+    "id": 40,
+    "rating": 1,
+    "title": "[Sacs] [de] [Rangement] [Sous] [Vide]",
+  },
+  Object {
+    "id": 10,
+    "rating": 4,
+    "title": "Piles alcalines 1,5 V AA - Lot [de] 12",
+  },
+]
+`;
+
+exports[`French language Normalization 1`] = `
+Array [
+  Object {
+    "id": 30,
+    "rating": 2,
+    "title": "Brosse À Dents [Électrique]",
+  },
+]
+`;
+
+exports[`French language Normalization 2`] = `
+Array [
+  Object {
+    "id": 30,
+    "rating": 2,
+    "title": "Brosse À Dents [Électrique]",
+  },
+]
+`;
+
+exports[`French language Partiles 1`] = `
+Array [
+  Object {
+    "id": 30,
+    "rating": 2,
+    "title": "Brosse À [De]nts Électrique",
+  },
+  Object {
+    "id": 40,
+    "rating": 1,
+    "title": "Sacs [de] Rangement Sous Vide",
+  },
+  Object {
+    "id": 10,
+    "rating": 4,
+    "title": "Piles alcalines 1,5 V AA - Lot [de] 12",
+  },
+]
+`;
+
+exports[`French language Stemming 1`] = `
+Array [
+  Object {
+    "id": 10,
+    "rating": 4,
+    "title": "[Pile]s alcalines 1,5 V [AA] - Lot de 12",
+  },
+]
+`;

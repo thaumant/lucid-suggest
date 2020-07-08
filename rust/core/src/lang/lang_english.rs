@@ -14,7 +14,6 @@ use PartOfSpeech::{
 
 
 const FUNCTION_WORDS: &[(PartOfSpeech, &'static str)] = &[
-    // Articles
     (Article, "a"),
     (Article, "an"),
     (Article, "the"),
