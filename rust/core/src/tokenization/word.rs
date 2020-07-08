@@ -32,7 +32,7 @@ pub trait Word {
         let (left2, right2) = other.slice();
         if left1 >= right2 { return left1 - right2; }
         if left2 >= right1 { return left2 - right1; }
-        panic!("Malformed words: ({}, {}), ({}, {})", left1, right1, left2, right2);
+        panic!("Malformed words");
     }
 }
 

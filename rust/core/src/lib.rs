@@ -33,7 +33,7 @@ pub fn create_store(id: usize, lang: Lang) {
     STORES.with(|cell| {
         let stores = &mut *cell.borrow_mut();
         if stores.contains_key(&id) {
-            panic!("Duplicate store id {}", id);
+            panic!("Duplicate store id");
         }
         let mut store = Store::new();
         store.lang = lang;
@@ -43,7 +43,7 @@ pub fn create_store(id: usize, lang: Lang) {
     RESULTS.with(|cell| {
         let buffers = &mut *cell.borrow_mut();
         if buffers.contains_key(&id) {
-            panic!("Duplicate store id {}", id);
+            panic!("Duplicate store id");
         }
         buffers.insert(id, Vec::with_capacity(DEFAULT_LIMIT));
     });
@@ -55,7 +55,7 @@ pub fn destroy_store(id: usize) {
     STORES.with(|cell| {
         let stores = &mut *cell.borrow_mut();
         if !stores.contains_key(&id) {
-            panic!("Missing store id {}", id);
+            panic!("Missing store id");
         }
         stores.remove(&id);
     });
@@ -63,7 +63,7 @@ pub fn destroy_store(id: usize) {
     RESULTS.with(|cell| {
         let buffers = &mut *cell.borrow_mut();
         if !buffers.contains_key(&id) {
-            panic!("Missing store id {}", id);
+            panic!("Missing store id");
         }
         buffers.remove(&id);
     });

@@ -1,3 +1,4 @@
+#![cfg(test)]
 #![allow(non_snake_case)]
 
 use std::cell::RefCell;
