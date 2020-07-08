@@ -1,6 +1,56 @@
 use crate::tokenization::{Word, TextRef};
 use crate::matching::text_match;
-use crate::search::{Hit, ScoreType};
+use crate::search::Hit;
+
+
+pub const SCORES_SIZE: usize = 9;
+
+
+pub enum ScoreType {
+    Chars   = 0,
+    Words   = 1,
+    Tails   = 2,
+    Trans   = 3,
+    Fin     = 4,
+    Offset  = 5,
+    Rating  = 6,
+    WordLen = 7,
+    CharLen = 8,
+}
+
+
+#[derive(Debug, Clone)]
+pub struct Scores([isize; SCORES_SIZE]);
+
+
+impl Scores {
+    pub fn iter(&self) -> impl Iterator<Item=&isize> {
+        self.0.iter()
+    }
+}
+
+
+impl std::ops::Index<ScoreType> for Scores {
+    type Output = isize;
+
+    fn index(&self, score: ScoreType) -> &Self::Output {
+        &self.0[score as usize]
+    }
+}
+
+
+impl std::ops::IndexMut<ScoreType> for Scores {
+    fn index_mut(&mut self, score: ScoreType) -> &mut Self::Output {
+        &mut self.0[score as usize]
+    }
+}
+
+
+impl Default for Scores {
+    fn default() -> Scores {
+        Scores([0; SCORES_SIZE])
+    }
+}
 
 
 pub fn score(query: &TextRef, hit: &mut Hit) {
@@ -95,8 +145,8 @@ mod tests {
     use crate::lang::{Lang, lang_english};
     use crate::tokenization::tokenize_query;
     use crate::store::Record;
-    use crate::search::{Hit, ScoreType};
-    use super::score;
+    use crate::search::Hit;
+    use super::{score, ScoreType};
 
     #[test]
     fn score_chars() {

@@ -1,95 +1,15 @@
+mod hit;
 mod score;
+mod result;
 mod filter;
 mod sort;
 mod highlight;
 
-use std::default::Default;
 use crate::utils::LimitSort;
 use crate::tokenization::TextRef;
-use crate::matching::WordMatch;
-use crate::store::{Store, Record};
-
-
-#[derive(Debug)]
-pub struct Hit<'a> {
-    pub id:      usize,
-    pub title:   TextRef<'a>,
-    pub rating:  usize,
-    pub rmatches: Vec<WordMatch>,
-    pub qmatches: Vec<WordMatch>,
-    pub scores:  Scores,
-}
-
-
-impl<'a> Hit<'a> {
-    pub fn from_record(record: &'a Record) -> Hit<'a> {
-        Hit {
-            id:       record.id,
-            title:    record.title.to_ref(),
-            rating:   record.rating,
-            scores:   Default::default(),
-            rmatches: Vec::new(),
-            qmatches: Vec::new(),
-        }
-    }
-}
-
-
-pub const SCORES_SIZE: usize = 9;
-
-
-pub enum ScoreType {
-    Chars   = 0,
-    Words   = 1,
-    Tails   = 2,
-    Trans   = 3,
-    Fin     = 4,
-    Offset  = 5,
-    Rating  = 6,
-    WordLen = 7,
-    CharLen = 8,
-}
-
-
-#[derive(Debug, Clone)]
-pub struct Scores([isize; SCORES_SIZE]);
-
-
-impl Scores {
-    pub fn iter(&self) -> impl Iterator<Item=&isize> {
-        self.0.iter()
-    }
-}
-
-
-impl std::ops::Index<ScoreType> for Scores {
-    type Output = isize;
-
-    fn index(&self, score: ScoreType) -> &Self::Output {
-        &self.0[score as usize]
-    }
-}
-
-
-impl std::ops::IndexMut<ScoreType> for Scores {
-    fn index_mut(&mut self, score: ScoreType) -> &mut Self::Output {
-        &mut self.0[score as usize]
-    }
-}
-
-
-impl Default for Scores {
-    fn default() -> Scores {
-        Scores([0; SCORES_SIZE])
-    }
-}
-
-
-#[derive(Debug)]
-pub struct SearchResult {
-    pub id:    usize,
-    pub title: String,
-}
+use crate::store::Store;
+pub use hit::Hit;
+pub use result::SearchResult;
 
 
 impl Store {
