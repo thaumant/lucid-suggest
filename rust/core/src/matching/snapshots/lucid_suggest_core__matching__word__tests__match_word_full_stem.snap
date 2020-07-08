@@ -5,9 +5,12 @@ expression: "word_match(&rtext.view(0), &qtext1.view(0))"
 Some(
     (
         WordMatch {
-            ix: 0,
-            len: 8,
+            offset: 0,
             slice: (
+                0,
+                8,
+            ),
+            subslice: (
                 0,
                 7,
             ),
@@ -16,9 +19,12 @@ Some(
             fin: true,
         },
         WordMatch {
-            ix: 0,
-            len: 10,
+            offset: 0,
             slice: (
+                0,
+                10,
+            ),
+            subslice: (
                 0,
                 7,
             ),

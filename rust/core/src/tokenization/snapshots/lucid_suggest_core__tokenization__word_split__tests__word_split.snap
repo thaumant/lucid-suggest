@@ -4,8 +4,8 @@ expression: split
 ---
 [
     WordShape {
-        ix: 0,
-        place: (
+        offset: 0,
+        slice: (
             1,
             4,
         ),
@@ -14,8 +14,8 @@ expression: split
         fin: true,
     },
     WordShape {
-        ix: 1,
-        place: (
+        offset: 1,
+        slice: (
             5,
             8,
         ),
@@ -24,8 +24,8 @@ expression: split
         fin: true,
     },
     WordShape {
-        ix: 2,
-        place: (
+        offset: 2,
+        slice: (
             10,
             13,
         ),

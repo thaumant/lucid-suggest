@@ -122,7 +122,7 @@ fn ecommerce_match_surface() {
  * Proper top1 were missing.
  */
 #[test]
-fn ecommerce_case__little_bird__not_in_top() {
+fn ecommerce_case__little_bird() {
     using_store(|store| {
         let query = tokenize_query("little bird", &store.lang);
         let hits  = store.search(&query.to_ref());

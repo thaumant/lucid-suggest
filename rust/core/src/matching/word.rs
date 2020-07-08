@@ -38,32 +38,33 @@ pub fn word_match(rword: &WordView, qword: &WordView) -> Option<(WordMatch, Word
 
         let range = (left .. right).rev();
 
-        for rlen in range.clone() {
-            for qlen in range.clone() {
+        for rslice in range.clone() {
+            for qslice in range.clone() {
                 // Out of bounds.
-                if qlen > qword.len() { continue; }
-                if rlen > rword.len() { continue; }
-                if qlen < qword.stem  { continue; }
+                if qslice > qword.len() { continue; }
+                if rslice > rword.len() { continue; }
+                if qslice < qword.stem  { continue; }
                 // Left margin is for insertion/deletion, not for both prefixes at the same time.
-                if rlen == left && qlen == left  { continue; }
-                // Compare full words only if query is finished.
-                if qword.fin && rlen < rword.stem { break; }
+                if rslice == left && qslice == left  { continue; }
+                // Compare partial words only if query is unfinished.
+                if qword.fin && rslice < rword.stem { break; }
                 // Words with 2+ insertions/deletions are mismatched by default.
-                if (qlen as isize - rlen as isize).abs() > 1 { continue; }
+                if (qslice as isize - rslice as isize).abs() > 1 { continue; }
 
-                let dist = dists.get(qlen + 1, rlen + 1);
+                // Damlev matrix got extra 2 cols/rows, so for chars[i] get row[i+2].
+                let dist = dists.get(qslice + 1, rslice + 1);
 
-                let rel = dist / max!(qlen, rlen, 1) as f64;
+                let rel = dist / max!(qslice, rslice, 1) as f64;
                 if rel > DAMLEV_THRESHOLD { continue; }
 
                 best_match = best_match
                     .take()
-                    .filter(|m| m.0.typos <= dist)
+                    .filter(|pair| pair.0.typos <= dist)
                     .or_else(|| Some(WordMatch::new_pair(
                         rword,
                         qword,
-                        rlen,
-                        qlen,
+                        rslice,
+                        qslice,
                         dist,
                     )));
 

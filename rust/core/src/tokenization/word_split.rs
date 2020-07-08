@@ -4,12 +4,12 @@ use super::word_shape::WordShape;
 
 
 pub struct WordSplit<'a, 'b, P: CharPattern> {
-    word:    &'a WordShape,
-    lang:    &'a Lang,
-    chars:   &'a [char],
-    pattern: &'b P,
-    ix:      usize,
-    offset:  usize,
+    word:        &'a WordShape,
+    lang:        &'a Lang,
+    chars:       &'a [char],
+    pattern:     &'b P,
+    word_offset: usize,
+    char_offset: usize,
 }
 
 
@@ -20,7 +20,7 @@ impl<'a, 'b, P: CharPattern> WordSplit<'a, 'b, P> {
         pattern: &'b P,
         lang:    &'a Lang,
     ) -> Self {
-        Self { lang, word, chars, pattern, ix: word.ix, offset: 0 }
+        Self { lang, word, chars, pattern, word_offset: word.offset, char_offset: 0 }
     }
 }
 
@@ -29,19 +29,19 @@ impl<'a, 'b, P: CharPattern> Iterator for WordSplit<'a, 'b, P> {
     type Item = WordShape;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let Self { word, ix, offset, pattern, lang, .. } = self;
-        let chars = &self.chars[word.place.0 .. word.place.1];
+        let Self { word, word_offset, char_offset, pattern, lang, .. } = self;
+        let chars = &self.chars[word.slice.0 .. word.slice.1];
 
-        if *offset >= word.len() {
+        if *char_offset >= word.len() {
             return None;
         }
 
-        *offset += chars[*offset ..]
+        *char_offset += chars[*char_offset ..]
             .iter()
             .take_while(|&&ch| pattern.matches(ch, lang).unwrap_or(false))
             .count();
 
-        let len = chars[*offset ..]
+        let len = chars[*char_offset ..]
             .iter()
             .take_while(|&&ch| !pattern.matches(ch, lang).unwrap_or(false))
             .count();
@@ -51,15 +51,15 @@ impl<'a, 'b, P: CharPattern> Iterator for WordSplit<'a, 'b, P> {
         }
 
         let splitted = WordShape {
-            ix:     *ix,
-            place:  (word.place.0 + *offset, word.place.0 + *offset + len),
+            offset: *word_offset,
+            slice:  (word.slice.0 + *char_offset, word.slice.0 + *char_offset + len),
             stem:   len,
             pos:    None,
-            fin:    word.fin || *offset + len < word.len(),
+            fin:    word.fin || *char_offset + len < word.len(),
         };
 
-        *offset += splitted.len();
-        *ix     += 1;
+        *char_offset += splitted.len();
+        *word_offset += 1;
 
         Some(splitted)
     }

@@ -3,8 +3,8 @@ source: src/tokenization/word_shape.rs
 expression: word
 ---
 WordShape {
-    ix: 0,
-    place: (
+    offset: 0,
+    slice: (
         3,
         3,
     ),

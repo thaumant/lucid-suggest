@@ -4,8 +4,8 @@ expression: text.words
 ---
 [
     WordShape {
-        ix: 0,
-        place: (
+        offset: 0,
+        slice: (
             1,
             4,
         ),
@@ -14,8 +14,8 @@ expression: text.words
         fin: true,
     },
     WordShape {
-        ix: 1,
-        place: (
+        offset: 1,
+        slice: (
             8,
             11,
         ),

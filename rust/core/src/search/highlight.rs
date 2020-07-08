@@ -16,25 +16,25 @@ pub fn highlight(hit: &Hit, dividers: (&[char], &[char])) -> String {
         String::with_capacity((chars_src + chars_hl) * 4)
     };
 
-    let mut offset = 0;
-    for (ix, word) in words.iter().enumerate() {
-        match rmatches.iter().find(|m| m.ix == ix) {
+    let mut char_offset = 0;
+    for (word_offset, word) in words.iter().enumerate() {
+        match rmatches.iter().find(|m| m.offset == word_offset) {
             Some(rmatch) => {
-                let match_start = word.place.0 + rmatch.slice.0;
-                let match_end   = word.place.0 + rmatch.slice.1;
-                highlighted.extend(&source[offset .. match_start]);
+                let match_start = word.slice.0 + rmatch.subslice.0;
+                let match_end   = word.slice.0 + rmatch.subslice.1;
+                highlighted.extend(&source[char_offset .. match_start]);
                 highlighted.extend(div_left);
                 highlighted.extend(&source[match_start .. match_end]);
                 highlighted.extend(div_right);
-                highlighted.extend(&source[match_end .. word.place.1]);
+                highlighted.extend(&source[match_end .. word.slice.1]);
             },
             None => {
-                highlighted.extend(&source[offset .. word.place.1]);
+                highlighted.extend(&source[char_offset .. word.slice.1]);
             },
         }
-        offset = word.place.1;
+        char_offset = word.slice.1;
     }
-    highlighted.extend(&source[offset .. ]);
+    highlighted.extend(&source[char_offset .. ]);
     highlighted.retain(|ch| ch != '\0');
 
     highlighted
@@ -52,22 +52,22 @@ mod tests {
     const L: &[char] = &['['];
     const R: &[char] = &[']'];
 
-    fn mock_match(ix: usize, size: usize) -> (WordMatch, WordMatch) {
+    fn mock_match(offset: usize, size: usize) -> (WordMatch, WordMatch) {
         let rmatch = WordMatch {
-            ix:    ix,
-            len:   size,
-            slice: (0, size),
-            func:  false,
-            typos: 0.0,
-            fin:   false,
+            offset:   offset,
+            slice:    (0, size),
+            subslice: (0, size),
+            func:     false,
+            typos:    0.0,
+            fin:      false,
         };
         let qmatch = WordMatch {
-            ix:    0,
-            len:   size,
-            slice: (0, size),
-            func:  false,
-            typos: 0.0,
-            fin:   false,
+            offset:   0,
+            slice:    (0, size),
+            subslice: (0, size),
+            func:     false,
+            typos:    0.0,
+            fin:      false,
         };
         (rmatch, qmatch)
     }

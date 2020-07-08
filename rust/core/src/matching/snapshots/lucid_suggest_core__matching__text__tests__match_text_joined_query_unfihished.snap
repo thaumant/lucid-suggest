@@ -5,9 +5,12 @@ expression: "text_match(&rtext.to_ref(), &qtext.to_ref())"
 (
     [
         WordMatch {
-            ix: 0,
-            len: 12,
+            offset: 0,
             slice: (
+                0,
+                12,
+            ),
+            subslice: (
                 0,
                 8,
             ),
@@ -18,9 +21,12 @@ expression: "text_match(&rtext.to_ref(), &qtext.to_ref())"
     ],
     [
         WordMatch {
-            ix: 0,
-            len: 5,
+            offset: 0,
             slice: (
+                0,
+                5,
+            ),
+            subslice: (
                 0,
                 5,
             ),
@@ -29,9 +35,12 @@ expression: "text_match(&rtext.to_ref(), &qtext.to_ref())"
             fin: true,
         },
         WordMatch {
-            ix: 1,
-            len: 3,
+            offset: 1,
             slice: (
+                6,
+                9,
+            ),
+            subslice: (
                 0,
                 3,
             ),

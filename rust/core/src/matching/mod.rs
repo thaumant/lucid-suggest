@@ -10,65 +10,77 @@ pub use text::text_match;
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct WordMatch {
-    pub ix:    usize,
-    pub len:   usize,
-    pub slice: (usize, usize),
-    pub typos: f64,
-    pub func:  bool,
-    pub fin:   bool,
+    pub offset:   usize,
+    pub slice:    (usize, usize),
+    pub subslice: (usize, usize),
+    pub typos:    f64,
+    pub func:     bool,
+    pub fin:      bool,
 }
 
 
 impl WordMatch {
     pub fn new_pair(
-        rword: &WordView,
-        qword: &WordView,
-        rlen:  usize,
-        qlen:  usize,
+        rword:  &WordView,
+        qword:  &WordView,
+        rslice: usize,
+        qslice: usize,
         typos: f64
     ) -> (Self, Self) {
-        let fin = qword.fin || rword.len() == rlen;
+        debug_assert!(rword.slice.0 + rslice <= rword.slice.1, "Record match subslice is too long");
+        debug_assert!(qword.slice.0 + qslice <= qword.slice.1, "Query match subslice is too long");
+        let fin = qword.fin || rword.len() == rslice;
         let rmatch = WordMatch {
-            ix:    rword.ix,
-            len:   rword.len(),
-            slice: (0, rlen),
-            func:  rword.is_function(),
+            offset:   rword.offset,
+            slice:    rword.slice,
+            subslice: (0, rslice),
+            func:     rword.is_function(),
             typos,
             fin,
         };
         let qmatch = WordMatch {
-            ix:     qword.ix,
-            len:    qword.len(),
-            slice:  (0, qlen),
-            func:   qword.is_function(),
+            offset:   qword.offset,
+            slice:    qword.slice,
+            subslice: (0, qslice),
+            func:     qword.is_function(),
             typos,
             fin,
         };
         (rmatch, qmatch)
     }
 
+    pub fn word_len(&self) -> usize {
+        let (left, right) = self.slice;
+        return right - left;
+    }
+
+    pub fn match_len(&self) -> usize {
+        let (left, right) = self.subslice;
+        return right - left;
+    }
+
     pub fn split(&self, w1: &WordView, w2: &WordView) -> Option<(Self, Self)> {
-        debug_assert!(w2.place.0 > w1.place.0,              "Invalid word order in match split");
-        debug_assert!(w1.ix == self.ix || w2.ix == self.ix, "Invalid word ixs in match split");
-        if self.slice.1 <= (w2.place.0 - w1.place.0) {
+        debug_assert!(w2.slice.0 > w1.slice.0,              "Invalid word order in match split");
+        debug_assert!(w1.offset == self.offset || w2.offset == self.offset, "Invalid word offsets in match split");
+        if w1.slice.0 + self.subslice.1 <= w2.slice.0 {
             return None;
         }
         let (typos1, typos2) = Self::split_typos(self.typos, w1.len(), w2.len());
         let part1 = Self {
-            ix:      w1.ix,
-            len:     w1.len(),
-            slice:   (0, w1.len()),
-            func:    w1.is_function(),
-            typos:   typos1,
-            fin:     true,
+            offset:   w1.offset,
+            slice:    w1.slice,
+            subslice: (0, w1.len()),
+            func:     w1.is_function(),
+            typos:    typos1,
+            fin:      true,
         };
         let part2 = Self {
-            ix:      w2.ix,
-            len:     w2.len(),
-            slice:   (0, self.slice.1 - (w2.place.0 - w1.place.0)), // TODO Or minus part1.len()? Or compare double slice with...?
-            func:    w2.is_function(),
-            typos:   typos2,
-            fin:     self.fin,
+            offset:   w2.offset,
+            slice:    w2.slice,
+            subslice: (0, self.subslice.1 - (w2.slice.0 - w1.slice.0)),
+            func:     w2.is_function(),
+            typos:    typos2,
+            fin:      self.fin,
         };
         Some((part1, part2))
     }

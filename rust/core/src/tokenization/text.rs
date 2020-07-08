@@ -98,12 +98,12 @@ impl TextOwn {
         if let Some(nfc) = lang.unicode_compose(&self.source) {
             self.source           = nfc.clone();
             self.chars            = nfc;
-            self.words[0].place.1 = self.chars.len();
+            self.words[0].slice.1 = self.chars.len();
         }
         if let Some((source, chars)) = lang.unicode_reduce(&self.chars) {
             self.source           = source;
             self.chars            = chars;
-            self.words[0].place.1 = self.chars.len();
+            self.words[0].slice.1 = self.chars.len();
         }
         self
     }
@@ -116,8 +116,8 @@ impl TextOwn {
             }
         }
         self.words = words;
-        for (ix, word) in self.words.iter_mut().enumerate() {
-            word.ix = ix;
+        for (offset, word) in self.words.iter_mut().enumerate() {
+            word.offset = offset;
         }
         self
     }
@@ -127,8 +127,8 @@ impl TextOwn {
             word.strip(&self.chars, pattern, lang);
         }
         self.words.retain(|w| w.len() > 0);
-        for (ix, word) in self.words.iter_mut().enumerate() {
-            word.ix = ix;
+        for (offset, word) in self.words.iter_mut().enumerate() {
+            word.offset = offset;
         }
         self
     }
@@ -254,9 +254,9 @@ mod tests {
         let chars = to_vec("-Foo- , Baz; ");
         let text  = Text {
                 words:  vec![
-                    WordShape { ix: 0, place: (0,  5), stem: 5, pos: None, fin: true },  // "-Foo-"
-                    WordShape { ix: 1, place: (6,  7), stem: 1, pos: None, fin: true },  // ","
-                    WordShape { ix: 2, place: (8, 13), stem: 5, pos: None, fin: true },  // "Baz; "
+                    WordShape { offset: 0, slice: (0,  5), stem: 5, pos: None, fin: true },  // "-Foo-"
+                    WordShape { offset: 1, slice: (6,  7), stem: 1, pos: None, fin: true },  // ","
+                    WordShape { offset: 2, slice: (8, 13), stem: 5, pos: None, fin: true },  // "Baz; "
                 ],
                 source:  chars.clone(),
                 chars:   chars.clone(),
@@ -273,8 +273,8 @@ mod tests {
         let chars = to_vec("-Foo- Baz; ");
         let text1 = Text {
                 words:  vec![
-                    WordShape { ix: 0, place: (0, 5), stem: 5, pos: None, fin: true },  // "-Foo-"
-                    WordShape { ix: 1, place: (5, 8), stem: 3, pos: None, fin: true },  // "Baz"
+                    WordShape { offset: 0, slice: (0, 5), stem: 5, pos: None, fin: true },  // "-Foo-"
+                    WordShape { offset: 1, slice: (5, 8), stem: 3, pos: None, fin: true },  // "Baz"
                 ],
                 source:  chars.clone(),
                 chars:   chars.clone(),
@@ -285,8 +285,8 @@ mod tests {
 
         let text2 = Text {
                 words:  vec![
-                    WordShape { ix: 0, place: (0,  5), stem: 5, pos: None, fin: true },  // "-Foo-"
-                    WordShape { ix: 1, place: (5, 10), stem: 5, pos: None, fin: true },  // "Baz; "
+                    WordShape { offset: 0, slice: (0,  5), stem: 5, pos: None, fin: true },  // "-Foo-"
+                    WordShape { offset: 1, slice: (5, 10), stem: 5, pos: None, fin: true },  // "Baz; "
                 ],
                 source:  chars.clone(),
                 chars:   chars.clone(),
@@ -304,9 +304,9 @@ mod tests {
         let chars = to_vec("Foo, Bar Baz");
         let text  = Text {
                 words:  vec![
-                    WordShape { ix: 0, place: (0,  4), stem: 4, pos: None, fin: true }, // "Foo,"
-                    WordShape { ix: 1, place: (5,  8), stem: 3, pos: None, fin: true }, // "Bar"
-                    WordShape { ix: 2, place: (9, 12), stem: 3, pos: None, fin: true }, // "Baz"
+                    WordShape { offset: 0, slice: (0,  4), stem: 4, pos: None, fin: true }, // "Foo,"
+                    WordShape { offset: 1, slice: (5,  8), stem: 3, pos: None, fin: true }, // "Bar"
+                    WordShape { offset: 2, slice: (9, 12), stem: 3, pos: None, fin: true }, // "Baz"
                 ],
                 source:  chars.clone(),
                 chars:   chars.clone(),
@@ -322,8 +322,8 @@ mod tests {
         let lang  = lang_english();
         let text  = Text {
                 words: vec![
-                    WordShape { ix: 0, place: (0,  5), stem: 5, pos: None, fin: true }, // "hello"
-                    WordShape { ix: 1, place: (6, 14), stem: 8, pos: None, fin: true }, // "universe"
+                    WordShape { offset: 0, slice: (0,  5), stem: 5, pos: None, fin: true }, // "hello"
+                    WordShape { offset: 1, slice: (6, 14), stem: 8, pos: None, fin: true }, // "universe"
                 ],
                 source:  chars.clone(),
                 chars:   chars.clone(),
@@ -339,8 +339,8 @@ mod tests {
         let lang  = lang_english();
         let text  = Text {
                 words: vec![
-                    WordShape { ix: 0, place: (0,  3), stem: 3, pos: None, fin: true }, // "hello"
-                    WordShape { ix: 1, place: (4, 12), stem: 8, pos: None, fin: true }, // "universe"
+                    WordShape { offset: 0, slice: (0,  3), stem: 3, pos: None, fin: true }, // "hello"
+                    WordShape { offset: 1, slice: (4, 12), stem: 8, pos: None, fin: true }, // "universe"
                 ],
                 source:  chars.clone(),
                 chars:   chars.clone(),

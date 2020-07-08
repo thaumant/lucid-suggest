@@ -88,7 +88,7 @@ impl TrigramIndex {
         let cap       = text.words.iter().map(|w| w.len()).sum::<usize>();
         let mut grams = Vec::with_capacity(cap);
         for word in text.words {
-            let chars = &text.chars[word.place.0 .. word.place.1];
+            let chars = &text.chars[word.slice.0 .. word.slice.1];
             for gram in chars.trigrams() {
                 grams.push(gram);
             }

@@ -22,8 +22,8 @@ expression: "(&text.source, &text.chars, &text.words[0])"
         'e',
     ],
     WordShape {
-        ix: 0,
-        place: (
+        offset: 0,
+        slice: (
             0,
             7,
         ),

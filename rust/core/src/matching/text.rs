@@ -20,48 +20,48 @@ pub fn text_match(rtext: &TextRef, qtext: &TextRef) -> (Vec<WordMatch>, Vec<Word
         qmatches.clear();
 
         for qword in qtext.words.iter() {
-            if qmatches.contains_key(&qword.ix) { continue; }
+            if qmatches.contains_key(&qword.offset) { continue; }
             let qword = qword.to_view(qtext);
 
             let mut candidate: Option<(WordMatch, WordMatch)> = None;
 
             for rword in rtext.words.iter() {
-                if rmatches.contains_key(&rword.ix) { continue; }
+                if rmatches.contains_key(&rword.offset) { continue; }
                 let rword = rword.to_view(rtext);
                 let mut stop = false;
 
                 None.or_else(|| {
-                        let rnext = rtext.words.get(rword.ix + 1)?.to_view(rtext);
+                        let rnext = rtext.words.get(rword.offset + 1)?.to_view(rtext);
                         if qword.len() < rword.len() + rword.dist(&rnext) { return None; }
-                        if rmatches.contains_key(&(rword.ix + 1)) { return None; }
+                        if rmatches.contains_key(&(rword.offset + 1)) { return None; }
                         let (rmatch,  qmatch)  = word_match(&rword.join(&rnext), &qword)?;
                         let (rmatch1, rmatch2) = rmatch.split(&rword, &rnext)?;
-                        rmatches.insert(rmatch1.ix, rmatch1);
-                        rmatches.insert(rmatch2.ix, rmatch2);
-                        qmatches.insert(qmatch.ix,  qmatch);
+                        rmatches.insert(rmatch1.offset, rmatch1);
+                        rmatches.insert(rmatch2.offset, rmatch2);
+                        qmatches.insert(qmatch.offset,  qmatch);
                         candidate.take();
                         stop = true;
                         Some(())
                     })
                     .or_else(|| {
-                        let qnext = qtext.words.get(qword.ix + 1)?.to_view(qtext);
+                        let qnext = qtext.words.get(qword.offset + 1)?.to_view(qtext);
                         if rword.len() < qword.len() + qword.dist(&qnext) { return None; }
-                        if qmatches.contains_key(&(qword.ix + 1)) { return None; }
+                        if qmatches.contains_key(&(qword.offset + 1)) { return None; }
                         let (rmatch,  qmatch)  = word_match(&rword, &qword.join(&qnext))?;
                         let (qmatch1, qmatch2) = qmatch.split(&qword, &qnext)?;
-                        rmatches.insert(rmatch.ix,  rmatch);
-                        qmatches.insert(qmatch1.ix, qmatch1);
-                        qmatches.insert(qmatch2.ix, qmatch2);
+                        rmatches.insert(rmatch.offset,  rmatch);
+                        qmatches.insert(qmatch1.offset, qmatch1);
+                        qmatches.insert(qmatch2.offset, qmatch2);
                         candidate.take();
                         stop = true;
                         Some(())
                     })
                     .or_else(|| {
                         let (rmatch2, qmatch2) = word_match(&rword, &qword)?;
-                        let score2 = rmatch2.slice.1 - 2 * (rmatch2.typos.ceil() as usize);
+                        let score2 = rmatch2.match_len() - 2 * (rmatch2.typos.ceil() as usize);
                         let score1 = candidate
                             .as_ref()
-                            .map(|(rm, _)| rm.slice.1 - 2 * (rm.typos.ceil() as usize))
+                            .map(|(m, _)| m.match_len() - 2 * (m.typos.ceil() as usize))
                             .unwrap_or(0);
                         let replace = match (candidate.as_ref(), score1.cmp(&score2)) {
                             (None, _) => true,
@@ -82,15 +82,15 @@ pub fn text_match(rtext: &TextRef, qtext: &TextRef) -> (Vec<WordMatch>, Vec<Word
             }
 
             if let Some((rmatch, qmatch)) = candidate {
-                rmatches.insert(rmatch.ix, rmatch);
-                qmatches.insert(qmatch.ix, qmatch);
+                rmatches.insert(rmatch.offset, rmatch);
+                qmatches.insert(qmatch.offset, qmatch);
             }
         }
 
         let mut rmatches = rmatches.drain().map(|(_, m)| m).collect::<Vec<_>>();
         let mut qmatches = qmatches.drain().map(|(_, m)| m).collect::<Vec<_>>();
-        rmatches.sort_by(|m1, m2| m1.ix.cmp(&m2.ix));
-        qmatches.sort_by(|m1, m2| m1.ix.cmp(&m2.ix));
+        rmatches.sort_by(|m1, m2| m1.offset.cmp(&m2.offset));
+        qmatches.sort_by(|m1, m2| m1.offset.cmp(&m2.offset));
 
         (rmatches, qmatches)
     }) })

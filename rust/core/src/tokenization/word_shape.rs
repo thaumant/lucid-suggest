@@ -7,31 +7,31 @@ use super::text::Text;
 
 #[derive(PartialEq, Debug, Clone)]
 pub struct WordShape {
-    pub ix:    usize,
-    pub place: (usize, usize),
-    pub stem:  usize,
-    pub pos:   Option<PartOfSpeech>,
-    pub fin:   bool,
+    pub offset: usize,
+    pub slice:  (usize, usize),
+    pub stem:   usize,
+    pub pos:    Option<PartOfSpeech>,
+    pub fin:    bool,
 }
 
 
 impl Word for WordShape {
-    #[inline] fn ix(&self)    -> usize                { self.ix }
-    #[inline] fn place(&self) -> (usize, usize)       { self.place }
-    #[inline] fn stem(&self)  -> usize                { self.stem }
-    #[inline] fn pos(&self)   -> Option<PartOfSpeech> { self.pos }
-    #[inline] fn fin(&self)   -> bool                 { self.fin }
+    #[inline] fn offset(&self) -> usize                { self.offset }
+    #[inline] fn slice(&self)  -> (usize, usize)       { self.slice }
+    #[inline] fn stem(&self)   -> usize                { self.stem }
+    #[inline] fn pos(&self)    -> Option<PartOfSpeech> { self.pos }
+    #[inline] fn fin(&self)    -> bool                 { self.fin }
 }
 
 
 impl WordShape {
     pub fn new(len: usize) -> Self {
         WordShape {
-            ix:    0,
-            place: (0, len),
-            stem:  len,
-            pos:   None,
-            fin:   true,
+            offset: 0,
+            slice:  (0, len),
+            stem:   len,
+            pos:    None,
+            fin:    true,
         }
     }
 
@@ -45,11 +45,11 @@ impl WordShape {
 
     pub fn join(&self, other: &Self) -> Self {
         Self {
-            ix:    self.ix,
-            place: (self.place.0, other.place.1),
-            stem:  other.place.0 - self.place.0 + other.stem,
-            pos:   None,
-            fin:   other.fin,
+            offset: self.offset,
+            slice:  (self.slice.0, other.slice.1),
+            stem:   other.slice.0 - self.slice.0 + other.stem,
+            pos:    None,
+            fin:    other.fin,
         }
     }
 
@@ -63,7 +63,7 @@ impl WordShape {
     }
 
     pub fn strip<P: CharPattern>(&mut self, chars: &[char], pattern: &P, lang: &Lang) -> &mut Self {
-        let chars = &chars[self.place.0 .. self.place.1];
+        let chars = &chars[self.slice.0 .. self.slice.1];
         let left  = chars.iter()
             .take_while(|&&ch| pattern.matches(ch, lang).unwrap_or(false))
             .count();
@@ -72,26 +72,26 @@ impl WordShape {
             .take_while(|&&ch| pattern.matches(ch, lang).unwrap_or(false))
             .take(chars.len() - left)
             .count();
-        self.place.0 += left;
-        self.place.1 -= right;
+        self.slice.0 += left;
+        self.slice.1 -= right;
         self.fin = self.fin || right != 0;
         self
     }
 
     pub fn set_stem(&mut self, chars: &[char], lang: &Lang) -> &mut Self {
-        let chars = &chars[self.place.0 .. self.place.1];
+        let chars = &chars[self.slice.0 .. self.slice.1];
         self.stem = lang.stem(chars);
         self
     }
 
     pub fn set_pos(&mut self, chars: &[char], lang: &Lang) -> &mut Self {
-        let chars = &chars[self.place.0 .. self.place.1];
+        let chars = &chars[self.slice.0 .. self.slice.1];
         self.pos = lang.get_pos(chars);
         self
     }
 
     pub fn lower(&mut self, chars: &mut [char]) -> &mut Self {
-        let chars = &mut chars[self.place.0 .. self.place.1];
+        let chars = &mut chars[self.slice.0 .. self.slice.1];
         if chars.iter().any(|ch| ch.is_uppercase()) {
             for ch in chars {
                 *ch = ch.to_lowercase().next().unwrap_or(*ch);
@@ -118,8 +118,8 @@ mod tests {
     fn word_dist_basic() {
         let mut w1 = WordShape::new(7);
         let mut w2 = WordShape::new(5);
-        w1.place = (0, w1.len());
-        w2.place = (w1.place.1 + 2, w1.place.1 + 2 + w2.len());
+        w1.slice = (0, w1.len());
+        w2.slice = (w1.slice.1 + 2, w1.slice.1 + 2 + w2.len());
         assert_eq!(w1.dist(&w2), 2);
         assert_eq!(w2.dist(&w1), 2);
     }
@@ -128,8 +128,8 @@ mod tests {
     fn word_dist_fused() {
         let mut w1 = WordShape::new(7);
         let mut w2 = WordShape::new(5);
-        w1.place = (0, w1.len());
-        w2.place = (w1.place.1, w1.place.1 + w2.len());
+        w1.slice = (0, w1.len());
+        w2.slice = (w1.slice.1, w1.slice.1 + w2.len());
         assert_eq!(w1.dist(&w2), 0);
         assert_eq!(w2.dist(&w1), 0);
     }
@@ -139,8 +139,8 @@ mod tests {
     fn word_dist_malformed() {
         let mut w1 = WordShape::new(7);
         let mut w2 = WordShape::new(5);
-        w1.place = (0, w1.len());
-        w2.place = (w1.place.1 - 2, w1.place.1 - 2 + w2.len());
+        w1.slice = (0, w1.len());
+        w2.slice = (w1.slice.1 - 2, w1.slice.1 - 2 + w2.len());
         w1.dist(&w2);
     }
 
@@ -148,8 +148,8 @@ mod tests {
     fn word_join_basic() {
         let mut w1 = WordShape::new(7);
         let mut w2 = WordShape::new(5);
-        w1.place = (0, w1.len());
-        w2.place = (w1.place.1 + 1, w1.place.1 + 1 + w2.len());
+        w1.slice = (0, w1.len());
+        w2.slice = (w1.slice.1 + 1, w1.slice.1 + 1 + w2.len());
         assert_debug_snapshot!(w1.join(&w2));
     }
 
@@ -157,8 +157,8 @@ mod tests {
     fn word_join_offset() {
         let mut w1 = WordShape::new(7);
         let mut w2 = WordShape::new(5);
-        w1.place = (3, 3 + w1.len());
-        w2.place = (w1.place.1 + 1, w1.place.1 + 1 + w2.len());
+        w1.slice = (3, 3 + w1.len());
+        w2.slice = (w1.slice.1 + 1, w1.slice.1 + 1 + w2.len());
         assert_debug_snapshot!(w1.join(&w2));
     }
 
@@ -166,8 +166,8 @@ mod tests {
     fn word_join_unfinished_first() {
         let mut w1 = WordShape::new(7);
         let mut w2 = WordShape::new(5);
-        w1.place = (0, w1.len());
-        w2.place = (w1.place.1 + 1, w1.place.1 + 1 + w2.len());
+        w1.slice = (0, w1.len());
+        w2.slice = (w1.slice.1 + 1, w1.slice.1 + 1 + w2.len());
         w1.fin   = false;
         w2.fin   = true;
         assert_debug_snapshot!(w1.join(&w2));
@@ -177,8 +177,8 @@ mod tests {
     fn word_join_unfinished_last() {
         let mut w1 = WordShape::new(7);
         let mut w2 = WordShape::new(5);
-        w1.place = (0, w1.len());
-        w2.place = (w1.place.1 + 1, w1.place.1 + 1 + w2.len());
+        w1.slice = (0, w1.len());
+        w2.slice = (w1.slice.1 + 1, w1.slice.1 + 1 + w2.len());
         w1.fin   = true;
         w2.fin   = false;
         assert_debug_snapshot!(w1.join(&w2));
@@ -188,8 +188,8 @@ mod tests {
     fn word_join_pos_first() {
         let mut w1 = WordShape::new(7);
         let mut w2 = WordShape::new(5);
-        w1.place = (0, w1.len());
-        w2.place = (w1.place.1 + 1, w1.place.1 + 1 + w2.len());
+        w1.slice = (0, w1.len());
+        w2.slice = (w1.slice.1 + 1, w1.slice.1 + 1 + w2.len());
         w1.pos   = Some(PartOfSpeech::Article);
         w2.pos   = None;
         assert_debug_snapshot!(w1.join(&w2));
@@ -199,8 +199,8 @@ mod tests {
     fn word_join_pos_last() {
         let mut w1 = WordShape::new(7);
         let mut w2 = WordShape::new(5);
-        w1.place = (0, w1.len());
-        w2.place = (w1.place.1 + 1, w1.place.1 + 1 + w2.len());
+        w1.slice = (0, w1.len());
+        w2.slice = (w1.slice.1 + 1, w1.slice.1 + 1 + w2.len());
         w1.pos   = None;
         w2.pos   = Some(PartOfSpeech::Article);
         assert_debug_snapshot!(w1.join(&w2));

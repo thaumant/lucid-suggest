@@ -23,7 +23,7 @@ pub fn score(query: &TextRef, hit: &mut Hit) {
 pub fn score_chars_up(hit: &Hit) -> isize {
     hit.rmatches
         .iter()
-        .map(|m| m.slice.1 - 2 * (m.typos.ceil() as usize))
+        .map(|m| m.match_len() - 2 * (m.typos.ceil() as usize))
         .sum::<usize>() as isize
 }
 
@@ -38,7 +38,7 @@ pub fn score_words_up(hit: &Hit) -> isize {
 pub fn score_tails_down(hit: &Hit) -> isize {
     let tails = hit.rmatches
         .iter()
-        .map(|m| m.slice.0 + m.len - m.slice.1)
+        .map(|m| m.word_len() - m.match_len())
         .sum::<usize>();
     -(tails as isize)
 }
@@ -50,8 +50,8 @@ pub fn score_trans_down(hit: &Hit) -> isize {
     let prevs = &hit.rmatches[ .. hit.rmatches.len() - 1];
     let nexts = &hit.rmatches[1..];
     for (prev, next) in prevs.iter().zip(nexts.iter()) {
-        if prev.ix + 1 > next.ix { count += prev.ix + 1 - next.ix; }
-        if prev.ix + 1 < next.ix { count += next.ix - prev.ix - 1; }
+        if prev.offset + 1 > next.offset { count += prev.offset + 1 - next.offset; }
+        if prev.offset + 1 < next.offset { count += next.offset - prev.offset - 1; }
     }
     -(count as isize)
 }
@@ -68,7 +68,7 @@ pub fn score_fin_up(hit: &Hit) -> isize {
 
 pub fn score_offset_down(hit: &Hit) -> isize {
     let offset = hit.rmatches.iter()
-        .map(|m| m.ix)
+        .map(|m| m.offset)
         .min()
         .unwrap_or(0);
     -(offset as isize)
