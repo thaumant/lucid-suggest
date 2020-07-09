@@ -1,15 +1,23 @@
 import * as readline from 'readline'
-import {LucidSuggest} from 'lucid-suggest/en'
+import {LucidSuggest, Hit} from 'lucid-suggest/en'
 import DATA from './e_commerce.json'
 
 const CODE_RESET = '\x1b[0m'
 const CODE_RED   = '\x1b[31m'
-const CODE_GREEN = '\x1b[36m'
 const CODE_BOLD  = '\x1b[1m'
 
 const suggest = new LucidSuggest
-suggest.highlightWith(CODE_BOLD + CODE_RED, CODE_RESET)
 suggest.setRecords(DATA)
+
+function render(hit: Hit): string {
+    return hit.chunks
+        .map(chunk => {
+            return chunk.highlight
+                ? CODE_BOLD + CODE_RED + chunk.text + CODE_RESET
+                : chunk.text
+        })
+        .join('')
+}
 
 const rl = readline.createInterface({
     input:  process.stdin,
@@ -18,12 +26,12 @@ const rl = readline.createInterface({
 
 function ready() {
     rl.question('> ', async query => {
-        const start   = Date.now()
-        const results = await suggest.search(query)
+        const start = Date.now()
+        const hits  = await suggest.search(query)
         console.log(Date.now() - start, 'ms')
         console.log('--------------------------------')
-        for (const result of results) {
-            console.log(result.title)
+        for (const hit of hits) {
+            console.log(render(hit))
         }
         console.log('--------------------------------')
         console.log('\n')
