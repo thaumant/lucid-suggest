@@ -2,11 +2,23 @@
 
 Embeddable search and autocomplete that works out of the box. Fast, simple, runs in browsers and NodeJS. Built with Rust and WebAssembly.
 
-Note: this package hasn't been battle-tested in production.
+Note: this package is pre-1.0, it hasn't been battle-tested in production, and API may change.
 
 ## Live demo
 
 [Check it out.](http://lucid-search.io.s3-website.eu-central-1.amazonaws.com/demo/index.html)
+
+
+## Table of contents
+- [Getting started](#getting-started)
+- [Code examples](#code-examples)
+- [Fulltext search features](#fulltext-search-features)
+- [Rating](#rating)
+- [Rendering results](#rendering-results)
+- [Supported languages](#supported-languages)
+- [Bundle sizes](#bundle-sizes)
+- [Performance](#performance)
+
 
 ## Getting started
 
@@ -63,7 +75,7 @@ await suggest.search("c")
 
 Typo resilience:
 ```javascript
-await suggest.search("alcaline bateries")
+await suggest.search("alcline bateries")
 // returns:
 [
  {id: 3, title: "AA [Alkaline] [Batteries]"},
@@ -97,22 +109,6 @@ await suggest.search("to")
 ]
 ```
 
-
-## Highlighting
-
-By default LucidSuggest highlights matched parts of text using `[ ]`. You can pick your own markup:
-```javascript
-suggest.highlightWith('<strong>', '</strong>')
-```
-
-```javascript
-await suggest.search("battery")
-// returns:
-[
- {id: 3, title: "AA Alkaline <strong>Batteri</strong>es"},
-]
-```
-
 ## Rating
 
 Optional `rating` field can be used as a tie breaker: records with greater `rating` are ranked higher. Use priority, product popularity, or term frequency as `rating` to improve overall scoring.
@@ -137,12 +133,50 @@ await suggest.search("ne")
 ```
 
 
+## Rendering results
+
+By default LucidSuggest highlights matched parts of text using `[ ]`.
+
+You can change this by providing an optional render function:
+
+```javascript
+const suggest = new LucidSuggest(chunks => {
+    return chunks
+        .map(({text, highlight}) => {
+            return highlight ? `<strong>${text}</strong>` : text
+        })
+        .join('')
+})
+
+await suggest.search("battery")
+
+// returns:
+[{id: 3, title: "AA Alkaline <strong>Batteri</strong>es"}]
+```
+
+A helper function `highglightWith` is aimed to simplify render to a string:
+
+```javascript
+import {LucidSuggest, highlightWith} from 'lucid-suggest'
+
+const suggest = new LucidSuggest(highlightWith('<strong>', '</strong>'))
+
+await suggest.search("battery")
+
+// returns:
+[{id: 3, title: "AA Alkaline <strong>Batteri</strong>es"}]
+```
+
+For examples of rendering in React or Vue, see [Code examples](#code-examples) section.
+
+
 ## Supported languages
 
 | Language   | Module             |
 | :--------- | :----------------- |
 | German     | `lucid-suggest/de` |
 | English    | `lucid-suggest/en` |
+| French     | `lucid-suggest/fr` |
 | Spanish    | `lucid-suggest/es` |
 | Portuguese | `lucid-suggest/pt` |
 | Russian    | `lucid-suggest/ru` |
@@ -152,23 +186,25 @@ await suggest.search("ne")
 
 | lang | size | gzipped |
 | :--- | ---: | ------: |
-| de   | 187K |     73K |
-| en   | 189K |     73K |
-| es   | 192K |     74K |
-| pt   | 192K |     74K |
-| ru   | 190K |     73K |
+| de   | 200K |     79K |
+| en   | 202K |     80K |
+| es   | 205K |     80K |
+| es   | 208K |     82K |
+| pt   | 205K |     81K |
+| ru   | 202K |     79K |
 
 
 ## Performance
 
 At the moment LucidSuggest works best with shorter sentences, like shopping items or book titles. Using longer texts, like articles or movie descriptions, may lead to poor experience.
 
-For example, for 10000 records, each containing 4-8 common English words, you can expect a typical search to take about 2 ms, so you can simply call it at every keystroke, without throttling or Web Workers.
+For example, for 10000 records, each containing 4-8 common English words, you can expect a typical search to take less than 1 ms, so you can simply call it at every keystroke, without throttling or Web Workers.
 
 Below are the detailed performance measurements, obtained using Node.js 14.3, Intel Core i7 (I7-9750H) 2.6 GHz.
 
-|               | 2-4 words | 4-8 words |
-| ------------: | --------: | --------: |
-|   100 records |   0.14 ms |   0.39 ms |
-|  1000 records |   0.46 ms |   0.81 ms |
-| 10000 records |   0.87 ms |   1.50 ms |
+|                | 2-4 words | 4-8 words |
+| -------------: | --------: | --------: |
+|    100 records |   0.08 ms |   0.24 ms |
+|   1000 records |   0.27 ms |   0.48 ms |
+|  10000 records |   0.51 ms |   0.74 ms |
+| 100000 records |   2.00 ms |   2.80 ms |

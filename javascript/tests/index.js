@@ -1,4 +1,4 @@
-const {LucidSuggest} = require('../en')
+const {LucidSuggest, highlight} = require('../en')
 
 describe('Suggest', () => {
     const records = [
@@ -87,5 +87,30 @@ describe('Suggest', () => {
         suggest.setRecords(records.map((r, i) => ({...r, rating: i})))
         const hits = await suggest.search('')
         expect(hits).toMatchSnapshot()
+    })
+
+    describe('Render', () => {
+        test('highlight helper', async () => {
+            const suggest = new LucidSuggest()
+            suggest.setRecords(records)
+            const hits = await suggest.search('hel')
+            const rendered = hits.map(hit => highlight(hit, '((', '))'))
+            expect(rendered).toMatchSnapshot()
+        })
+
+        test('DIY', async () => {
+            const suggest = new LucidSuggest()
+            suggest.setRecords(records)
+            const hits = await suggest.search('ba')
+            const rendered = hits.map(hit => {
+                return {
+                    value: hit.record.id.toString(),
+                    label: hit.chunks
+                        .map(c => c.highlight ? '<<' + c.text + '>>' : c.text)
+                        .join('')
+                }
+            })
+            expect(rendered).toMatchSnapshot()
+        })
     })
 })

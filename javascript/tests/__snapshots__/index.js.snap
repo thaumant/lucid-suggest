@@ -75,6 +75,25 @@ Array [
 ]
 `;
 
+exports[`Suggest Render DIY 1`] = `
+Array [
+  Object {
+    "label": "Foo <<ba>>r",
+    "value": "20",
+  },
+  Object {
+    "label": "-<<BA>>ZZZ-",
+    "value": "30",
+  },
+]
+`;
+
+exports[`Suggest Render highlight helper 1`] = `
+Array [
+  "((Hel))lo world!",
+]
+`;
+
 exports[`Suggest Typos 1`] = `
 Array [
   Object {

@@ -8,12 +8,12 @@ export class LucidSuggest {
     constructor() {
         this.id         = NEXT_ID++
         this.limit      = DEFAULT_LIMIT
-        this.dividers   = ['[', ']']
         this.records    = []
         this.setupQueue = compileWasm
 
         this.setup(wasm => {
             wasm.create_store(this.id)
+            wasm.highlight_with(this.id, '{{', '}}')
         })
     }
 
@@ -53,14 +53,6 @@ export class LucidSuggest {
         })
     }
 
-    highlightWith(left, right) {
-        return this.setup(wasm => {
-            this.dividers[0] = left
-            this.dividers[1] = right
-            wasm.highlight_with(this.id, left, right)
-        })
-    }
-
     async search(query) {
         const wasm = await this.setupQueue
         wasm.run_search(this.id, query)
@@ -73,10 +65,48 @@ export class LucidSuggest {
             const record = this.records.find(r => r.id === id)
             if (!record) throw new Error(`Missing record ${id}`)
             if (!title)  throw new Error(`Missing title for ${id}`)
-            hits.push({...record, title})
+            hits.push(new Hit(title, record))
         }
         return hits
     }
+}
+
+
+export function highlight(hit, left, right) {
+    let result = ''
+    for (const {text, highlight} of hit.chunks) {
+        result += highlight
+            ? left + text + right
+            : text
+    }
+    return result
+}
+
+
+export class Hit {
+    constructor(title, record) {
+        this.record = record
+        this.chunks = toChunks(title)
+    }
+
+    get title() {
+        return highlight(this, '[', ']')
+    }
+}
+
+
+function toChunks(title) {
+    const split  = title.split(/{{|}}/g)
+    const chunks = []
+    for (let i = 0; i < split.length; i++) {
+        if (split[i] != '') {
+            chunks.push({
+                text: split[i],
+                highlight: i % 2 === 1,
+            })
+        }
+    }
+    return chunks
 }
 
 

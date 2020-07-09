@@ -1,3 +1,9 @@
+export class LucidSuggest {
+    setRecords(records: Record[]): Promise<void>;
+    setLimit(limit: number): Promise<void>;
+    search(query: string): Promise<Hit[]>;
+}
+
 
 export interface Record {
     id:      number,
@@ -5,9 +11,19 @@ export interface Record {
     rating?: number,
 }
 
-export class LucidSuggest {
-    setRecords(records: Record[]): Promise<void>;
-    setLimit(limit: number): Promise<void>;
-    highlightWith(left: string, right: string): Promise<void>;
-    search(query: string): Promise<Record[]>;
+
+export class Hit {
+    title:    string;
+    chunks:   HighlightedTextChunk[];
+    record:   Record;
+    position: number;
 }
+
+
+export type HighlightedTextChunk = {
+    text:      string,
+    highlight: boolean,
+}
+
+
+export function highlight(hit: Hit, left: string, right: string): string;

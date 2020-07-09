@@ -11,7 +11,7 @@ const PRESETS = {
 const suite = new Suite()
 
 for (const name in PRESETS) {
-    for (const sampleSize of [100, 1000, 10000]) {
+    for (const sampleSize of [100, 1000, 10000, 100000]) {
         const preset     = PRESETS[name]
         const records    = generateRecords(sampleSize, preset.minWords, preset.maxWords)
         const queries    = generateQueries(10000, records, 0, preset.queryMaxLen)

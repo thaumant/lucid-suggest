@@ -34,7 +34,11 @@
   },
   "jest": {
     "testMatch": [
-      "<rootDir>/tests/*.js"
+      "<rootDir>/tests/index.js",
+      "<rootDir>/tests/lang_*.js"
+    ],
+    "snapshotSerializers": [
+      "<rootDir>/tests/hit-serializer.js"
     ]
   }
 }
