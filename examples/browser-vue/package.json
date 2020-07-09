@@ -1,0 +1,25 @@
+{
+  "name": "lucid-example-browser-vue",
+  "version": "0.1.0",
+  "description": "",
+  "main": "webpack.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lucid": "rm -rf ./node_modules/lucid-suggest && cp -r ../../javascript ./node_modules/lucid-suggest && cd ./node_modules/lucid-suggest && rm -rf pkg src tests node_modules && npm install --production",
+    "build": "rm -rf build && ./node_modules/.bin/webpack",
+    "dev-server": "./node_modules/.bin/webpack-dev-server --watch"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "vue-loader": "^15.9.3",
+    "vue-template-compiler": "^2.6.11",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0"
+  },
+  "dependencies": {
+    "lucid-suggest": "^0.7.3",
+    "vue": "^2.6.11"
+  }
+}
