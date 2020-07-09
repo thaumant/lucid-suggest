@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lucid": "rm -rf ./node_modules/lucid-suggest && cp -r ../../javascript ./node_modules/lucid-suggest && cd ./node_modules/lucid-suggest && rm -rf pkg src tests node_modules && npm install --production",
+    "master": "rm -rf ./node_modules/lucid-suggest && cp -r ../../javascript ./node_modules/lucid-suggest && cd ./node_modules/lucid-suggest && rm -rf pkg src tests node_modules && npm install --production",
     "check": "./node_modules/.bin/tsc --noEmit",
     "build": "rm -rf build && ./node_modules/.bin/tsc",
     "start": "node build/index.js"

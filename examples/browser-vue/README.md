@@ -1,4 +1,4 @@
-# LucidSuggest example for browser using plain JavaScript
+# LucidSuggest example for Vue
 
 ## Try it
 

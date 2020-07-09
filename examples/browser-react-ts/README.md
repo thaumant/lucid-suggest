@@ -1,4 +1,4 @@
-# LucidSuggest example for browser using React and TypeScript
+# LucidSuggest example for React and TypeScript
 
 ## Try it
 
