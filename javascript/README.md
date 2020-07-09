@@ -4,20 +4,29 @@ Embeddable search and autocomplete that works out of the box. Fast, simple, runs
 
 Note: this package is pre-1.0, it hasn't been battle-tested in production, and API may change.
 
-## Live demo
-
-[Check it out.](http://lucid-search.io.s3-website.eu-central-1.amazonaws.com/demo/index.html)
-
 
 ## Table of contents
+- [Resources](#resources)
 - [Getting started](#getting-started)
-- [Code examples](#code-examples)
 - [Fulltext search features](#fulltext-search-features)
 - [Rating](#rating)
 - [Rendering results](#rendering-results)
 - [Supported languages](#supported-languages)
 - [Bundle sizes](#bundle-sizes)
 - [Performance](#performance)
+
+
+## Resources
+
+[Live demo.](http://lucid-search.io.s3-website.eu-central-1.amazonaws.com/demo/index.html)
+
+[API reference.](https://github.com/thaumant/lucid-suggest/tree/master/javascript/REFERENCE.md)
+
+Code examples:
+- [Plain JavaScript in browser](https://github.com/thaumant/lucid-suggest/tree/master/examples/browser-plain)
+- [NodeJS](https://github.com/thaumant/lucid-suggest/tree/master/examples/node-ts)
+- [React](https://github.com/thaumant/lucid-suggest/tree/master/examples/browser-react-ts)
+- [Vue](https://github.com/thaumant/lucid-suggest/tree/master/examples/browser-vue)
 
 
 ## Getting started
@@ -43,15 +52,53 @@ Search:
 ```javascript
 await suggest.search("batteries")
 // returns:
-[
- {id: 3, title: "AA Alkaline [Batteries]"},
-]
+// [
+//   Hit { title: "AA Alkaline [Batteries]" }
+// ]
 ```
 
-## Code examples
 
-- [Browser and plain JavaScript](https://github.com/thaumant/lucid-suggest/tree/master/examples/browser-plain)
-- [NodeJS and TypeScript](https://github.com/thaumant/lucid-suggest/tree/master/examples/node-ts)
+## Rendering results
+
+By default LucidSuggest highlights hit titles using `[ ]`.
+The easiest way to change it is to use `highlight` helper function:
+
+```javascript
+import {LucidSuggest, highlight} from 'lucid-suggest'
+
+const suggest = new LucidSuggest()
+const hits = await suggest.search("to")
+
+hits.map(hit => ({
+    value: hit.record.id.toString(),
+    label: highlight(hit, '<strong>', '</strong>')
+}))
+// returns:
+// [
+//   {value: "1", label: "Electric <strong>To</strong>othbrush"},
+//   {value: "2", label: "Lightning <strong>to</strong> USB-C Cable"},
+// ]
+```
+
+Or you can directly operate on chunks of a highlighted text,
+which can come in handy if you need a more complex render logic:
+
+```javascript
+const hits = await suggest.search("to")
+hits.map(hit => ({
+    value: hit.record.id.toString(),
+    label: hit.chunks
+        .map(c => c.highlight ? `<strong>${c.text}</strong>` : c.text)
+        .join('')
+}))
+// returns:
+// [
+//   {value: "1", label: "Electric <strong>To</strong>othbrush"},
+//   {value: "2", label: "Lightning <strong>to</strong> USB-C Cable"},
+// ]
+```
+
+For examples of rendering in React or Vue, see [Resources](#resources) section.
 
 ## Fulltext search features
 
@@ -59,54 +106,54 @@ When an exact match is unavailable, the best possible partial matches are return
 ```javascript
 await suggest.search("plastic toothbrush")
 // returns:
-[
- {id: 1, title: "Electric [Toothbrush]"},
-]
+// [
+//   Hit { title: "Electric [Toothbrush]" }
+// ]
 ```
 
 Search as you type, results are provided from the first letter:
 ```javascript
 await suggest.search("c")
 // returns:
-[
- {id: 2, title: "Lightning to USB-C [C]able"},
-]
+// [
+//   Hit { title: "Lightning to USB-C [C]able" }
+// ]
 ```
 
-Typo resilience:
+Search algorithm is resilient to different kinds of typos:
 ```javascript
-await suggest.search("alcline bateries")
+await suggest.search("alkln")
 // returns:
-[
- {id: 3, title: "AA [Alkaline] [Batteries]"},
-]
+// [
+//   Hit { title: "AA [Alkalin]e Batteries" }
+// ]
 ```
 
 ```javascript
 await suggest.search("tooth brush")
 // returns:
-[
- {id: 1, title: "Electric [Toothbrush]"},
-]
+// [
+//   Hit { title: "Electric [Toothbrush]" }
+// ]
 ```
 
-Stemming is used to handle different word endings:
+Stemming is used to handle different word forms:
 ```javascript
 await suggest.search("battery")
 // returns:
-[
- {id: 3, title: "AA Alkaline [Batteri]es"},
-]
+// [
+//   Hit { title: "AA Alkaline [Batteri]es" }
+// ]
 ```
 
-Function words (articles, prepositions, etc.) receive special treatment, so they don't pop up every time you start typing a word:
+Function words (articles, prepositions, etc.) receive special treatment, so they don't occupy top positions every time you start typing a word:
 ```javascript
 await suggest.search("to")
 // returns:
-[
-    {id: 1, title: "Electric [To]othbrush"},
-    {id: 2, title: "Lightning [to] USB-C Cable"},
-]
+// [
+//   Hit { title: "Electric [To]othbrush" },
+//   Hit { title: "Lightning [to] USB-C Cable" },
+// ]
 ```
 
 ## Rating
@@ -125,49 +172,12 @@ suggest.setRecords([
 ```javascript
 await suggest.search("ne")
 // returns:
-[
- {id: 3, title: "[Ne]w York"},
- {id: 2, title: "[Ne]w Jersey"},
- {id: 1, title: "[Ne]vada"},
-]
+// [
+//   Hit { title: "[Ne]w York" },
+//   Hit { title: "[Ne]w Jersey" },
+//   Hit { title: "[Ne]vada" },
+// ]
 ```
-
-
-## Rendering results
-
-By default LucidSuggest highlights matched parts of text using `[ ]`.
-
-You can change this by providing an optional render function:
-
-```javascript
-const suggest = new LucidSuggest(chunks => {
-    return chunks
-        .map(({text, highlight}) => {
-            return highlight ? `<strong>${text}</strong>` : text
-        })
-        .join('')
-})
-
-await suggest.search("battery")
-
-// returns:
-[{id: 3, title: "AA Alkaline <strong>Batteri</strong>es"}]
-```
-
-A helper function `highglightWith` is aimed to simplify render to a string:
-
-```javascript
-import {LucidSuggest, highlightWith} from 'lucid-suggest'
-
-const suggest = new LucidSuggest(highlightWith('<strong>', '</strong>'))
-
-await suggest.search("battery")
-
-// returns:
-[{id: 3, title: "AA Alkaline <strong>Batteri</strong>es"}]
-```
-
-For examples of rendering in React or Vue, see [Code examples](#code-examples) section.
 
 
 ## Supported languages
@@ -202,9 +212,9 @@ For example, for 10000 records, each containing 4-8 common English words, you ca
 
 Below are the detailed performance measurements, obtained using Node.js 14.3, Intel Core i7 (I7-9750H) 2.6 GHz.
 
-|                | 2-4 words | 4-8 words |
-| -------------: | --------: | --------: |
-|    100 records |   0.08 ms |   0.24 ms |
-|   1000 records |   0.27 ms |   0.48 ms |
-|  10000 records |   0.51 ms |   0.74 ms |
-| 100000 records |   2.00 ms |   2.80 ms |
+|                 | 2-4 words | 4-8 words |
+| --------------: | --------: | --------: |
+|     100 records |   0.08 ms |   0.24 ms |
+|    1000 records |   0.27 ms |   0.48 ms |
+|  10 000 records |   0.51 ms |   0.74 ms |
+| 100 000 records |   2.00 ms |   2.80 ms |
