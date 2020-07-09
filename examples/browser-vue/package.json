@@ -19,7 +19,7 @@
     "webpack-dev-server": "^3.11.0"
   },
   "dependencies": {
-    "lucid-suggest": "^0.7.3",
+    "lucid-suggest": "^0.8.0",
     "vue": "^2.6.11"
   }
 }
