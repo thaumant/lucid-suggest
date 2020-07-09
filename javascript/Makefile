@@ -27,5 +27,7 @@ bump:
 	npm version $(V)
 	cd ../rust/core && cargo bump $(V)
 	cd ../rust/wasm && cargo bump $(V)
-	cd ../examples/browser-plain && sed -i '' 's/"lucid-suggest": "^*.*.*"/"lucid-suggest": "^$(V)"/' package.json
-	cd ../examples/node-ts       && sed -i '' 's/"lucid-suggest": "^*.*.*"/"lucid-suggest": "^$(V)"/' package.json
+	cd ../examples/browser-plain    && sed -i '' 's/"lucid-suggest": "^*.*.*"/"lucid-suggest": "^$(V)"/' package.json
+	cd ../examples/browser-react-ts && sed -i '' 's/"lucid-suggest": "^*.*.*"/"lucid-suggest": "^$(V)"/' package.json
+	cd ../examples/browser-vue      && sed -i '' 's/"lucid-suggest": "^*.*.*"/"lucid-suggest": "^$(V)"/' package.json
+	cd ../examples/node-ts          && sed -i '' 's/"lucid-suggest": "^*.*.*"/"lucid-suggest": "^$(V)"/' package.json
