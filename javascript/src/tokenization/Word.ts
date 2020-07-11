@@ -7,7 +7,7 @@ import {
     CONJUNCTION,
     PARTICLE,
 } from '../lang/pos'
-import type {Lang} from '../lang/lang'
+import type {LangAbstract} from '../lang/lang'
 
 
 export class Word {
@@ -45,7 +45,7 @@ export class Word {
         throw new Error("Malformed words")
     }
 
-    split(chars: string, pattern: CharClass[], lang: Lang): Word[] {
+    split(chars: string, pattern: CharClass[], lang: LangAbstract): Word[] {
         const words = []
         let wordOffset = this.offset
         let charOffset = this.slice[0]
@@ -76,7 +76,7 @@ export class Word {
         return words
     }
 
-    strip(chars: string, pattern: CharClass[], lang: Lang): Word {
+    strip(chars: string, pattern: CharClass[], lang: LangAbstract): Word {
         let [left, right] = this.slice
         while (true) {
             if (right <= left) break

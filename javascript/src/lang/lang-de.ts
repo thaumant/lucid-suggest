@@ -1,4 +1,4 @@
-import {Lang} from './lang'
+import {LangAbstract} from './lang'
 import {Stemmer} from './stemming/ext/GermanStemmer'
 import {CHAR_CLASSES_LATIN} from './constants'
 import {CharClass, CONSONANT} from './cls'
@@ -129,7 +129,7 @@ const UTF_REDUCE_MAP: [string, string][] = [
 ]
 
 
-export class LangDe extends Lang {
+export class Lang extends LangAbstract {
     constructor() {
         super(
             new Stemmer(),

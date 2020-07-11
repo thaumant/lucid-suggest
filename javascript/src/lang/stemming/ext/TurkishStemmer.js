@@ -6,10 +6,10 @@
  * Copyright 2010, Oleg Mazko
  * http://www.mozilla.org/MPL/
  */
-const {Among} = require('../among')
-const {SnowballProgram} = require('../program')
+import {Among} from "../among"
+import {SnowballProgram} from "../program"
 
-exports.Stemmer = function TurkishStemmer() {
+export function Stemmer() {
 	var a_0 = [new Among("m", -1, -1), new Among("n", -1, -1),
 			new Among("miz", -1, -1), new Among("niz", -1, -1),
 			new Among("muz", -1, -1), new Among("nuz", -1, -1),

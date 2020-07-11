@@ -1,10 +1,10 @@
-import {LangPlaceholder} from "../../lang/lang-placeholder"
+import {Lang} from "../../lang/lang-placeholder"
 import {WHITESPACE, PUNCTUATION} from "../../lang/cls"
 import {Word} from "../word"
 
 
 describe("Word", () => {
-    const lang = new LangPlaceholder()
+    const lang = new Lang()
 
     describe("split", () => {
         test("Empty", () => {

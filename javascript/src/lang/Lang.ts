@@ -13,7 +13,7 @@ import {
 } from './cls'
 
 
-export class Lang {
+export class LangAbstract {
     stemmer:    Stemmer
     classMap:   {[char: string]: CharClass}
     posMap:     {[char: string]: PartOfSpeech}

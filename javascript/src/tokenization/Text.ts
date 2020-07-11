@@ -1,6 +1,6 @@
 import {CharClass, ANY, NOTALPHA} from '../lang/cls'
 import {UNKNOWN} from '../lang/pos'
-import type {Lang} from '../lang/lang'
+import type {LangAbstract} from '../lang/lang'
 import {Word} from './word'
 
 
@@ -33,7 +33,7 @@ export class Text {
     }
 
 
-    normalize(lang: Lang): Text {
+    normalize(lang: LangAbstract): Text {
         if (this.isEmpty()) {
             return this
         }
@@ -60,7 +60,7 @@ export class Text {
     }
 
 
-    split(pattern: CharClass[], lang: Lang): Text {
+    split(pattern: CharClass[], lang: LangAbstract): Text {
         const words = []
         let offset = 0
         for (const word of this.words) {
@@ -75,7 +75,7 @@ export class Text {
     }
 
 
-    strip(pattern: CharClass[], lang: Lang): Text {
+    strip(pattern: CharClass[], lang: LangAbstract): Text {
         for (const word of this.words) {
             word.strip(this.chars, pattern, lang)
         }
@@ -88,7 +88,7 @@ export class Text {
     }
 
 
-    setStem(lang: Lang): Text {
+    setStem(lang: LangAbstract): Text {
         for (const word of this.words) {
             const chars = this.chars.slice(word.slice[0], word.slice[1])
             const stem  = lang.stem(chars)
@@ -98,7 +98,7 @@ export class Text {
     }
 
 
-    setPos(lang: Lang): Text {
+    setPos(lang: LangAbstract): Text {
         for (const word of this.words) {
             const chars = this.chars.slice(word.slice[0], word.slice[1])
             word.pos = lang.getPos(chars) || UNKNOWN
@@ -107,7 +107,7 @@ export class Text {
     }
 
 
-    setCharClasses(lang: Lang): Text {
+    setCharClasses(lang: LangAbstract): Text {
         const classes: CharClass[] = []
         for (let i = 0; i < this.chars.length; i++) {
             const cls = lang.getCharClass(this.chars.charAt(i)) || NOTALPHA

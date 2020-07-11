@@ -1,5 +1,5 @@
 
-exports.Stemmer = function Stemmer() {
+export function Stemmer() {
     this.setCurrent = function(word) {
         this.current = word;
     };
