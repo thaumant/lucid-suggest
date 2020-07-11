@@ -1,0 +1,51 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Word split Few words, some spaces and punctuation 1`] = `
+Array [
+  Word {
+    "fin": true,
+    "offset": 0,
+    "pos": 0,
+    "slice": Array [
+      1,
+      4,
+    ],
+    "stem": 3,
+  },
+  Word {
+    "fin": true,
+    "offset": 1,
+    "pos": 0,
+    "slice": Array [
+      5,
+      8,
+    ],
+    "stem": 3,
+  },
+  Word {
+    "fin": true,
+    "offset": 2,
+    "pos": 0,
+    "slice": Array [
+      10,
+      13,
+    ],
+    "stem": 3,
+  },
+]
+`;
+
+exports[`Word split Single word, nothing to split 1`] = `
+Array [
+  Word {
+    "fin": true,
+    "offset": 0,
+    "pos": 0,
+    "slice": Array [
+      0,
+      3,
+    ],
+    "stem": 3,
+  },
+]
+`;

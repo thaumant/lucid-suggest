@@ -27,18 +27,14 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "@babel/core": "^7.10.4",
+    "@babel/preset-env": "^7.10.4",
+    "@babel/preset-typescript": "^7.10.4",
     "@rollup/plugin-wasm": "^3.0.0",
+    "babel-jest": "^26.1.0",
     "benchmark": "^2.1.4",
     "jest": "^25.5.4",
-    "rollup": "^2.16.1"
-  },
-  "jest": {
-    "testMatch": [
-      "<rootDir>/tests/index.js",
-      "<rootDir>/tests/lang_*.js"
-    ],
-    "snapshotSerializers": [
-      "<rootDir>/tests/hit-serializer.js"
-    ]
+    "rollup": "^2.16.1",
+    "typescript": "^3.9.6"
   }
 }
