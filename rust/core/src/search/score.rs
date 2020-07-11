@@ -143,7 +143,7 @@ pub fn score_char_len_down(hit: &Hit) -> isize {
 #[cfg(test)]
 mod tests {
     use crate::lang::{Lang, lang_english};
-    use crate::tokenization::tokenize_query;
+    use crate::tokenization::{tokenize_query, tokenize_record};
     use crate::store::Record;
     use crate::search::Hit;
     use super::{score, ScoreType};
@@ -152,9 +152,9 @@ mod tests {
     fn score_chars() {
         let lang   = Lang::new();
         let q      = tokenize_query("quarter of it", &lang);
-        let r1     = Record::new(10, "half of it",  0, &lang);
-        let r2     = Record::new(20, "quarter",     0, &lang);
-        let r3     = Record::new(30, "whole thing", 0, &lang);
+        let r1     = Record { ix: 0, id: 10, title: tokenize_record("half of it",  &lang), rating: 0 };
+        let r2     = Record { ix: 0, id: 20, title: tokenize_record("quarter",     &lang), rating: 0 };
+        let r3     = Record { ix: 0, id: 30, title: tokenize_record("whole thing", &lang), rating: 0 };
         let mut h1 = Hit::from_record(&r1);
         let mut h2 = Hit::from_record(&r2);
         let mut h3 = Hit::from_record(&r3);
@@ -169,7 +169,7 @@ mod tests {
     #[test]
     fn score_chars_typos() {
         let lang   = Lang::new();
-        let r      = Record::new(10, "small yellow metal mailbox", 0, &lang);
+        let r      = Record { ix: 0, id: 10, title: tokenize_record("small yellow metal mailbox", &lang), rating: 0 };
         let mut h1 = Hit::from_record(&r);
         let mut h2 = Hit::from_record(&r);
         let mut h3 = Hit::from_record(&r);
@@ -189,8 +189,8 @@ mod tests {
     fn score_chars_regress_1() {
         let lang   = lang_english();
         let q      = tokenize_query("orn", &lang);
-        let r1     = Record::new(10, "ornament", 0, &lang);
-        let r2     = Record::new(20, "orange",   0, &lang);
+        let r1     = Record { ix: 0, id: 10, title: tokenize_record("ornament", &lang), rating: 0 };
+        let r2     = Record { ix: 0, id: 20, title: tokenize_record("orange",   &lang), rating: 0 };
         let mut h1 = Hit::from_record(&r1);
         let mut h2 = Hit::from_record(&r2);
         score(&q.to_ref(), &mut h1);
@@ -204,10 +204,10 @@ mod tests {
     fn score_tails() {
         let lang   = Lang::new();
         let q      = tokenize_query("green", &lang);
-        let r1     = Record::new(10, "green",    0, &lang);
-        let r2     = Record::new(20, "greens",   0, &lang);
-        let r3     = Record::new(30, "greeny",   0, &lang);
-        let r4     = Record::new(40, "greenies", 0, &lang);
+        let r1     = Record { ix: 0, id: 10, title: tokenize_record("green",    &lang), rating: 0 };
+        let r2     = Record { ix: 0, id: 20, title: tokenize_record("greens",   &lang), rating: 0 };
+        let r3     = Record { ix: 0, id: 30, title: tokenize_record("greeny",   &lang), rating: 0 };
+        let r4     = Record { ix: 0, id: 40, title: tokenize_record("greenies", &lang), rating: 0 };
         let mut h1 = Hit::from_record(&r1);
         let mut h2 = Hit::from_record(&r2);
         let mut h3 = Hit::from_record(&r3);
@@ -225,7 +225,7 @@ mod tests {
     #[test]
     fn score_offset() {
         let lang   = Lang::new();
-        let r      = Record::new(10, "small yellow metal mailbox", 0, &lang);
+        let r      = Record { ix: 0, id: 10, title: tokenize_record("small yellow metal mailbox", &lang), rating: 0 };
         let mut h1 = Hit::from_record(&r);
         let mut h2 = Hit::from_record(&r);
         let mut h3 = Hit::from_record(&r);

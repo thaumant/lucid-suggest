@@ -46,6 +46,7 @@ mod tests {
     use crate::matching::WordMatch;
     use crate::store::Record;
     use crate::search::Hit;
+    use crate::tokenization::tokenize_record;
     use crate::lang::{Lang, lang_german, lang_portuguese};
     use super::highlight;
 
@@ -75,7 +76,7 @@ mod tests {
     #[test]
     fn highlight_basic() {
         let lang   = Lang::new();
-        let record = Record::new(10, "metal detector", 0, &lang);
+        let record = Record { ix: 0, id: 10, title: tokenize_record("metal detector", &lang), rating: 0 };
 
         let mut hit = Hit::from_record(&record);
         let (rmatch, qmatch) = mock_match(1, 6);
@@ -91,7 +92,7 @@ mod tests {
     #[test]
     fn highlight_stripped() {
         let lang   = Lang::new();
-        let record = Record::new(10, "'metal' mailbox!", 0, &lang);
+        let record = Record { ix: 0, id: 10, title: tokenize_record("'metal' mailbox!", &lang), rating: 0 };
 
         let mut hit = Hit::from_record(&record);
         let (rmatch, qmatch) = mock_match(0, 5);
@@ -107,7 +108,7 @@ mod tests {
     #[test]
     fn highlight_multichar_dividers() {
         let lang   = Lang::new();
-        let record = Record::new(10, "metal detector", 0, &lang);
+        let record = Record { ix: 0, id: 10, title: tokenize_record("metal detector", &lang), rating: 0 };
 
         let mut hit = Hit::from_record(&record);
         let (rmatch, qmatch) = mock_match(1, 6);
@@ -126,7 +127,7 @@ mod tests {
     #[test]
     fn highlight_utf_padded() {
         let lang   = lang_german();
-        let record = Record::new(10, "Passstraße", 0, &lang);
+        let record = Record { ix: 0, id: 10, title: tokenize_record("Passstraße", &lang), rating: 0 };
 
         let mut hit = Hit::from_record(&record);
         let (rmatch, qmatch) = mock_match(0, 9);
@@ -142,7 +143,7 @@ mod tests {
     #[test]
     fn highlight_utf_nfd() {
         let lang   = lang_portuguese();
-        let record = Record::new(10, "Passstraße", 0, &lang);
+        let record = Record { ix: 0, id: 10, title: tokenize_record("Passstraße", &lang), rating: 0 };
 
         let mut hit = Hit::from_record(&record);
         let (rmatch, qmatch) = mock_match(0, 9);

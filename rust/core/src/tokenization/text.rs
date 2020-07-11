@@ -38,6 +38,8 @@ impl TextOwn {
     pub fn from_str(source: &str) -> TextOwn {
         Self::from_vec(to_vec(source))
     }
+
+    // pub fn from_raw(source: &str, chars: &str, classes: &[usi])
 }
 
 

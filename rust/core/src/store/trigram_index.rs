@@ -104,18 +104,18 @@ impl TrigramIndex {
 mod tests {
     use insta::{assert_debug_snapshot, assert_snapshot};
     use crate::lang::Lang;
-    use crate::tokenization::tokenize_query;
+    use crate::tokenization::{tokenize_query, tokenize_record};
     use super::Record;
     use super::TrigramIndex;
 
     fn get_index() -> (TrigramIndex, [Record; 5]) {
         let lang = Lang::new();
         let mut records = [
-            Record::new(10, "brown plush bear",     10, &lang),
-            Record::new(20, "the metal detector",   20, &lang),
-            Record::new(30, "yellow metal mailbox", 30, &lang),
-            Record::new(40, "thesaurus",            40, &lang),
-            Record::new(50, "wi-fi router",         50, &lang),
+            Record { ix: 0, id: 10, title: tokenize_record("brown plush bear",     &lang), rating: 10 },
+            Record { ix: 1, id: 20, title: tokenize_record("the metal detector",   &lang), rating: 20 },
+            Record { ix: 2, id: 30, title: tokenize_record("yellow metal mailbox", &lang), rating: 30 },
+            Record { ix: 3, id: 40, title: tokenize_record("thesaurus",            &lang), rating: 40 },
+            Record { ix: 4, id: 50, title: tokenize_record("wi-fi router",         &lang), rating: 50 },
         ];
         let mut index = TrigramIndex::new();
         for (ix, record) in records.iter_mut().enumerate() {
@@ -160,7 +160,7 @@ mod tests {
     fn add_first() {
         let lang       = Lang::new();
         let mut index  = TrigramIndex::new();
-        index.add(&Record::new(10, "Foo Bar", 10, &lang));
+        index.add(&Record { ix: 0, id: 10, title: tokenize_record("Foo Bar", &lang), rating: 10 });
         assert_snapshot!(export_dict(&index));
     }
 
@@ -168,8 +168,8 @@ mod tests {
     fn add_second() {
         let lang        = Lang::new();
         let mut index   = TrigramIndex::new();
-        let mut record1 = Record::new(10, "Foo Bar", 10, &lang);
-        let mut record2 = Record::new(20, "Bar Baz", 20, &lang);
+        let mut record1 = Record { ix: 0, id: 10, title: tokenize_record("Foo Bar", &lang), rating: 10 };
+        let mut record2 = Record { ix: 0, id: 20, title: tokenize_record("Bar Baz", &lang), rating: 20 };
         record1.ix = 0;
         record2.ix = 1;
         index.add(&record1);

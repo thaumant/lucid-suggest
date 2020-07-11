@@ -1,21 +1,15 @@
 LANGS = en de en es fr pt ru
 
+.PHONY: build
 build:
 	make cleanup
-	make compile
+	cd ../rust/wasm && wasm-pack build --target bundler --out-dir ../../javascript/pkg
+	./node_modules/.bin/tsc
+	LANG=de ./node_modules/.bin/rollup -c rollup/config.js
 
 cleanup:
-	rm -rf ./*.js
-	rm -rf ./*.d.ts
-
-compile:
-	for LANG in ${LANGS}; do \
-		cd ../rust/wasm ; \
-		RUSTFLAGS="--cfg lang=\"$$LANG\"" wasm-pack build --target bundler --out-dir ../../javascript/pkg; \
-		cd ../../javascript ; \
-		RUSTFLAGS="--cfg lang=\"$$LANG\"" ./node_modules/.bin/rollup -c rollup/config.js; \
-		cp src/index.d.ts ./$$LANG.d.ts; \
-	done;
+	rm -rf ./build
+	rm -rf ./pkg
 
 test:
 	./node_modules/.bin/jest tests

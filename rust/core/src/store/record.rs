@@ -1,6 +1,4 @@
-use crate::tokenization::{TextOwn, tokenize_record};
-use crate::lang::Lang;
-
+use crate::tokenization::TextOwn;
 
 #[derive(Debug)]
 pub struct Record {
@@ -8,16 +6,4 @@ pub struct Record {
     pub id:     usize,
     pub title:  TextOwn,
     pub rating: usize,
-}
-
-
-impl Record {
-    pub fn new(id: usize, source: &str, rating: usize, lang: &Lang) -> Record {
-        Record {
-            ix: 0,
-            id,
-            title: tokenize_record(source, lang),
-            rating,
-        }
-    }
 }

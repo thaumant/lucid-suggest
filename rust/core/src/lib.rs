@@ -10,18 +10,18 @@ pub mod lang;
 use std::cell::RefCell;
 use fnv::{FnvHashMap as HashMap};
 
-pub use tokenization::{Word, WordShape, WordView, Text, TextOwn, TextRef, tokenize_query};
+pub use tokenization::{
+    Word,
+    WordShape,
+    WordView,
+    Text,
+    TextOwn,
+    TextRef,
+    tokenize_query,
+    tokenize_record,
+};
 pub use store::{Record, Store, DEFAULT_LIMIT};
 pub use search::{SearchResult};
-pub use lang::Lang;
-pub use lang::{
-    lang_german,
-    lang_english,
-    lang_french,
-    lang_portuguese,
-    lang_russian,
-    lang_spanish,
-};
 
 
 thread_local! {
@@ -30,24 +30,19 @@ thread_local! {
 }
 
 
-pub fn create_store(id: usize, lang: Lang) {
-    STORES.with(|cell| {
+pub fn create_store() -> usize {
+    let id = STORES.with(|cell| {
         let stores = &mut *cell.borrow_mut();
-        if stores.contains_key(&id) {
-            panic!("Duplicate store id");
-        }
-        let mut store = Store::new();
-        store.lang = lang;
+        let id = stores.keys().max().unwrap_or(&0) + 1;
+        let store = Store::new();
         stores.insert(id, store);
+        id
     });
-
     RESULTS.with(|cell| {
         let buffers = &mut *cell.borrow_mut();
-        if buffers.contains_key(&id) {
-            panic!("Duplicate store id");
-        }
         buffers.insert(id, Vec::with_capacity(DEFAULT_LIMIT));
     });
+    id
 }
 
 
@@ -78,12 +73,9 @@ pub fn highlight_with(store_id: usize, separators: (&str, &str)) {
 }
 
 
-pub fn set_records<'a, I>(store_id: usize, records: I) where I: IntoIterator<Item=(usize, &'a str, usize)> {
+pub fn add_record(store_id: usize, record: Record) {
     using_store(store_id, |store| {
-        store.clear();
-        for (id, title, rating) in records {
-            store.add(Record::new(id, title, rating, &store.lang));
-        }
+        store.add(record);
     });
 }
 
@@ -99,16 +91,17 @@ pub fn set_limit(store_id: usize, limit: usize)  {
 }
 
 
-pub fn run_search(store_id: usize, query: &str) {
+pub fn run_search(store_id: usize, query: &TextRef) -> usize {
     using_store(store_id, |store| {
     using_results(store_id, |buffer| {
-        let query = tokenize_query(query, &store.lang);
-        let query = query.to_ref();
         buffer.clear();
-        for result in store.search(&query) {
+        let hits = store.search(&query);
+        let len  = hits.len();
+        for result in hits {
             buffer.push(result);
         }
-    }); });
+        len
+    }) })
 }
 
 

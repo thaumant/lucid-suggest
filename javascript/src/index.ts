@@ -1,7 +1,7 @@
 import {Lang} from './lang/lang-placeholder'
 import {tokenizeRecord, tokenizeQuery} from './tokenization'
 import {Word} from './tokenization/word'
-import {WasmAPI} from './wasm-placeholder'
+import compileWasm, {WasmAPI} from './wasm-placeholder'
 
 const DEFAULT_LIMIT = 10
 
@@ -20,7 +20,7 @@ export class LucidSuggest {
     records:    Map<number, Record>
     setupQueue: Promise<WasmAPI>
 
-    constructor(compileWasm: Promise<WasmAPI>) {
+    constructor() {
         this.id         = 0
         this.lang       = new Lang()
         this.limit      = DEFAULT_LIMIT

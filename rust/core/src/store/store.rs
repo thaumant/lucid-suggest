@@ -1,6 +1,5 @@
 use std::cell::RefCell;
 use crate::utils::to_vec;
-use crate::lang::Lang;
 use super::{Record, TrigramIndex, DEFAULT_LIMIT};
 
 
@@ -8,7 +7,6 @@ pub struct Store {
     pub next_ix:  usize,
     pub records:  Vec<Record>,
     pub limit:    usize,
-    pub lang:     Lang,
     pub dividers: (Vec<char>, Vec<char>),
     pub index:    RefCell<TrigramIndex>,
     pub top_ixs:  RefCell<Option<Vec<usize>>>,
@@ -21,7 +19,6 @@ impl Store {
             next_ix:  0,
             records:  Vec::new(),
             limit:    DEFAULT_LIMIT,
-            lang:     Lang::new(),
             dividers: (vec!['['], vec![']']),
             index:    RefCell::new(TrigramIndex::new()),
             top_ixs:  RefCell::new(None),

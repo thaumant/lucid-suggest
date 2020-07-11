@@ -1,19 +1,25 @@
-import wasm         from './plugin-wasm'
-import bindgenAsync from './plugin-bindgen-async'
+import {nodeResolve} from "@rollup/plugin-node-resolve"
+import placeholders from "./plugin-placeholders"
+import wasm         from "./plugin-wasm"
+import bindgenAsync from "./plugin-bindgen-async"
 
-const lang = (process.env.RUSTFLAGS || '').match(/lang="(\w+)"/)?.[1]
 
-if (!lang) {
-    throw new Error("Missing RUSTFLAGS=\"--cfg lang=\"*\"\"")
+const LANG = process.env.LANG
+const SUPPORTED_LANGS = ["en", "de", "en", "es", "fr", "pt", "ru"]
+if (!SUPPORTED_LANGS.includes(LANG)) {
+    throw new Error(`Unknown lang: ${LANG}`)
 }
 
+
 export default {
-    input: 'src/index.js',
+    input: "build/index.js",
     output: {
-        file: `${lang}.js`,
-        format: 'cjs',
+        file: `dist/${LANG}.js`,
+        format: "cjs",
     },
     plugins: [
+        nodeResolve(),
+        placeholders({lang: LANG}),
         wasm(),
         bindgenAsync(),
     ]

@@ -3,7 +3,18 @@ use std::fs;
 use std::cmp::min;
 use rand::prelude::*;
 use rand::distributions::WeightedIndex;
-use lucid_suggest_core::{Word, Store, Record, Lang, TextOwn, tokenize_query, lang_english};
+use lucid_suggest_core::{
+    Word,
+    Store,
+    Record,
+    TextOwn,
+    tokenize_query,
+    tokenize_record,
+};
+use lucid_suggest_core::lang::{
+    Lang,
+    lang_english,
+};
 
 
 fn search_benchmark(criterion: &mut Criterion) {
@@ -61,9 +72,8 @@ impl SyntheticDataset {
 
     pub fn gen_data(&self, len: usize, min_words: usize, max_words: usize) -> (Store, Vec<TextOwn>) {
         let mut records = self.gen_records(len, min_words, max_words);
-        let queries = self.gen_queries(&records, 10000);
-        let mut store = Store::new();
-        store.lang = lang_english();
+        let mut store   = Store::new();
+        let queries     = self.gen_queries(&records, 10000);
         for record in records.drain(..) {
             store.add(record);
         }
@@ -71,11 +81,12 @@ impl SyntheticDataset {
     }
 
     pub fn gen_records(&self, len: usize, min_words: usize, max_words: usize) -> Vec<Record> {
-        let mut id = 1;
+        let mut id      = 1;
         let mut records = Vec::with_capacity(len);
+        let lang        = lang_english();
         for _ in 0..len {
             let title  = self.gen_title(min_words, max_words);
-            let record = Record::new(id, &title, 0, &self.lang);
+            let record = Record { ix: 0, id, title: tokenize_record(&title, &lang), rating: 0 };
             records.push(record);
             id += 1;
         }

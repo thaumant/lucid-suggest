@@ -75,21 +75,20 @@ impl Store {
 #[cfg(test)]
 mod tests {
     use insta::assert_debug_snapshot;
-    use crate::tokenization::tokenize_query;
+    use crate::tokenization::{tokenize_query, tokenize_record};
     use crate::lang::{Lang, lang_english, lang_german};
     use crate::store::{Store, Record};
 
     fn check(name: &str, lang: Lang, queries: &[&str]) {
         let mut store = Store::new();
-        store.lang = lang;
-        store.add(Record::new(10, "brown plush bear",     10, &store.lang));
-        store.add(Record::new(20, "the metal detector",   20, &store.lang));
-        store.add(Record::new(30, "yellow metal mailbox", 30, &store.lang));
-        store.add(Record::new(40, "thesaurus",            40, &store.lang));
-        store.add(Record::new(50, "wi-fi router",         50, &store.lang));
+        store.add(Record { ix: 0, id: 10, title: tokenize_record("brown plush bear",     &lang), rating: 10 });
+        store.add(Record { ix: 0, id: 20, title: tokenize_record("the metal detector",   &lang), rating: 20 });
+        store.add(Record { ix: 0, id: 30, title: tokenize_record("yellow metal mailbox", &lang), rating: 30 });
+        store.add(Record { ix: 0, id: 40, title: tokenize_record("thesaurus",            &lang), rating: 40 });
+        store.add(Record { ix: 0, id: 50, title: tokenize_record("wi-fi router",         &lang), rating: 50 });
 
         for (i, query) in queries.iter().enumerate() {
-            let query   = tokenize_query(query, &store.lang);
+            let query   = tokenize_query(query, &lang);
             let query   = query.to_ref();
             let results = store.search(&query);
             assert_debug_snapshot!(format!("{}-{}", name, i), results);
@@ -104,11 +103,12 @@ mod tests {
     #[test]
     fn search_empty_lexicographic() {
         let mut store = Store::new();
-        store.add(Record::new(10, "brown plush bear",     10, &store.lang));
-        store.add(Record::new(20, "the metal detector",   10, &store.lang));
-        store.add(Record::new(30, "yellow metal mailbox", 10, &store.lang));
-        store.add(Record::new(40, "thesaurus",            10, &store.lang));
-        store.add(Record::new(50, "wi-fi router",         10, &store.lang));
+        let lang = Lang::new();
+        store.add(Record { ix: 0, id: 10, title: tokenize_record("brown plush bear",     &lang), rating: 10 });
+        store.add(Record { ix: 0, id: 20, title: tokenize_record("the metal detector",   &lang), rating: 10 });
+        store.add(Record { ix: 0, id: 30, title: tokenize_record("yellow metal mailbox", &lang), rating: 10 });
+        store.add(Record { ix: 0, id: 40, title: tokenize_record("thesaurus",            &lang), rating: 10 });
+        store.add(Record { ix: 0, id: 50, title: tokenize_record("wi-fi router",         &lang), rating: 10 });
         assert_debug_snapshot!(store.top_ixs());
     }
 
@@ -153,13 +153,13 @@ mod tests {
 
     #[test]
     fn search_stemming() {
-        let empty_lang = Lang::new();
+        let lang_empty = Lang::new();
+        let lang_en    = lang_english();
         let mut store = Store::new();
-        store.lang = lang_english();
-        store.add(Record::new(30, "universe", 30, &store.lang));
+        store.add(Record { ix: 0, id: 30, title: tokenize_record("universe", &lang_en), rating: 30 });
 
-        let query1   = tokenize_query("university", &empty_lang);
-        let query2   = tokenize_query("university", &store.lang);
+        let query1   = tokenize_query("university", &lang_empty);
+        let query2   = tokenize_query("university", &lang_en);
         let query1   = query1.to_ref();
         let query2   = query2.to_ref();
         let results1 = store.search(&query1);
@@ -195,9 +195,9 @@ mod tests {
     #[test]
     fn search_utf_normalization() {
         let mut store = Store::new();
-        store.lang = lang_german();
-        store.add(Record::new(10, "Mitteltöner", 10, &store.lang));
-        store.add(Record::new(20, "Passstraße",  20, &store.lang));
+        let lang = lang_german();
+        store.add(Record { ix: 0, id: 10, title: tokenize_record("Mitteltöner", &lang), rating: 10 });
+        store.add(Record { ix: 0, id: 20, title: tokenize_record("Passstraße",  &lang), rating: 20 });
 
         let queries = [
             "mitteltö",
@@ -207,7 +207,7 @@ mod tests {
         ];
 
         for query in &queries {
-            let query  = tokenize_query(query, &store.lang);
+            let query  = tokenize_query(query, &lang);
             let query  = query.to_ref();
             let result = store.search(&query);
             assert_debug_snapshot!(result);

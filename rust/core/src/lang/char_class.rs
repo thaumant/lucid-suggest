@@ -9,14 +9,14 @@ pub trait CharPattern: fmt::Debug {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CharClass {
-    Any,
-    Control,
-    Whitespace,
-    Punctuation,
-    NotAlpha,
-    NotAlphaNum,
-    Consonant,
-    Vowel,
+    Any         = 0,
+    Control     = 1,
+    Whitespace  = 2,
+    Punctuation = 3,
+    NotAlpha    = 4,
+    NotAlphaNum = 5,
+    Consonant   = 6,
+    Vowel       = 7,
 }
 
 use CharClass::{
