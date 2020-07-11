@@ -1,10 +1,10 @@
 import {CharClass, ANY, NOTALPHA} from '../lang/cls'
 import {UNKNOWN} from '../lang/pos'
-import type Lang from '../lang/Lang'
-import Word from './Word'
+import type {Lang} from '../lang/lang'
+import {Word} from './word'
 
 
-export default class Text {
+export class Text {
     words:   Word[]
     source:  string
     chars:   string
@@ -12,6 +12,7 @@ export default class Text {
 
 
     constructor(source: string) {
+        if (source.indexOf('\0') >= 0) source = source.replace(/\0/g, '')
         this.words    = [new Word(source.length)]
         this.source   = source
         this.chars    = source

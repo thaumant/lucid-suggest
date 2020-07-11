@@ -7,7 +7,7 @@
  * http://www.mozilla.org/MPL/
  */
 
-module.exports = function SnowballProgram() {
+export function SnowballProgram() {
     var current;
     return {
         bra : 0,

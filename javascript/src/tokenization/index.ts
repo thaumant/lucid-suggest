@@ -1,6 +1,6 @@
-import type Lang from '../lang/Lang'
+import type {Lang} from '../lang/lang'
 import {WHITESPACE, CONTROL, PUNCTUATION, NOTALPHANUM} from '../lang/cls'
-import Text from './Text'
+import {Text} from './text'
 
 
 export function tokenizeQuery(source: string, lang: Lang): Text {

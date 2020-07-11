@@ -7,7 +7,7 @@
  * http://www.mozilla.org/MPL/
  */
 
-function Among(s, substring_i, result, method) {
+export function Among(s, substring_i, result, method) {
     if ((!s && s != "") || (!substring_i && (substring_i != 0)) || !result)
         throw ("Bad Among initialisation: s:" + s + ", substring_i: "
                 + substring_i + ", result: " + result);
@@ -23,5 +23,3 @@ Among.prototype.toCharArray = function(s) {
         charArr[i] = s.charCodeAt(i);
     return charArr;
 }
-
-module.exports = Among;

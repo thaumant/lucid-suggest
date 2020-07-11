@@ -6,10 +6,10 @@
  * Copyright 2010, Oleg Mazko
  * http://www.mozilla.org/MPL/
  */
-const Among = require('../Among')
-const SnowballProgram = require('../SnowballProgram')
+const {Among} = require('../among')
+const {SnowballProgram} = require('../program')
 
-module.exports = function SpanishStemmer() {
+exports.Stemmer = function SpanishStemmer() {
     var a_0 = [new Among("", -1, 6), new Among("\u00E1", 0, 1),
             new Among("\u00E9", 0, 2), new Among("\u00ED", 0, 3),
             new Among("\u00F3", 0, 4), new Among("\u00FA", 0, 5)], a_1 = [

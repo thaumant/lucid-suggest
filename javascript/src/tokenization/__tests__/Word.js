@@ -1,6 +1,6 @@
-import LangPlaceholder from "../../lang/LangPlaceholder"
+import {LangPlaceholder} from "../../lang/lang-placeholder"
 import {WHITESPACE, PUNCTUATION} from "../../lang/cls"
-import Word from "../Word"
+import {Word} from "../word"
 
 
 describe("Word", () => {

@@ -7,10 +7,10 @@ import {
     CONJUNCTION,
     PARTICLE,
 } from '../lang/pos'
-import type Lang from '../lang/Lang'
+import type {Lang} from '../lang/lang'
 
 
-export default class Word {
+export class Word {
     offset: number
     slice:  [number, number]
     stem:   number

@@ -1,4 +1,4 @@
-import Stemmer from './stemming/ext/PlaceholderStemmer'
+import {Stemmer} from './stemming/ext/PlaceholderStemmer'
 import {PartOfSpeech} from './pos'
 import {
     CharClass,
@@ -13,7 +13,7 @@ import {
 } from './cls'
 
 
-export default class Lang {
+export class Lang {
     stemmer:    Stemmer
     classMap:   {[char: string]: CharClass}
     posMap:     {[char: string]: PartOfSpeech}

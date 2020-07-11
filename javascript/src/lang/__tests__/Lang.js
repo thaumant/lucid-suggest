@@ -1,6 +1,6 @@
 import {CONSONANT, VOWEL} from '../cls'
 import {PARTICLE} from '../pos'
-import Lang from '../Lang'
+import {Lang} from '../lang'
 import Stemmer from '../stemming/ext/PlaceholderStemmer'
 
 

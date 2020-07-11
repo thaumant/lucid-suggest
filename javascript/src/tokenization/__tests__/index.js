@@ -1,4 +1,4 @@
-import LangDe from "../../lang/LangDe"
+import {LangDe} from "../../lang/lang-de"
 import {tokenizeQuery} from "../index"
 
 

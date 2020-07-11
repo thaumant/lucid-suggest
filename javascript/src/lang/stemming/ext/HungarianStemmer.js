@@ -6,10 +6,10 @@
  * Copyright 2010, Oleg Mazko
  * http://www.mozilla.org/MPL/
  */
-const Among = require('../Among')
-const SnowballProgram = require('../SnowballProgram')
+const {Among} = require('../among')
+const {SnowballProgram} = require('../program')
 
-module.exports = function HungarianStemmer() {
+exports.Stemmer = function HungarianStemmer() {
     var a_0 = [new Among("cs", -1, -1), new Among("dzs", -1, -1),
             new Among("gy", -1, -1), new Among("ly", -1, -1),
             new Among("ny", -1, -1), new Among("sz", -1, -1),
