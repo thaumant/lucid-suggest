@@ -1,8 +1,8 @@
 # LucidSuggest
 
-Embeddable search and autocomplete that works out of the box. Fast, simple, runs in browsers and NodeJS. Built with Rust and WebAssembly.
+Embeddable autocomplete engine that works out of the box. Fast, easy to use, runs in browsers and NodeJS. Built with Rust, WebAssembly, and TypeScript.
 
-Note: this package is pre-1.0, it hasn't been battle-tested in production, and API may change.
+Note: this package is pre-1.0, it hasn't been battle-tested in production, API may change.
 
 
 ## Table of contents
@@ -12,8 +12,8 @@ Note: this package is pre-1.0, it hasn't been battle-tested in production, and A
 - [Rating](#rating)
 - [Rendering results](#rendering-results)
 - [Supported languages](#supported-languages)
-- [Bundle sizes](#bundle-sizes)
 - [Performance](#performance)
+- [Bundle sizes](#bundle-sizes)
 
 
 ## Resources
@@ -38,9 +38,10 @@ npm install lucid-suggest
 
 Initialize:
 ```javascript
-import {LucidSuggest} from 'lucid-suggest/en'
+import {LucidSuggest} from 'lucid-suggest'
+import {LANG_ENGLISH} from 'lucid-suggest/lang/lang-english'
 
-const suggest = new LucidSuggest()
+const suggest = new LucidSuggest(LANG_ENGLISH)
 suggest.setRecords([
     {id: 1, title: "Electric Toothbrush"},
     {id: 2, title: "Lightning to USB-C Cable"},
@@ -51,7 +52,7 @@ suggest.setRecords([
 Search:
 ```javascript
 await suggest.search("batteries")
-// returns:
+// produces:
 // [
 //   Hit { title: "AA Alkaline [Batteries]" }
 // ]
@@ -65,15 +66,16 @@ The easiest way to change it is to use `highlight` helper function:
 
 ```javascript
 import {LucidSuggest, highlight} from 'lucid-suggest'
+import {LANG_ENGLISH} from 'lucid-suggest/lang/lang-english'
 
-const suggest = new LucidSuggest()
+const suggest = new LucidSuggest(LANG_ENGLISH)
 const hits = await suggest.search("to")
 
 hits.map(hit => ({
     value: hit.record.id.toString(),
     label: highlight(hit, '<strong>', '</strong>')
 }))
-// returns:
+// produces:
 // [
 //   {value: "1", label: "Electric <strong>To</strong>othbrush"},
 //   {value: "2", label: "Lightning <strong>to</strong> USB-C Cable"},
@@ -91,7 +93,7 @@ hits.map(hit => ({
         .map(c => c.highlight ? `<strong>${c.text}</strong>` : c.text)
         .join('')
 }))
-// returns:
+// produces:
 // [
 //   {value: "1", label: "Electric <strong>To</strong>othbrush"},
 //   {value: "2", label: "Lightning <strong>to</strong> USB-C Cable"},
@@ -105,7 +107,7 @@ For examples of rendering in React or Vue, see [Resources](#resources) section.
 When an exact match is unavailable, the best possible partial matches are returned:
 ```javascript
 await suggest.search("plastic toothbrush")
-// returns:
+// produces:
 // [
 //   Hit { title: "Electric [Toothbrush]" }
 // ]
@@ -114,7 +116,7 @@ await suggest.search("plastic toothbrush")
 Search as you type, results are provided from the first letter:
 ```javascript
 await suggest.search("c")
-// returns:
+// produces:
 // [
 //   Hit { title: "Lightning to USB-C [C]able" }
 // ]
@@ -123,7 +125,7 @@ await suggest.search("c")
 Search algorithm is resilient to different kinds of typos:
 ```javascript
 await suggest.search("alkln")
-// returns:
+// produces:
 // [
 //   Hit { title: "AA [Alkalin]e Batteries" }
 // ]
@@ -131,7 +133,7 @@ await suggest.search("alkln")
 
 ```javascript
 await suggest.search("tooth brush")
-// returns:
+// produces:
 // [
 //   Hit { title: "Electric [Toothbrush]" }
 // ]
@@ -140,7 +142,7 @@ await suggest.search("tooth brush")
 Stemming is used to handle different word forms:
 ```javascript
 await suggest.search("battery")
-// returns:
+// produces:
 // [
 //   Hit { title: "AA Alkaline [Batteri]es" }
 // ]
@@ -149,7 +151,7 @@ await suggest.search("battery")
 Function words (articles, prepositions, etc.) receive special treatment, so they don't occupy top positions every time you start typing a word:
 ```javascript
 await suggest.search("to")
-// returns:
+// produces:
 // [
 //   Hit { title: "Electric [To]othbrush" },
 //   Hit { title: "Lightning [to] USB-C Cable" },
@@ -171,7 +173,7 @@ suggest.setRecords([
 
 ```javascript
 await suggest.search("ne")
-// returns:
+// produces:
 // [
 //   Hit { title: "[Ne]w York" },
 //   Hit { title: "[Ne]w Jersey" },
@@ -182,39 +184,50 @@ await suggest.search("ne")
 
 ## Supported languages
 
-| Language   | Module             |
-| :--------- | :----------------- |
-| German     | `lucid-suggest/de` |
-| English    | `lucid-suggest/en` |
-| French     | `lucid-suggest/fr` |
-| Spanish    | `lucid-suggest/es` |
-| Portuguese | `lucid-suggest/pt` |
-| Russian    | `lucid-suggest/ru` |
-
-
-## Bundle sizes
-
-| lang | size | gzipped |
-| :--- | ---: | ------: |
-| de   | 200K |     79K |
-| en   | 202K |     80K |
-| es   | 205K |     80K |
-| es   | 208K |     82K |
-| pt   | 205K |     81K |
-| ru   | 202K |     79K |
+| Language   | Import                                                               |
+| :--------- | :------------------------------------------------------------------- |
+| German     | `import {LANG_GERMAN}     from "lucid-suggest/lang/lang-german"`     |
+| English    | `import {LANG_ENGLISH}    from "lucid-suggest/lang/lang-english"`    |
+| French     | `import {LANG_FRENCH}     from "lucid-suggest/lang/lang-french"`     |
+| Spanish    | `import {LANG_SPANISH}    from "lucid-suggest/lang/lang-spanish"`    |
+| Portuguese | `import {LANG_PORTUGUESE} from "lucid-suggest/lang/lang-portuguese"` |
+| Russian    | `import {LANG_RUSSIAN}    from "lucid-suggest/lang/lang-russian"`    |
 
 
 ## Performance
 
-At the moment LucidSuggest works best with shorter sentences, like shopping items or book titles. Using longer texts, like articles or movie descriptions, may lead to poor experience.
+LucidSuggest works best with shorter sentences, like shopping items or book titles. Using longer texts, like articles or movie descriptions, may lead to performance regressions and generally poor user experience.
 
-For example, for 10000 records, each containing 4-8 common English words, you can expect a typical search to take less than 1 ms, so you can simply call it at every keystroke, without throttling or Web Workers.
+For example, for 10000 records, each containing 4-8 common English words, you can expect a typical search to take less than 1 ms, so you could simply call it at every keystroke. On the other hand, such an amount of data would add 500K to page size, and indexing would take half a second, so it may not be the best idea to bring it into a browser without using Web Workers.
 
 Below are the detailed performance measurements, obtained using Node.js 14.3, Intel Core i7 (I7-9750H) 2.6 GHz.
 
-|                 | 2-4 words | 4-8 words |
-| --------------: | --------: | --------: |
-|     100 records |   0.08 ms |   0.24 ms |
-|    1000 records |   0.27 ms |   0.48 ms |
-|  10 000 records |   0.51 ms |   0.74 ms |
-| 100 000 records |   2.00 ms |   2.80 ms |
+Search:
+
+|               | 2-4 words | 4-8 words |
+| ------------: | --------: | --------: |
+|   100 records |   0.09 ms |   0.24 ms |
+|  1000 records |   0.27 ms |   0.48 ms |
+| 10000 records |   0.47 ms |   0.69 ms |
+
+Indexing:
+
+|               | 2-4 words | 4-8 words |
+| ------------: | --------: | --------: |
+|   100 records |      2 ms |      3 ms |
+|  1000 records |     17 ms |     40 ms |
+| 10000 records |    250 ms |    460 ms |
+
+
+## Bundle sizes
+
+Note that base64-encoded Wasm source constitutes the bulk of the bundle. Minifiers won't affect it, but gzip compresses it well.
+
+| lang       |   size |  gzipped |
+| :--------- | -----: | -------: |
+| English    | 167 KB |    57 KB |
+| French     | 171 KB |    58 KB |
+| German     | 159 KB |    56 KB |
+| Spanish    | 166 KB |    57 KB |
+| Portuguese | 165 KB |    57 KB |
+| Russian    | 167 KB |    57 KB |
