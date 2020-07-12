@@ -34,17 +34,13 @@ export class LucidSuggest {
         })
     }
 
-    setRecords(records) {
+    addRecords(records) {
         return this.setup(wasm => {
             records = setRatings(records)
-            wasm.set_records(
-                this.id,
-                records.map(r => r.id),
-                records.map(r => r.title).join('\0'),
-                records.map(r => r.rating),
-            )
             for (const record of records) {
-                this.records.set(record.id, record)
+                const {id, title, rating} = record
+                wasm.add_record(this.id, id, title, rating)
+                this.records.set(id, record)
             }
         })
     }

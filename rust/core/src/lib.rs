@@ -78,13 +78,10 @@ pub fn highlight_with(store_id: usize, separators: (&str, &str)) {
 }
 
 
-pub fn set_records<'a, I>(store_id: usize, records: I) where I: IntoIterator<Item=(usize, &'a str, usize)> {
+pub fn add_record(store_id: usize, record_id: usize, title: &str, rating: usize) {
     using_store(store_id, |store| {
-        store.clear();
-        for (id, title, rating) in records {
-            store.add(Record::new(id, title, rating, &store.lang));
-        }
-    });
+        store.add(Record::new(record_id, title, rating, &store.lang));
+    })
 }
 
 

@@ -26,7 +26,7 @@ async function run() {
 
             await suggest.setupQueue
             const start = performance.now()
-            suggest.setRecords(records)
+            suggest.addRecords(records)
             await suggest.setupQueue
             const end = performance.now()
 

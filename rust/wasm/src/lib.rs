@@ -43,13 +43,8 @@ pub fn set_limit(id: usize, limit: usize)  {
 
 
 #[wasm_bindgen]
-pub fn set_records(store_id: usize, ids: &[usize], texts: String, ratings: &[usize]) {
-    let records = ids.iter()
-        .cloned()
-        .zip(texts.split('\0'))
-        .zip(ratings)
-        .map(|((id, text), &rating)| (id, text, rating));
-    core::set_records(store_id, records)
+pub fn add_record(store_id: usize, record_id: usize, title: &str, rating: usize) {
+    core::add_record(store_id, record_id, title, rating);
 }
 
 

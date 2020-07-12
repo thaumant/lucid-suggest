@@ -8,7 +8,7 @@ describe('Suggest', () => {
     ]
 
     const suggest = new LucidSuggest()
-    suggest.setRecords(records)
+    suggest.addRecords(records)
 
     test('Setup calls are sequential', async () => {
         function timeout(ms) {
@@ -33,7 +33,7 @@ describe('Suggest', () => {
 
     test('Cannot search after destruction', async () => {
         const suggest = new LucidSuggest()
-        await suggest.setRecords(records)
+        await suggest.addRecords(records)
         await suggest.search('foo')
         await suggest.destroy()
         await expect(suggest.search('foo')).rejects.toThrow('Suggest destroyed')
@@ -84,7 +84,7 @@ describe('Suggest', () => {
 
     test('Prio', async () => {
         const suggest = new LucidSuggest()
-        suggest.setRecords(records.map((r, i) => ({...r, rating: i})))
+        suggest.addRecords(records.map((r, i) => ({...r, rating: i})))
         const hits = await suggest.search('')
         expect(hits).toMatchSnapshot()
     })
@@ -92,7 +92,7 @@ describe('Suggest', () => {
     describe('Render', () => {
         test('highlight helper', async () => {
             const suggest = new LucidSuggest()
-            suggest.setRecords(records)
+            suggest.addRecords(records)
             const hits = await suggest.search('hel')
             const rendered = hits.map(hit => highlight(hit, '((', '))'))
             expect(rendered).toMatchSnapshot()
@@ -100,7 +100,7 @@ describe('Suggest', () => {
 
         test('DIY', async () => {
             const suggest = new LucidSuggest()
-            suggest.setRecords(records)
+            suggest.addRecords(records)
             const hits = await suggest.search('ba')
             const rendered = hits.map(hit => {
                 return {
