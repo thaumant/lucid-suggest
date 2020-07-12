@@ -15,12 +15,12 @@ Methods:
 
 | Name       | Type                                 | Description                                       |
 | :--------- | :----------------------------------- | :------------------------------------------------ |
-| setRecords | `(records: Record[]): Promise<void>` | Set a record list to search in.                   |
+| addRecords | `(records: Record[]): Promise<void>` | Add records to the search index.                  |
 | setLimit   | `(limit: number): Promise<void>`     | Set the number of top hits returned.              |
 | search     | `(query: string): Promise<Hit[]>`    | Get top hits (matched records) for a given query. |
 | destroy    | `(): Promise<void>`                  | Destroy the instance and clean it's memory.       |
 
-**Note:** `setLimit` and `setRecords` operate by pushing tasks into a setup queue.
+**Note:** `setLimit` and `addRecords` operate by pushing tasks into a setup queue.
 You can skip awaiting them because `search` will wait for that queue to finish.
 Although if you pass malformed arguments you will get an uncaught exception.
 
@@ -32,7 +32,7 @@ An example of usage:
 ```javascript
 const suggest = new LucidSuggest()
 suggest.setLimit(5)
-suggest.setRecords([
+suggest.addRecords([
     {id: 1, title: "Electric Toothbrush"},
     {id: 2, title: "Lightning to USB-C Cable"},
     {id: 3, title: "AA Alkaline Batteries"},
@@ -51,11 +51,11 @@ An object stored in `LucidSuggest` instance and matched with a query by it's `se
 
 Properties:
 
-| Name   | Type     | Description                                                         |
-| :----- | :------- | :------------------------------------------------------------------ |
-| id     | `number` | Unique non-negative integer identifier.                             |
-| title  | `string` | Text used for fulltext search.                                      |
-| rating | `number` | Matching tie breaker: records with greater rating are ranked higher |
+| Name   | Type                 | Description                                                         |
+| :----- | :------------------- | :------------------------------------------------------------------ |
+| id     | `number`             | Unique non-negative integer identifier.                             |
+| title  | `string`             | Text used for fulltext search.                                      |
+| rating | `number | undefined` | Matching tie breaker: records with greater rating are ranked higher |
 
 **Note:** use priority, product popularity, or term frequency as `rating` to improve overall scoring.
 

@@ -1,8 +1,8 @@
 # LucidSuggest
 
-Embeddable search and autocomplete that works out of the box. Fast, simple, runs in browsers and NodeJS. Built with Rust and WebAssembly.
+Autocomplete engine that works out of the box. Fast, easy to use, runs in browsers and Node.js. Built with Rust and WebAssembly.
 
-Note: this package is pre-1.0, it hasn't been battle-tested in production, and API may change.
+Note: this package is pre-1.0, it hasn't been battle-tested in production, API may change.
 
 
 ## Table of contents
@@ -206,11 +206,11 @@ await suggest.search("ne")
 
 ## Performance
 
-At the moment LucidSuggest works best with shorter sentences, like shopping items or book titles. Using longer texts, like articles or movie descriptions, may lead to poor experience.
-
-For example, for 10000 records, each containing 4-8 common English words, you can expect a typical search to take less than 1 ms, so you can simply call it at every keystroke, without throttling or Web Workers.
+LucidSuggest works best with shorter sentences, like shopping items or book titles. Using longer texts, like articles or movie descriptions, may lead to performance regressions and generally poor user experience.
 
 Below are the detailed performance measurements, obtained using Node.js 14.3, Intel Core i7 (I7-9750H) 2.6 GHz.
+
+Searching:
 
 |                 | 2-4 words | 4-8 words |
 | --------------: | --------: | --------: |
@@ -218,3 +218,12 @@ Below are the detailed performance measurements, obtained using Node.js 14.3, In
 |    1000 records |   0.27 ms |   0.48 ms |
 |  10 000 records |   0.45 ms |   0.68 ms |
 | 100 000 records |   1.40 ms |   2.00 ms |
+
+Indexing:
+
+|                 | 2-4 words | 4-8 words |
+| --------------: | --------: | --------: |
+|     100 records |      1 ms |      2 ms |
+|    1000 records |     11 ms |     18 ms |
+|  10 000 records |    160 ms |    380 ms |
+| 100 000 records |   7000 ms | 24 000 ms |
