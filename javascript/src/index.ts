@@ -1,5 +1,5 @@
 import {tokenizeRecord, tokenizeQuery} from './tokenization'
-import compileWasm from './wasm'
+import {compileWasm} from './wasm'
 import type {Lang} from './lang/lang'
 import {once, toChunks, serializeWords} from './utils'
 

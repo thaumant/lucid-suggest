@@ -1,7 +1,7 @@
 /node_modules
+
+# wasm
 /tmp
-/dist
-/build
 /src/wasm.js
 
 # build
@@ -11,3 +11,5 @@
 /index.d.ts
 /wasm.js
 /wasm.d.ts
+/utils.js
+/utils.d.ts

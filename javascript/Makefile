@@ -1,4 +1,4 @@
-LANGS = en de en es fr pt ru
+LANGS = english german spanish french portuguese russian
 
 .PHONY: build
 .PHONY: wasm
@@ -21,9 +21,11 @@ wasm:
 
 
 cleanup:
-	rm -rf ./build
-	rm -rf ./pkg
-	rm -rf ./wasm
+	rm -rf ./index.{js,d.ts}
+	rm -rf ./utils.{js,d.ts}
+	rm -rf ./wasm.{js,d.ts}
+	rm -rf ./lang
+	rm -rf ./tokenization
 
 
 test:
@@ -32,6 +34,20 @@ test:
 
 bench:
 	node benches/search.js
+
+
+sizes:
+	rm -rf ./tmp/
+	./node_modules/.bin/tsc --module es2020
+
+	for lang in ${LANGS}; do \
+		LANG=$$lang ./node_modules/.bin/rollup -c rollup/config-sizes.js; \
+		./node_modules/.bin/uglifyjs tmp/$$lang.js -o tmp/$$lang.min.js; \
+		tar -cvzf tmp/$$lang.tar.gz tmp/$$lang.min.js; \
+	done
+
+	rm tmp/*.min.js
+	ls -lAh tmp
 
 
 bump:
