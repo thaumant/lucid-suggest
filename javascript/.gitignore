@@ -1,4 +1,13 @@
 node_modules
-pkg
+tmp
 dist
 build
+src/wasm.js
+
+# build
+lang
+tokenization
+index.js
+index.d.ts
+wasm.js
+wasm.d.ts

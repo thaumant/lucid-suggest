@@ -1,9 +1,35 @@
-import {Lang} from './lang/lang-placeholder'
 import {tokenizeRecord, tokenizeQuery} from './tokenization'
-import {Word} from './tokenization/word'
-import compileWasm, {WasmAPI} from './wasm-placeholder'
+import compileWasm from './wasm'
+import type {Lang} from './lang/lang'
+import type {Word} from './tokenization/word'
+
 
 const DEFAULT_LIMIT = 10
+
+
+export interface WasmAPI {
+    create_store(): number;
+    destroy_store(store_id: number): void;
+    set_limit(store_id: number, limit: number): void;
+    add_record(
+        store_id:  number,
+        record_id: number,
+        rating:    number,
+        source:    string,
+        chars:     string,
+        classes:   Uint32Array,
+        words:     Uint32Array,
+    ): void;
+    run_search(
+        store_id: number,
+        source:   string,
+        chars:    string,
+        classes:  Uint32Array,
+        words:    Uint32Array,
+    ): number;
+    get_result_ids(store_id: number): Uint32Array;
+    get_result_titles(store_id: number): string;
+}
 
 
 export type Record = {
@@ -20,9 +46,9 @@ export class LucidSuggest {
     records:    Map<number, Record>
     setupQueue: Promise<WasmAPI>
 
-    constructor() {
+    constructor(lang: Lang) {
         this.id         = 0
-        this.lang       = new Lang()
+        this.lang       = lang
         this.limit      = DEFAULT_LIMIT
         this.records    = new Map()
         this.setupQueue = compileWasm

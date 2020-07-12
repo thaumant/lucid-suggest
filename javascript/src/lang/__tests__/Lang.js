@@ -1,6 +1,6 @@
 import {CONSONANT, VOWEL} from '../cls'
 import {PARTICLE} from '../pos'
-import {LangAbstract} from '../lang'
+import {Lang} from '../lang'
 import Stemmer from '../stemming/ext/PlaceholderStemmer'
 
 
@@ -19,7 +19,7 @@ function langMock() {
         [CONSONANT, 'x'],
         [VOWEL, 'y']
     ]
-    return new LangAbstract(
+    return new Lang(
         Stemmer,
         charClasses,
         posList,

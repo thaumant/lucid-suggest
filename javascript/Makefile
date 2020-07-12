@@ -1,21 +1,38 @@
 LANGS = en de en es fr pt ru
 
 .PHONY: build
+.PHONY: wasm
+
+
 build:
 	make cleanup
-	cd ../rust/wasm && wasm-pack build --target bundler --out-dir ../../javascript/pkg
+	make wasm
+	make tsc
+
+
+tsc:
 	./node_modules/.bin/tsc
-	LANG=de ./node_modules/.bin/rollup -c rollup/config.js
+
+
+wasm:
+	cd ../rust/wasm && wasm-pack build --target bundler --out-dir ../../javascript/tmp
+	./node_modules/.bin/rollup -c rollup/config-wasm.js
+	rm -rf ./tmp
+
 
 cleanup:
 	rm -rf ./build
 	rm -rf ./pkg
+	rm -rf ./wasm
+
 
 test:
 	./node_modules/.bin/jest tests
 
+
 bench:
 	node benches/search.js
+
 
 bump:
 	npm version $(V)

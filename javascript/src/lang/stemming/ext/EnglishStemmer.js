@@ -9,7 +9,7 @@
 import {Among} from "../among"
 import {SnowballProgram} from "../program"
 
-export function Stemmer() {
+export function EnglishStemmer() {
     var a_0 = [new Among("arsen", -1, -1), new Among("commun", -1, -1),
             new Among("gener", -1, -1)], a_1 = [new Among("'", -1, 1),
             new Among("'s'", 0, 1), new Among("'s", -1, 1)], a_2 = [
@@ -66,7 +66,7 @@ export function Stemmer() {
             new Among("sky", -1, -1), new Among("tying", -1, 5),
             new Among("ugly", -1, 8)], g_v = [17, 65, 16, 1], g_v_WXY = [1, 17,
             65, 208, 1], g_valid_LI = [55, 141, 2], B_Y_found, I_p2, I_p1, habr = [
-            r_Step_1b, r_Step_1c, r_Step_2, r_Step_3, r_Step_4, r_Step_5], sbp = SnowballProgram();
+            r_Step_1b, r_Step_1c, r_Step_2, r_Step_3, r_Step_4, r_Step_5], sbp = new SnowballProgram();
     this.setCurrent = function(word) {
         sbp.setCurrent(word);
     };

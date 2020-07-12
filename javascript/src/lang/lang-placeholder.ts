@@ -1,10 +1,10 @@
-import {LangAbstract} from './lang'
-import {Stemmer} from './stemming/ext/PlaceholderStemmer'
+import {Lang} from './lang'
+import {PlaceholderStemmer} from './stemming/ext/PlaceholderStemmer'
 
-export class Lang extends LangAbstract {
+export class LangPlaceholder extends Lang {
     constructor() {
         super(
-            new Stemmer(),
+            new PlaceholderStemmer(),
             [],
             [],
             [],

@@ -1,14 +1,14 @@
 
-export function Stemmer() {
-    this.setCurrent = function(word) {
-        this.current = word;
-    };
+export class PlaceholderStemmer {
+    setCurrent(word) {
+        this.current = word
+    }
 
-    this.getCurrent = function() {
-        return this.current;
-    };
+    getCurrent() {
+        return this.current
+    }
 
-    this.stem = function() {
-        return true;
+    stem() {
+        return true
     }
 }

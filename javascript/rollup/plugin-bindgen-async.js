@@ -4,13 +4,13 @@ export default () => ({
     name: 'bindgen-async',
 
     load(path) {
-        if (/\/pkg\/lucid_suggest_wasm\.js$/.test(path)) {
+        if (/lucid_suggest_wasm\.js$/.test(path)) {
             return fs.promises.readFile(path, 'utf8')
         }
     },
 
     transform(code, path) {
-        if (code && /\/pkg\/lucid_suggest_wasm\.js$/.test(path)) {
+        if (code && /lucid_suggest_wasm\.js$/.test(path)) {
             code = code.replace(/^import \* as wasm.*\n/, '')
             code = code.replace(/export function ([\w_\d]+)/g, '__exports__.$1 = function')
             code = `

@@ -30,8 +30,6 @@
     "@babel/core": "^7.10.4",
     "@babel/preset-env": "^7.10.4",
     "@babel/preset-typescript": "^7.10.4",
-    "@rollup/plugin-node-resolve": "^8.1.0",
-    "@rollup/plugin-wasm": "^3.0.0",
     "babel-jest": "^26.1.0",
     "benchmark": "^2.1.4",
     "jest": "^25.5.4",

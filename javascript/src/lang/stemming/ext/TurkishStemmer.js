@@ -9,7 +9,7 @@
 import {Among} from "../among"
 import {SnowballProgram} from "../program"
 
-export function Stemmer() {
+export function TurkishStemmer() {
 	var a_0 = [new Among("m", -1, -1), new Among("n", -1, -1),
 			new Among("miz", -1, -1), new Among("niz", -1, -1),
 			new Among("muz", -1, -1), new Among("nuz", -1, -1),
@@ -82,7 +82,7 @@ export function Stemmer() {
 			["a", g_vowel1, 97, 305], ["e", g_vowel2, 101, 252],
 			["\u0131", g_vowel3, 97, 305], ["i", g_vowel4, 101, 105],
 			["o", g_vowel5, 111, 117], ["\u00F6", g_vowel6, 246, 252],
-			["u", g_vowel5, 111, 117]], sbp = SnowballProgram();
+			["u", g_vowel5, 111, 117]], sbp = new SnowballProgram();
 	this.setCurrent = function(word) {
 		sbp.setCurrent(word);
 	};

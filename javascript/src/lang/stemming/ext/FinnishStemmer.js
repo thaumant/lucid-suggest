@@ -9,7 +9,7 @@
 import {Among} from "../among"
 import {SnowballProgram} from "../program"
 
-export function Stemmer() {
+export function FinnishStemmer() {
     var a_0 = [new Among("pa", -1, 1), new Among("sti", -1, 2),
             new Among("kaan", -1, 1), new Among("han", -1, 1),
             new Among("kin", -1, 1), new Among("h\u00E4n", -1, 1),
@@ -58,7 +58,7 @@ export function Stemmer() {
             0, 0, 0, 0, 0, 0, 8], g_V1 = [17, 65, 16, 1, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 8, 0, 32], g_V2 = [17, 65, 16, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 8, 0, 32], g_particle_end = [17, 97, 24, 1, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 32], B_ending_removed, S_x, I_p2, I_p1, sbp = SnowballProgram();
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 0, 32], B_ending_removed, S_x, I_p2, I_p1, sbp = new SnowballProgram();
     this.setCurrent = function(word) {
         sbp.setCurrent(word);
     };
