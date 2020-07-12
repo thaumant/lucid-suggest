@@ -1,7 +1,7 @@
 import {tokenizeRecord, tokenizeQuery} from './tokenization'
 import compileWasm from './wasm'
 import type {Lang} from './lang/lang'
-import type {Word} from './tokenization/word'
+import {once, toChunks, serializeWords} from './utils'
 
 
 const DEFAULT_LIMIT = 10
@@ -39,19 +39,40 @@ export type Record = {
 }
 
 
+export type HighlightedTextChunk = {
+    text:      string,
+    highlight: boolean,
+}
+
+
+export class Hit {
+    record: Record
+    chunks: HighlightedTextChunk[]
+
+    constructor(title: string, record: Record) {
+        this.record = record
+        this.chunks = toChunks(title)
+    }
+
+    get title(): string {
+        return highlight(this, '[', ']')
+    }
+}
+
+
 export class LucidSuggest {
     id:         number
     lang:       Lang
     limit:      number
     records:    Map<number, Record>
-    setupQueue: Promise<WasmAPI>
+    setupQueue: () => Promise<WasmAPI>
 
     constructor(lang: Lang) {
         this.id         = 0
         this.lang       = lang
         this.limit      = DEFAULT_LIMIT
         this.records    = new Map()
-        this.setupQueue = compileWasm
+        this.setupQueue = () => compileWasm
 
         this.setup(wasm => {
             this.id = wasm.create_store()
@@ -59,18 +80,19 @@ export class LucidSuggest {
     }
 
     setup(fn: (api: WasmAPI) => unknown): Promise<void> {
-        this.setupQueue = this.setupQueue.then(async wasm => {
+        const oldQueue = this.setupQueue
+        this.setupQueue = once(() => oldQueue().then(async wasm => {
             await fn(wasm)
-            this.setupQueue = Promise.resolve(wasm)
+            this.setupQueue = () => Promise.resolve(wasm)
             return wasm
-        })
-        return this.setupQueue.then(() => {})
+        }))
+        return this.setupQueue().then(() => {})
     }
 
     destroy(): Promise<void> {
         const oldQueue = this.setupQueue
-        this.setupQueue = Promise.reject(new Error('Suggest destroyed'))
-        return oldQueue.then(wasm => {
+        this.setupQueue = () => Promise.reject(new Error('Suggest destroyed'))
+        return oldQueue().then(wasm => {
             wasm.destroy_store(this.id)
         })
     }
@@ -101,7 +123,7 @@ export class LucidSuggest {
     }
 
     async search(query: string): Promise<Hit[]> {
-        const wasm  = await this.setupQueue
+        const wasm  = await this.setupQueue()
         const qtext = tokenizeQuery(query, this.lang)
         const len   = wasm.run_search(
             this.id,
@@ -128,27 +150,6 @@ export class LucidSuggest {
 }
 
 
-export type HighlightedTextChunk = {
-    text:      string,
-    highlight: boolean,
-}
-
-
-export class Hit {
-    record: Record
-    chunks: HighlightedTextChunk[]
-
-    constructor(title: string, record: Record) {
-        this.record = record
-        this.chunks = toChunks(title)
-    }
-
-    get title(): string {
-        return highlight(this, '[', ']')
-    }
-}
-
-
 export function highlight(hit: Hit, left: string, right: string) {
     let result = ''
     for (const {text, highlight} of hit.chunks) {
@@ -157,34 +158,4 @@ export function highlight(hit: Hit, left: string, right: string) {
             : text
     }
     return result
-}
-
-
-function toChunks(title: string): HighlightedTextChunk[] {
-    const split  = title.split(/{{|}}/g)
-    const chunks = []
-    for (let i = 0; i < split.length; i++) {
-        if (split[i] != '') {
-            chunks.push({
-                text: split[i],
-                highlight: i % 2 === 1,
-            })
-        }
-    }
-    return chunks
-}
-
-
-function serializeWords(words: Word[]): Uint32Array {
-    const serialized = new Uint32Array(words.length * 6)
-    for (let i = 0; i < words.length; i++) {
-        const word = words[i]
-        serialized[i * 6 + 0] = word.offset
-        serialized[i * 6 + 1] = word.slice[0]
-        serialized[i * 6 + 2] = word.slice[1]
-        serialized[i * 6 + 3] = word.stem
-        serialized[i * 6 + 4] = word.pos
-        serialized[i * 6 + 5] = +word.fin
-    }
-    return serialized
 }

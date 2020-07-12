@@ -29,7 +29,7 @@ describe("Suggest", () => {
             await timeout(50)
             steps.push("end 2")
         })
-        await suggest.setupQueue
+        await suggest.setupQueue()
         expect(steps).toEqual(["start 1", "end 1", "start 2", "end 2"])
     })
 
