@@ -1,14 +1,7 @@
-use std::cmp::Ordering;
 use fnv::{FnvHashMap as HashMap};
 use crate::utils::{Trigrams, LimitSort};
 use crate::tokenization::{Word, TextRef};
 use super::Record;
-
-use Ordering::{
-    Less,
-    Equal,
-    Greater,
-};
 
 
 pub struct TrigramIndex {
@@ -36,13 +29,10 @@ impl TrigramIndex {
             dict
                 .entry(gram)
                 .and_modify(|ixs| {
-                    for i in 0..ixs.len() {
-                        match ix.cmp(unsafe { ixs.get_unchecked(i) }) {
-                            Greater => continue,
-                            Equal   => return,
-                            Less    => return ixs.insert(i, *ix),
-                        }
-                    }
+                    debug_assert!(
+                        ixs.len() == 0 || ixs.last().unwrap() < ix,
+                        "Gram ixs are not monotonously increasing"
+                    );
                     ixs.push(*ix);
                 })
                 .or_insert_with(|| vec![*ix]);
