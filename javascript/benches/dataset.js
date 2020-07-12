@@ -1,9 +1,9 @@
-const fs = require('fs')
+const fs = require("fs")
 
-const CHARS = 'abcdefghijklmnopqrstuvwxyz'.split('')
+const CHARS = "abcdefghijklmnopqrstuvwxyz".split("")
 
-const WORDS = fs.readFileSync(__dirname + '/../../datasets/top_1000_words_en.csv', 'utf8')
-    .split('\n')
+const WORDS = fs.readFileSync(__dirname + "/../../datasets/top_1000_words_en.csv", "utf8")
+    .split("\n")
     .map(word => word.trim())
     .filter(word => word.length > 0)
 
@@ -46,15 +46,15 @@ function generateQueries(size, records, minLen = 1.0, maxLen = 1.0) {
 
 function generateTitle(minWords, maxWords) {
     const len = randRangeInt(minWords, maxWords)
-    let title = ''
+    let title = ""
     for (let j = 0; j < len; j++) {
         title += randWord()
-        title += Math.random() > 0.2 ? ' ' : ', '
+        title += Math.random() > 0.2 ? " " : ", "
     }
     title = title[0].toUpperCase() + title.slice(1)
     title = title.slice(
         0,
-        title[title.length - 2] === ',' ? -2 : -1,
+        title[title.length - 2] === "," ? -2 : -1,
     )
     return title
 }
@@ -67,14 +67,14 @@ function corrupt(title) {
 
     const chars = title
     .toLowerCase()
-    .replace(/, /, ' ')
-    .split('')
+    .replace(/, /, " ")
+    .split("")
 
     const typos = randRangeInt(0, Math.ceil(title.length / 10))
 
     for (let i = 0; i < typos; i++) {
         let ix = 0
-        while (ix == 0 || chars[ix - 1] == ' ') {
+        while (ix == 0 || chars[ix - 1] == " ") {
             ix = randRangeInt(0, chars.length - 1)
         }
         const rand = Math.random()
@@ -83,7 +83,7 @@ function corrupt(title) {
         else if (rand >= 0.000) chars.splice(ix, 0, randItem(CHARS))
     }
 
-    return chars.join('')
+    return chars.join("")
 }
 
 
