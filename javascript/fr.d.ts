@@ -1,5 +1,5 @@
 export class LucidSuggest {
-    setRecords(records: Record[]): Promise<void>;
+    addRecords(records: Record[]): Promise<void>;
     setLimit(limit: number): Promise<void>;
     search(query: string): Promise<Hit[]>;
 }

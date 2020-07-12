@@ -17,6 +17,6 @@
     "webpack-dev-server": "^3.11.0"
   },
   "dependencies": {
-    "lucid-suggest": "^0.8.1"
+    "lucid-suggest": "^0.8.2"
   }
 }

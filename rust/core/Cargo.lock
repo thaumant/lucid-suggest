@@ -296,7 +296,7 @@ dependencies = [
 
 [[package]]
 name = "lucid-suggest-core"
-version = "0.8.1"
+version = "0.8.2"
 dependencies = [
  "criterion 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "fnv 1.0.7 (registry+https://github.com/rust-lang/crates.io-index)",

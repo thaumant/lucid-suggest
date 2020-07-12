@@ -224,6 +224,6 @@ Indexing:
 |                 | 2-4 words | 4-8 words |
 | --------------: | --------: | --------: |
 |     100 records |      1 ms |      2 ms |
-|    1000 records |     11 ms |     18 ms |
-|  10 000 records |    160 ms |    380 ms |
-| 100 000 records |   7000 ms | 24 000 ms |
+|    1000 records |     11 ms |     16 ms |
+|  10 000 records |     88 ms |    160 ms |
+| 100 000 records |    810 ms |   1900 ms |
