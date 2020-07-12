@@ -8,7 +8,7 @@ export class LucidSuggest {
     constructor() {
         this.id         = NEXT_ID++
         this.limit      = DEFAULT_LIMIT
-        this.records    = []
+        this.records    = new Map()
         this.setupQueue = compileWasm
 
         this.setup(wasm => {
@@ -36,13 +36,16 @@ export class LucidSuggest {
 
     setRecords(records) {
         return this.setup(wasm => {
-            this.records = setRatings(records)
+            records = setRatings(records)
             wasm.set_records(
                 this.id,
-                this.records.map(r => r.id),
-                this.records.map(r => r.title).join('\0'),
-                this.records.map(r => r.rating),
+                records.map(r => r.id),
+                records.map(r => r.title).join('\0'),
+                records.map(r => r.rating),
             )
+            for (const record of records) {
+                this.records.set(record.id, record)
+            }
         })
     }
 
@@ -62,7 +65,7 @@ export class LucidSuggest {
         for (let i = 0; i < ids.length; i++) {
             const id     = ids[i]
             const title  = titles[i]
-            const record = this.records.find(r => r.id === id)
+            const record = this.records.get(id)
             if (!record) throw new Error(`Missing record ${id}`)
             if (!title)  throw new Error(`Missing title for ${id}`)
             hits.push(new Hit(title, record))
