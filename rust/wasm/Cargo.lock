@@ -30,7 +30,7 @@ dependencies = [
 
 [[package]]
 name = "lucid-suggest-core"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "fnv 1.0.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "rust-stemmers 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -38,9 +38,9 @@ dependencies = [
 
 [[package]]
 name = "lucid-suggest-wasm"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
- "lucid-suggest-core 0.8.0",
+ "lucid-suggest-core 0.8.1",
  "wasm-bindgen 0.2.58 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 

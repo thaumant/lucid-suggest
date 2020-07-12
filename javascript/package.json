@@ -1,6 +1,6 @@
 {
   "name": "lucid-suggest",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "Fulltext search and autocomplete engine that works out of the box.",
   "keywords": [
     "autocomplete",
