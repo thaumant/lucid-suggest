@@ -1,0 +1,153 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`English language Empty input 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Electric Toothbrush",
+      },
+    ],
+    "record": Object {
+      "id": 30,
+      "title": "Electric Toothbrush",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Vacuum Compression Storage Bags",
+      },
+    ],
+    "record": Object {
+      "id": 40,
+      "title": "Vacuum Compression Storage Bags",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Lightning to USB A Cable",
+      },
+    ],
+    "record": Object {
+      "id": 20,
+      "title": "Lightning to USB A Cable",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "AA 1.5 Alkaline Batteries — Pack of 12",
+      },
+    ],
+    "record": Object {
+      "id": 10,
+      "title": "AA 1.5 Alkaline Batteries — Pack of 12",
+    },
+  },
+]
+`;
+
+exports[`English language Equality 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": true,
+        "text": "Electric",
+      },
+      Object {
+        "highlight": false,
+        "text": " ",
+      },
+      Object {
+        "highlight": true,
+        "text": "Toothbrush",
+      },
+    ],
+    "record": Object {
+      "id": 30,
+      "title": "Electric Toothbrush",
+    },
+  },
+]
+`;
+
+exports[`English language Partiles 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Electric ",
+      },
+      Object {
+        "highlight": true,
+        "text": "To",
+      },
+      Object {
+        "highlight": false,
+        "text": "othbrush",
+      },
+    ],
+    "record": Object {
+      "id": 30,
+      "title": "Electric Toothbrush",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Lightning ",
+      },
+      Object {
+        "highlight": true,
+        "text": "to",
+      },
+      Object {
+        "highlight": false,
+        "text": " USB A Cable",
+      },
+    ],
+    "record": Object {
+      "id": 20,
+      "title": "Lightning to USB A Cable",
+    },
+  },
+]
+`;
+
+exports[`English language Stemming 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": true,
+        "text": "AA",
+      },
+      Object {
+        "highlight": false,
+        "text": " 1.5 Alkaline ",
+      },
+      Object {
+        "highlight": true,
+        "text": "Batteri",
+      },
+      Object {
+        "highlight": false,
+        "text": "es — Pack of 12",
+      },
+    ],
+    "record": Object {
+      "id": 10,
+      "title": "AA 1.5 Alkaline Batteries — Pack of 12",
+    },
+  },
+]
+`;

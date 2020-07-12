@@ -1,0 +1,286 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Suggest Empty input 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "-BAZZZ-",
+      },
+    ],
+    "record": Object {
+      "id": 30,
+      "title": "-BAZZZ-",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Foo bar",
+      },
+    ],
+    "record": Object {
+      "id": 20,
+      "title": "Foo bar",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Hello world!",
+      },
+    ],
+    "record": Object {
+      "id": 10,
+      "title": "Hello world!",
+    },
+  },
+]
+`;
+
+exports[`Suggest Equality 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": true,
+        "text": "Foo",
+      },
+      Object {
+        "highlight": false,
+        "text": " ",
+      },
+      Object {
+        "highlight": true,
+        "text": "bar",
+      },
+    ],
+    "record": Object {
+      "id": 20,
+      "title": "Foo bar",
+    },
+  },
+]
+`;
+
+exports[`Suggest Joined words 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": true,
+        "text": "Foo",
+      },
+      Object {
+        "highlight": false,
+        "text": " ",
+      },
+      Object {
+        "highlight": true,
+        "text": "bar",
+      },
+    ],
+    "record": Object {
+      "id": 20,
+      "title": "Foo bar",
+    },
+  },
+]
+`;
+
+exports[`Suggest Prefix 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Foo ",
+      },
+      Object {
+        "highlight": true,
+        "text": "ba",
+      },
+      Object {
+        "highlight": false,
+        "text": "r",
+      },
+    ],
+    "record": Object {
+      "id": 20,
+      "title": "Foo bar",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "-",
+      },
+      Object {
+        "highlight": true,
+        "text": "BA",
+      },
+      Object {
+        "highlight": false,
+        "text": "ZZZ-",
+      },
+    ],
+    "record": Object {
+      "id": 30,
+      "title": "-BAZZZ-",
+    },
+  },
+]
+`;
+
+exports[`Suggest Rating 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "-BAZZZ-",
+      },
+    ],
+    "record": Object {
+      "id": 30,
+      "rating": 2,
+      "title": "-BAZZZ-",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Foo bar",
+      },
+    ],
+    "record": Object {
+      "id": 20,
+      "rating": 1,
+      "title": "Foo bar",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Hello world!",
+      },
+    ],
+    "record": Object {
+      "id": 10,
+      "rating": 0,
+      "title": "Hello world!",
+    },
+  },
+]
+`;
+
+exports[`Suggest Rating 2`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Hello world!",
+      },
+    ],
+    "record": Object {
+      "id": 10,
+      "rating": 3,
+      "title": "Hello world!",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Foo bar",
+      },
+    ],
+    "record": Object {
+      "id": 20,
+      "rating": 2,
+      "title": "Foo bar",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "-BAZZZ-",
+      },
+    ],
+    "record": Object {
+      "id": 30,
+      "rating": 1,
+      "title": "-BAZZZ-",
+    },
+  },
+]
+`;
+
+exports[`Suggest Render DIY 1`] = `
+Array [
+  Object {
+    "label": "Foo <<ba>>r",
+    "value": "20",
+  },
+  Object {
+    "label": "-<<BA>>ZZZ-",
+    "value": "30",
+  },
+]
+`;
+
+exports[`Suggest Render highlight helper 1`] = `
+Array [
+  "((Hel))lo world!",
+]
+`;
+
+exports[`Suggest Typos 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": true,
+        "text": "Hello",
+      },
+      Object {
+        "highlight": false,
+        "text": " world!",
+      },
+    ],
+    "record": Object {
+      "id": 10,
+      "title": "Hello world!",
+    },
+  },
+]
+`;
+
+exports[`Suggest Typos 2`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": true,
+        "text": "Hello",
+      },
+      Object {
+        "highlight": false,
+        "text": " world!",
+      },
+    ],
+    "record": Object {
+      "id": 10,
+      "title": "Hello world!",
+    },
+  },
+]
+`;

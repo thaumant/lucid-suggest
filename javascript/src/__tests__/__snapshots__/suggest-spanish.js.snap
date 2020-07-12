@@ -1,0 +1,314 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Spanish language Empty input 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Deshumidificador Eléctrico portátil",
+      },
+    ],
+    "record": Object {
+      "id": 40,
+      "title": "Deshumidificador Eléctrico portátil",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Cepillo de dientes eléctrico",
+      },
+    ],
+    "record": Object {
+      "id": 30,
+      "title": "Cepillo de dientes eléctrico",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Cable de USB A a Lightning",
+      },
+    ],
+    "record": Object {
+      "id": 20,
+      "title": "Cable de USB A a Lightning",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Pack de 24 pilas alcalinas AA",
+      },
+    ],
+    "record": Object {
+      "id": 10,
+      "title": "Pack de 24 pilas alcalinas AA",
+    },
+  },
+]
+`;
+
+exports[`Spanish language Equality 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": true,
+        "text": "Cepillo",
+      },
+      Object {
+        "highlight": false,
+        "text": " ",
+      },
+      Object {
+        "highlight": true,
+        "text": "de",
+      },
+      Object {
+        "highlight": false,
+        "text": " ",
+      },
+      Object {
+        "highlight": true,
+        "text": "dientes",
+      },
+      Object {
+        "highlight": false,
+        "text": " ",
+      },
+      Object {
+        "highlight": true,
+        "text": "eléctrico",
+      },
+    ],
+    "record": Object {
+      "id": 30,
+      "title": "Cepillo de dientes eléctrico",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Deshumidificador ",
+      },
+      Object {
+        "highlight": true,
+        "text": "Eléctrico",
+      },
+      Object {
+        "highlight": false,
+        "text": " portátil",
+      },
+    ],
+    "record": Object {
+      "id": 40,
+      "title": "Deshumidificador Eléctrico portátil",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Cable ",
+      },
+      Object {
+        "highlight": true,
+        "text": "de",
+      },
+      Object {
+        "highlight": false,
+        "text": " USB A a Lightning",
+      },
+    ],
+    "record": Object {
+      "id": 20,
+      "title": "Cable de USB A a Lightning",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Pack ",
+      },
+      Object {
+        "highlight": true,
+        "text": "de",
+      },
+      Object {
+        "highlight": false,
+        "text": " 24 pilas alcalinas AA",
+      },
+    ],
+    "record": Object {
+      "id": 10,
+      "title": "Pack de 24 pilas alcalinas AA",
+    },
+  },
+]
+`;
+
+exports[`Spanish language Normalization 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Deshumidificador ",
+      },
+      Object {
+        "highlight": true,
+        "text": "Eléctric",
+      },
+      Object {
+        "highlight": false,
+        "text": "o ",
+      },
+      Object {
+        "highlight": true,
+        "text": "portá",
+      },
+      Object {
+        "highlight": false,
+        "text": "til",
+      },
+    ],
+    "record": Object {
+      "id": 40,
+      "title": "Deshumidificador Eléctrico portátil",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Cepillo de dientes ",
+      },
+      Object {
+        "highlight": true,
+        "text": "eléctric",
+      },
+      Object {
+        "highlight": false,
+        "text": "o",
+      },
+    ],
+    "record": Object {
+      "id": 30,
+      "title": "Cepillo de dientes eléctrico",
+    },
+  },
+]
+`;
+
+exports[`Spanish language Partiles 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": true,
+        "text": "De",
+      },
+      Object {
+        "highlight": false,
+        "text": "shumidificador Eléctrico portátil",
+      },
+    ],
+    "record": Object {
+      "id": 40,
+      "title": "Deshumidificador Eléctrico portátil",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Cepillo ",
+      },
+      Object {
+        "highlight": true,
+        "text": "de",
+      },
+      Object {
+        "highlight": false,
+        "text": " dientes eléctrico",
+      },
+    ],
+    "record": Object {
+      "id": 30,
+      "title": "Cepillo de dientes eléctrico",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Cable ",
+      },
+      Object {
+        "highlight": true,
+        "text": "de",
+      },
+      Object {
+        "highlight": false,
+        "text": " USB A a Lightning",
+      },
+    ],
+    "record": Object {
+      "id": 20,
+      "title": "Cable de USB A a Lightning",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Pack ",
+      },
+      Object {
+        "highlight": true,
+        "text": "de",
+      },
+      Object {
+        "highlight": false,
+        "text": " 24 pilas alcalinas AA",
+      },
+    ],
+    "record": Object {
+      "id": 10,
+      "title": "Pack de 24 pilas alcalinas AA",
+    },
+  },
+]
+`;
+
+exports[`Spanish language Stemming 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Pack de 24 pilas ",
+      },
+      Object {
+        "highlight": true,
+        "text": "alcalin",
+      },
+      Object {
+        "highlight": false,
+        "text": "as AA",
+      },
+    ],
+    "record": Object {
+      "id": 10,
+      "title": "Pack de 24 pilas alcalinas AA",
+    },
+  },
+]
+`;

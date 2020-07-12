@@ -1,4 +1,4 @@
 
 module.exports = {
-    testMatch: ["<rootDir>/src/**/__tests__/*.js"]
+    testMatch: ["<rootDir>/src/**/__tests__/*.js"],
 }

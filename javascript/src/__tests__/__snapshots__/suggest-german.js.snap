@@ -1,0 +1,252 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`German language Empty input 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Lightning auf USB A Kabel",
+      },
+    ],
+    "record": Object {
+      "id": 20,
+      "title": "Lightning auf USB A Kabel",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Zahnbürste, mit 3D White, Weiß",
+      },
+    ],
+    "record": Object {
+      "id": 30,
+      "title": "Zahnbürste, mit 3D White, Weiß",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "AA Batterien, Alkaline — 12er Pack",
+      },
+    ],
+    "record": Object {
+      "id": 10,
+      "title": "AA Batterien, Alkaline — 12er Pack",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Hi-Fi-Mitteltöner, Speaker für die Mittelton-Wiedergabe",
+      },
+    ],
+    "record": Object {
+      "id": 40,
+      "title": "Hi-Fi-Mitteltöner, Speaker für die Mittelton-Wiedergabe",
+    },
+  },
+]
+`;
+
+exports[`German language Equality 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": true,
+        "text": "Lightning",
+      },
+      Object {
+        "highlight": false,
+        "text": " ",
+      },
+      Object {
+        "highlight": true,
+        "text": "auf",
+      },
+      Object {
+        "highlight": false,
+        "text": " ",
+      },
+      Object {
+        "highlight": true,
+        "text": "USB",
+      },
+      Object {
+        "highlight": false,
+        "text": " ",
+      },
+      Object {
+        "highlight": true,
+        "text": "A",
+      },
+      Object {
+        "highlight": false,
+        "text": " ",
+      },
+      Object {
+        "highlight": true,
+        "text": "Kabel",
+      },
+    ],
+    "record": Object {
+      "id": 20,
+      "title": "Lightning auf USB A Kabel",
+    },
+  },
+]
+`;
+
+exports[`German language Normalization 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Hi-Fi-",
+      },
+      Object {
+        "highlight": true,
+        "text": "Mitteltö",
+      },
+      Object {
+        "highlight": false,
+        "text": "ner, Speaker für die Mittelton-Wiedergabe",
+      },
+    ],
+    "record": Object {
+      "id": 40,
+      "title": "Hi-Fi-Mitteltöner, Speaker für die Mittelton-Wiedergabe",
+    },
+  },
+]
+`;
+
+exports[`German language Normalization 2`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Hi-Fi-",
+      },
+      Object {
+        "highlight": true,
+        "text": "Mitteltö",
+      },
+      Object {
+        "highlight": false,
+        "text": "ner, Speaker für die Mittelton-Wiedergabe",
+      },
+    ],
+    "record": Object {
+      "id": 40,
+      "title": "Hi-Fi-Mitteltöner, Speaker für die Mittelton-Wiedergabe",
+    },
+  },
+]
+`;
+
+exports[`German language Normalization 3`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Hi-Fi-",
+      },
+      Object {
+        "highlight": true,
+        "text": "Mitteltö",
+      },
+      Object {
+        "highlight": false,
+        "text": "ner, Speaker für die Mittelton-Wiedergabe",
+      },
+    ],
+    "record": Object {
+      "id": 40,
+      "title": "Hi-Fi-Mitteltöner, Speaker für die Mittelton-Wiedergabe",
+    },
+  },
+]
+`;
+
+exports[`German language Partiles 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Hi-Fi-",
+      },
+      Object {
+        "highlight": true,
+        "text": "Mit",
+      },
+      Object {
+        "highlight": false,
+        "text": "teltöner, Speaker für die Mittelton-Wiedergabe",
+      },
+    ],
+    "record": Object {
+      "id": 40,
+      "title": "Hi-Fi-Mitteltöner, Speaker für die Mittelton-Wiedergabe",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Zahnbürste, ",
+      },
+      Object {
+        "highlight": true,
+        "text": "mit",
+      },
+      Object {
+        "highlight": false,
+        "text": " 3D White, Weiß",
+      },
+    ],
+    "record": Object {
+      "id": 30,
+      "title": "Zahnbürste, mit 3D White, Weiß",
+    },
+  },
+]
+`;
+
+exports[`German language Stemming 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": true,
+        "text": "AA",
+      },
+      Object {
+        "highlight": false,
+        "text": " ",
+      },
+      Object {
+        "highlight": true,
+        "text": "Batterie",
+      },
+      Object {
+        "highlight": false,
+        "text": "n, Alkaline — 12er Pack",
+      },
+    ],
+    "record": Object {
+      "id": 10,
+      "title": "AA Batterien, Alkaline — 12er Pack",
+    },
+  },
+]
+`;

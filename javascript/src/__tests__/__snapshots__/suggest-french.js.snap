@@ -1,0 +1,259 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`French language Empty input 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Brosse À Dents Électrique",
+      },
+    ],
+    "record": Object {
+      "id": 30,
+      "title": "Brosse À Dents Électrique",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Câble Lightning vers USB A",
+      },
+    ],
+    "record": Object {
+      "id": 20,
+      "title": "Câble Lightning vers USB A",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Sacs de Rangement Sous Vide",
+      },
+    ],
+    "record": Object {
+      "id": 40,
+      "title": "Sacs de Rangement Sous Vide",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Piles alcalines 1,5 V AA - Lot de 12",
+      },
+    ],
+    "record": Object {
+      "id": 10,
+      "title": "Piles alcalines 1,5 V AA - Lot de 12",
+    },
+  },
+]
+`;
+
+exports[`French language Equality 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": true,
+        "text": "Sacs",
+      },
+      Object {
+        "highlight": false,
+        "text": " ",
+      },
+      Object {
+        "highlight": true,
+        "text": "de",
+      },
+      Object {
+        "highlight": false,
+        "text": " ",
+      },
+      Object {
+        "highlight": true,
+        "text": "Rangement",
+      },
+      Object {
+        "highlight": false,
+        "text": " ",
+      },
+      Object {
+        "highlight": true,
+        "text": "Sous",
+      },
+      Object {
+        "highlight": false,
+        "text": " ",
+      },
+      Object {
+        "highlight": true,
+        "text": "Vide",
+      },
+    ],
+    "record": Object {
+      "id": 40,
+      "title": "Sacs de Rangement Sous Vide",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Piles alcalines 1,5 V AA - Lot ",
+      },
+      Object {
+        "highlight": true,
+        "text": "de",
+      },
+      Object {
+        "highlight": false,
+        "text": " 12",
+      },
+    ],
+    "record": Object {
+      "id": 10,
+      "title": "Piles alcalines 1,5 V AA - Lot de 12",
+    },
+  },
+]
+`;
+
+exports[`French language Normalization 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Brosse À Dents ",
+      },
+      Object {
+        "highlight": true,
+        "text": "Électrique",
+      },
+    ],
+    "record": Object {
+      "id": 30,
+      "title": "Brosse À Dents Électrique",
+    },
+  },
+]
+`;
+
+exports[`French language Normalization 2`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Brosse À Dents ",
+      },
+      Object {
+        "highlight": true,
+        "text": "Électrique",
+      },
+    ],
+    "record": Object {
+      "id": 30,
+      "title": "Brosse À Dents Électrique",
+    },
+  },
+]
+`;
+
+exports[`French language Partiles 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Brosse À ",
+      },
+      Object {
+        "highlight": true,
+        "text": "De",
+      },
+      Object {
+        "highlight": false,
+        "text": "nts Électrique",
+      },
+    ],
+    "record": Object {
+      "id": 30,
+      "title": "Brosse À Dents Électrique",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Sacs ",
+      },
+      Object {
+        "highlight": true,
+        "text": "de",
+      },
+      Object {
+        "highlight": false,
+        "text": " Rangement Sous Vide",
+      },
+    ],
+    "record": Object {
+      "id": 40,
+      "title": "Sacs de Rangement Sous Vide",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Piles alcalines 1,5 V AA - Lot ",
+      },
+      Object {
+        "highlight": true,
+        "text": "de",
+      },
+      Object {
+        "highlight": false,
+        "text": " 12",
+      },
+    ],
+    "record": Object {
+      "id": 10,
+      "title": "Piles alcalines 1,5 V AA - Lot de 12",
+    },
+  },
+]
+`;
+
+exports[`French language Stemming 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": true,
+        "text": "Pile",
+      },
+      Object {
+        "highlight": false,
+        "text": "s alcalines 1,5 V ",
+      },
+      Object {
+        "highlight": true,
+        "text": "AA",
+      },
+      Object {
+        "highlight": false,
+        "text": " - Lot de 12",
+      },
+    ],
+    "record": Object {
+      "id": 10,
+      "title": "Piles alcalines 1,5 V AA - Lot de 12",
+    },
+  },
+]
+`;

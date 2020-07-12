@@ -1,0 +1,178 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Russian language Empty input 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Электрическая зубная щётка",
+      },
+    ],
+    "record": Object {
+      "id": 30,
+      "title": "Электрическая зубная щётка",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Вакуумные компресионные мешки",
+      },
+    ],
+    "record": Object {
+      "id": 40,
+      "title": "Вакуумные компресионные мешки",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Кабель Lightning — USB-A",
+      },
+    ],
+    "record": Object {
+      "id": 20,
+      "title": "Кабель Lightning — USB-A",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Батарейки алкалиновые — 12 штук в упаковке",
+      },
+    ],
+    "record": Object {
+      "id": 10,
+      "title": "Батарейки алкалиновые — 12 штук в упаковке",
+    },
+  },
+]
+`;
+
+exports[`Russian language Equality 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": true,
+        "text": "Электрическая",
+      },
+      Object {
+        "highlight": false,
+        "text": " ",
+      },
+      Object {
+        "highlight": true,
+        "text": "зубная",
+      },
+      Object {
+        "highlight": false,
+        "text": " ",
+      },
+      Object {
+        "highlight": true,
+        "text": "щётка",
+      },
+    ],
+    "record": Object {
+      "id": 30,
+      "title": "Электрическая зубная щётка",
+    },
+  },
+]
+`;
+
+exports[`Russian language Normalization 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Электрическая зубная ",
+      },
+      Object {
+        "highlight": true,
+        "text": "щё",
+      },
+      Object {
+        "highlight": false,
+        "text": "тка",
+      },
+    ],
+    "record": Object {
+      "id": 30,
+      "title": "Электрическая зубная щётка",
+    },
+  },
+]
+`;
+
+exports[`Russian language Partiles 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": true,
+        "text": "В",
+      },
+      Object {
+        "highlight": false,
+        "text": "акуумные компресионные мешки",
+      },
+    ],
+    "record": Object {
+      "id": 40,
+      "title": "Вакуумные компресионные мешки",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Батарейки алкалиновые — 12 штук ",
+      },
+      Object {
+        "highlight": true,
+        "text": "в",
+      },
+      Object {
+        "highlight": false,
+        "text": " упаковке",
+      },
+    ],
+    "record": Object {
+      "id": 10,
+      "title": "Батарейки алкалиновые — 12 штук в упаковке",
+    },
+  },
+]
+`;
+
+exports[`Russian language Stemming 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Электрическая ",
+      },
+      Object {
+        "highlight": true,
+        "text": "зубн",
+      },
+      Object {
+        "highlight": false,
+        "text": "ая щётка",
+      },
+    ],
+    "record": Object {
+      "id": 30,
+      "title": "Электрическая зубная щётка",
+    },
+  },
+]
+`;

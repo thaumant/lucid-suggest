@@ -1,0 +1,210 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Portuguese language Empty input 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Escova de dentes elétrica",
+      },
+    ],
+    "record": Object {
+      "id": 30,
+      "title": "Escova de dentes elétrica",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Cabo Lightning para USB-A",
+      },
+    ],
+    "record": Object {
+      "id": 20,
+      "title": "Cabo Lightning para USB-A",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Sacos de armazenamento a vácuo",
+      },
+    ],
+    "record": Object {
+      "id": 40,
+      "title": "Sacos de armazenamento a vácuo",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Pilhas Alcalinas AA — Embalagem com 12",
+      },
+    ],
+    "record": Object {
+      "id": 10,
+      "title": "Pilhas Alcalinas AA — Embalagem com 12",
+    },
+  },
+]
+`;
+
+exports[`Portuguese language Equality 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": true,
+        "text": "Escova",
+      },
+      Object {
+        "highlight": false,
+        "text": " ",
+      },
+      Object {
+        "highlight": true,
+        "text": "de",
+      },
+      Object {
+        "highlight": false,
+        "text": " ",
+      },
+      Object {
+        "highlight": true,
+        "text": "dentes",
+      },
+      Object {
+        "highlight": false,
+        "text": " ",
+      },
+      Object {
+        "highlight": true,
+        "text": "elétrica",
+      },
+    ],
+    "record": Object {
+      "id": 30,
+      "title": "Escova de dentes elétrica",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Sacos ",
+      },
+      Object {
+        "highlight": true,
+        "text": "de",
+      },
+      Object {
+        "highlight": false,
+        "text": " armazenamento a vácuo",
+      },
+    ],
+    "record": Object {
+      "id": 40,
+      "title": "Sacos de armazenamento a vácuo",
+    },
+  },
+]
+`;
+
+exports[`Portuguese language Normalization 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Escova de dentes ",
+      },
+      Object {
+        "highlight": true,
+        "text": "elétric",
+      },
+      Object {
+        "highlight": false,
+        "text": "a",
+      },
+    ],
+    "record": Object {
+      "id": 30,
+      "title": "Escova de dentes elétrica",
+    },
+  },
+]
+`;
+
+exports[`Portuguese language Partiles 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Escova de ",
+      },
+      Object {
+        "highlight": true,
+        "text": "de",
+      },
+      Object {
+        "highlight": false,
+        "text": "ntes elétrica",
+      },
+    ],
+    "record": Object {
+      "id": 30,
+      "title": "Escova de dentes elétrica",
+    },
+  },
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Sacos ",
+      },
+      Object {
+        "highlight": true,
+        "text": "de",
+      },
+      Object {
+        "highlight": false,
+        "text": " armazenamento a vácuo",
+      },
+    ],
+    "record": Object {
+      "id": 40,
+      "title": "Sacos de armazenamento a vácuo",
+    },
+  },
+]
+`;
+
+exports[`Portuguese language Stemming 1`] = `
+Array [
+  Hit {
+    "chunks": Array [
+      Object {
+        "highlight": false,
+        "text": "Pilhas ",
+      },
+      Object {
+        "highlight": true,
+        "text": "Alcalin",
+      },
+      Object {
+        "highlight": false,
+        "text": "as AA — Embalagem com 12",
+      },
+    ],
+    "record": Object {
+      "id": 10,
+      "title": "Pilhas Alcalinas AA — Embalagem com 12",
+    },
+  },
+]
+`;
