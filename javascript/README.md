@@ -41,7 +41,7 @@ Initialize:
 import {LucidSuggest} from 'lucid-suggest/en'
 
 const suggest = new LucidSuggest()
-suggest.setRecords([
+suggest.addRecords([
     {id: 1, title: "Electric Toothbrush"},
     {id: 2, title: "Lightning to USB-C Cable"},
     {id: 3, title: "AA Alkaline Batteries"},
@@ -162,7 +162,7 @@ Optional `rating` field can be used as a tie breaker: records with greater `rati
 
 For example, let's use state population as `rating`:
 ```javascript
-suggest.setRecords([
+suggest.addRecords([
     {id: 1, rating:  3000, title: "Nevada"},
     {id: 2, rating:  8900, title: "New Jersey"},
     {id: 3, rating: 19500, title: "New York"},

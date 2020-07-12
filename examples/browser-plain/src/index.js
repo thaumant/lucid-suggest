@@ -3,7 +3,7 @@ import DATA from './e_commerce.json'
 
 document.addEventListener('DOMContentLoaded', () => {
     const suggest = new LucidSuggest()
-    suggest.setRecords(DATA)
+    suggest.addRecords(DATA)
 
     function renderHit(hit) {
         const title = hit.chunks

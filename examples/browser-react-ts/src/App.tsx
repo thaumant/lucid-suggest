@@ -5,7 +5,7 @@ import IconLoupe from './IconLoupe'
 import ListItem from './ListItem'
 
 const suggest: LucidSuggest = new LucidSuggest()
-suggest.setRecords(DATA)
+suggest.addRecords(DATA)
 
 const App: React.FC = () => {
     const [input, setInput] = useState<string>('')

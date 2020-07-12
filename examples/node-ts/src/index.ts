@@ -7,7 +7,7 @@ const CODE_RED   = '\x1b[31m'
 const CODE_BOLD  = '\x1b[1m'
 
 const suggest = new LucidSuggest
-suggest.setRecords(DATA)
+suggest.addRecords(DATA)
 
 function render(hit: Hit): string {
     return hit.chunks

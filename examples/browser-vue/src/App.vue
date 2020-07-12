@@ -36,7 +36,7 @@ import {LucidSuggest} from 'lucid-suggest/en'
 import DATA from './e_commerce.json'
 
 const suggest = new LucidSuggest()
-suggest.setRecords(DATA)
+suggest.addRecords(DATA)
 
 export default {
     name: "App",
