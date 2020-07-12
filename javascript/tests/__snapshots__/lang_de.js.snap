@@ -3,23 +3,23 @@
 exports[`German language Empty input 1`] = `
 Array [
   Object {
-    "id": 10,
-    "rating": 4,
-    "title": "AA Batterien, Alkaline — 12er Pack",
-  },
-  Object {
     "id": 20,
-    "rating": 3,
+    "rating": undefined,
     "title": "Lightning auf USB A Kabel",
   },
   Object {
     "id": 30,
-    "rating": 2,
+    "rating": undefined,
     "title": "Zahnbürste, mit 3D White, Weiß",
   },
   Object {
+    "id": 10,
+    "rating": undefined,
+    "title": "AA Batterien, Alkaline — 12er Pack",
+  },
+  Object {
     "id": 40,
-    "rating": 1,
+    "rating": undefined,
     "title": "Hi-Fi-Mitteltöner, Speaker für die Mittelton-Wiedergabe",
   },
 ]
@@ -29,7 +29,7 @@ exports[`German language Equality 1`] = `
 Array [
   Object {
     "id": 20,
-    "rating": 3,
+    "rating": undefined,
     "title": "[Lightning] [auf] [USB] [A] [Kabel]",
   },
 ]
@@ -39,7 +39,7 @@ exports[`German language Normalization 1`] = `
 Array [
   Object {
     "id": 40,
-    "rating": 1,
+    "rating": undefined,
     "title": "Hi-Fi-[Mitteltö]ner, Speaker für die Mittelton-Wiedergabe",
   },
 ]
@@ -49,7 +49,7 @@ exports[`German language Normalization 2`] = `
 Array [
   Object {
     "id": 40,
-    "rating": 1,
+    "rating": undefined,
     "title": "Hi-Fi-[Mitteltö]ner, Speaker für die Mittelton-Wiedergabe",
   },
 ]
@@ -59,12 +59,12 @@ exports[`German language Partiles 1`] = `
 Array [
   Object {
     "id": 40,
-    "rating": 1,
+    "rating": undefined,
     "title": "Hi-Fi-[Mit]teltöner, Speaker für die Mittelton-Wiedergabe",
   },
   Object {
     "id": 30,
-    "rating": 2,
+    "rating": undefined,
     "title": "Zahnbürste, [mit] 3D White, Weiß",
   },
 ]
@@ -74,7 +74,7 @@ exports[`German language Stemming 1`] = `
 Array [
   Object {
     "id": 10,
-    "rating": 4,
+    "rating": undefined,
     "title": "[AA] [Batterie]n, Alkaline — 12er Pack",
   },
 ]

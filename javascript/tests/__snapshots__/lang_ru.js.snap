@@ -3,24 +3,24 @@
 exports[`Russian language Empty input 1`] = `
 Array [
   Object {
-    "id": 10,
-    "rating": 4,
-    "title": "Батарейки алкалиновые — 12 штук в упаковке",
-  },
-  Object {
-    "id": 20,
-    "rating": 3,
-    "title": "Кабель Lightning — USB-A",
-  },
-  Object {
     "id": 30,
-    "rating": 2,
+    "rating": undefined,
     "title": "Электрическая зубная щётка",
   },
   Object {
     "id": 40,
-    "rating": 1,
+    "rating": undefined,
     "title": "Вакуумные компресионные мешки",
+  },
+  Object {
+    "id": 20,
+    "rating": undefined,
+    "title": "Кабель Lightning — USB-A",
+  },
+  Object {
+    "id": 10,
+    "rating": undefined,
+    "title": "Батарейки алкалиновые — 12 штук в упаковке",
   },
 ]
 `;
@@ -29,7 +29,7 @@ exports[`Russian language Equality 1`] = `
 Array [
   Object {
     "id": 30,
-    "rating": 2,
+    "rating": undefined,
     "title": "[Электрическая] [зубная] [щётка]",
   },
 ]
@@ -39,7 +39,7 @@ exports[`Russian language Normalization 1`] = `
 Array [
   Object {
     "id": 30,
-    "rating": 2,
+    "rating": undefined,
     "title": "Электрическая зубная [щё]тка",
   },
 ]
@@ -49,12 +49,12 @@ exports[`Russian language Partiles 1`] = `
 Array [
   Object {
     "id": 40,
-    "rating": 1,
+    "rating": undefined,
     "title": "[В]акуумные компресионные мешки",
   },
   Object {
     "id": 10,
-    "rating": 4,
+    "rating": undefined,
     "title": "Батарейки алкалиновые — 12 штук [в] упаковке",
   },
 ]
@@ -64,7 +64,7 @@ exports[`Russian language Stemming 1`] = `
 Array [
   Object {
     "id": 30,
-    "rating": 2,
+    "rating": undefined,
     "title": "Электрическая [зубн]ая щётка",
   },
 ]

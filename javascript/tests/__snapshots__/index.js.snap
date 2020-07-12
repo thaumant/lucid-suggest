@@ -3,19 +3,19 @@
 exports[`Suggest Empty input 1`] = `
 Array [
   Object {
-    "id": 10,
-    "rating": 3,
-    "title": "Hello world!",
+    "id": 30,
+    "rating": undefined,
+    "title": "-BAZZZ-",
   },
   Object {
     "id": 20,
-    "rating": 2,
+    "rating": undefined,
     "title": "Foo bar",
   },
   Object {
-    "id": 30,
-    "rating": 1,
-    "title": "-BAZZZ-",
+    "id": 10,
+    "rating": undefined,
+    "title": "Hello world!",
   },
 ]
 `;
@@ -24,7 +24,7 @@ exports[`Suggest Equality 1`] = `
 Array [
   Object {
     "id": 20,
-    "rating": 2,
+    "rating": undefined,
     "title": "[Foo] [bar]",
   },
 ]
@@ -34,7 +34,7 @@ exports[`Suggest Joined words 1`] = `
 Array [
   Object {
     "id": 20,
-    "rating": 2,
+    "rating": undefined,
     "title": "[Foo] [bar]",
   },
 ]
@@ -44,12 +44,12 @@ exports[`Suggest Prefix 1`] = `
 Array [
   Object {
     "id": 20,
-    "rating": 2,
+    "rating": undefined,
     "title": "Foo [ba]r",
   },
   Object {
     "id": 30,
-    "rating": 1,
+    "rating": undefined,
     "title": "-[BA]ZZZ-",
   },
 ]
@@ -98,7 +98,7 @@ exports[`Suggest Typos 1`] = `
 Array [
   Object {
     "id": 10,
-    "rating": 3,
+    "rating": undefined,
     "title": "[Hello] world!",
   },
 ]
@@ -108,7 +108,7 @@ exports[`Suggest Typos 2`] = `
 Array [
   Object {
     "id": 10,
-    "rating": 3,
+    "rating": undefined,
     "title": "[Hello] world!",
   },
 ]

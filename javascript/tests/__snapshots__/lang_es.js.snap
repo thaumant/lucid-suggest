@@ -3,24 +3,24 @@
 exports[`Spanish language Empty input 1`] = `
 Array [
   Object {
-    "id": 10,
-    "rating": 4,
-    "title": "Pack de 24 pilas alcalinas AA",
-  },
-  Object {
-    "id": 20,
-    "rating": 3,
-    "title": "Cable de USB A a Lightning",
+    "id": 40,
+    "rating": undefined,
+    "title": "Deshumidificador Eléctrico portátil",
   },
   Object {
     "id": 30,
-    "rating": 2,
+    "rating": undefined,
     "title": "Cepillo de dientes eléctrico",
   },
   Object {
-    "id": 40,
-    "rating": 1,
-    "title": "Deshumidificador Eléctrico portátil",
+    "id": 20,
+    "rating": undefined,
+    "title": "Cable de USB A a Lightning",
+  },
+  Object {
+    "id": 10,
+    "rating": undefined,
+    "title": "Pack de 24 pilas alcalinas AA",
   },
 ]
 `;
@@ -29,23 +29,23 @@ exports[`Spanish language Equality 1`] = `
 Array [
   Object {
     "id": 30,
-    "rating": 2,
+    "rating": undefined,
     "title": "[Cepillo] [de] [dientes] [eléctrico]",
   },
   Object {
     "id": 40,
-    "rating": 1,
+    "rating": undefined,
     "title": "Deshumidificador [Eléctrico] portátil",
   },
   Object {
-    "id": 10,
-    "rating": 4,
-    "title": "Pack [de] 24 pilas alcalinas AA",
+    "id": 20,
+    "rating": undefined,
+    "title": "Cable [de] USB A a Lightning",
   },
   Object {
-    "id": 20,
-    "rating": 3,
-    "title": "Cable [de] USB A a Lightning",
+    "id": 10,
+    "rating": undefined,
+    "title": "Pack [de] 24 pilas alcalinas AA",
   },
 ]
 `;
@@ -54,12 +54,12 @@ exports[`Spanish language Normalization 1`] = `
 Array [
   Object {
     "id": 40,
-    "rating": 1,
+    "rating": undefined,
     "title": "Deshumidificador [Eléctric]o [portá]til",
   },
   Object {
     "id": 30,
-    "rating": 2,
+    "rating": undefined,
     "title": "Cepillo de dientes [eléctric]o",
   },
 ]
@@ -69,23 +69,23 @@ exports[`Spanish language Partiles 1`] = `
 Array [
   Object {
     "id": 40,
-    "rating": 1,
+    "rating": undefined,
     "title": "[De]shumidificador Eléctrico portátil",
   },
   Object {
-    "id": 10,
-    "rating": 4,
-    "title": "Pack [de] 24 pilas alcalinas AA",
+    "id": 30,
+    "rating": undefined,
+    "title": "Cepillo [de] dientes eléctrico",
   },
   Object {
     "id": 20,
-    "rating": 3,
+    "rating": undefined,
     "title": "Cable [de] USB A a Lightning",
   },
   Object {
-    "id": 30,
-    "rating": 2,
-    "title": "Cepillo [de] dientes eléctrico",
+    "id": 10,
+    "rating": undefined,
+    "title": "Pack [de] 24 pilas alcalinas AA",
   },
 ]
 `;
@@ -94,7 +94,7 @@ exports[`Spanish language Stemming 1`] = `
 Array [
   Object {
     "id": 10,
-    "rating": 4,
+    "rating": undefined,
     "title": "Pack de 24 pilas [alcalin]as AA",
   },
 ]

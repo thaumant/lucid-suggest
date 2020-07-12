@@ -3,24 +3,24 @@
 exports[`Portuguese language Empty input 1`] = `
 Array [
   Object {
-    "id": 10,
-    "rating": 4,
-    "title": "Pilhas Alcalinas AA — Embalagem com 12",
-  },
-  Object {
-    "id": 20,
-    "rating": 3,
-    "title": "Cabo Lightning para USB-A",
-  },
-  Object {
     "id": 30,
-    "rating": 2,
+    "rating": undefined,
     "title": "Escova de dentes elétrica",
   },
   Object {
+    "id": 20,
+    "rating": undefined,
+    "title": "Cabo Lightning para USB-A",
+  },
+  Object {
     "id": 40,
-    "rating": 1,
+    "rating": undefined,
     "title": "Sacos de armazenamento a vácuo",
+  },
+  Object {
+    "id": 10,
+    "rating": undefined,
+    "title": "Pilhas Alcalinas AA — Embalagem com 12",
   },
 ]
 `;
@@ -29,12 +29,12 @@ exports[`Portuguese language Equality 1`] = `
 Array [
   Object {
     "id": 30,
-    "rating": 2,
+    "rating": undefined,
     "title": "[Escova] [de] [dentes] [elétrica]",
   },
   Object {
     "id": 40,
-    "rating": 1,
+    "rating": undefined,
     "title": "Sacos [de] armazenamento a vácuo",
   },
 ]
@@ -44,7 +44,7 @@ exports[`Portuguese language Normalization 1`] = `
 Array [
   Object {
     "id": 30,
-    "rating": 2,
+    "rating": undefined,
     "title": "Escova de dentes [elétric]a",
   },
 ]
@@ -54,12 +54,12 @@ exports[`Portuguese language Partiles 1`] = `
 Array [
   Object {
     "id": 30,
-    "rating": 2,
+    "rating": undefined,
     "title": "Escova de [de]ntes elétrica",
   },
   Object {
     "id": 40,
-    "rating": 1,
+    "rating": undefined,
     "title": "Sacos [de] armazenamento a vácuo",
   },
 ]
@@ -69,7 +69,7 @@ exports[`Portuguese language Stemming 1`] = `
 Array [
   Object {
     "id": 10,
-    "rating": 4,
+    "rating": undefined,
     "title": "Pilhas [Alcalin]as AA — Embalagem com 12",
   },
 ]

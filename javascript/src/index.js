@@ -36,10 +36,9 @@ export class LucidSuggest {
 
     addRecords(records) {
         return this.setup(wasm => {
-            records = setRatings(records)
             for (const record of records) {
                 const {id, title, rating} = record
-                wasm.add_record(this.id, id, title, rating)
+                wasm.add_record(this.id, id, title, rating || 0)
                 this.records.set(id, record)
             }
         })
@@ -106,11 +105,4 @@ function toChunks(title) {
         }
     }
     return chunks
-}
-
-
-function setRatings(records) {
-    return records.some(r => r.rating != null && r.rating > 0)
-        ? records.map(r => ({...r, rating: r.rating > 0 ? r.rating : 0}))
-        : records.map((r, i) => ({...r, rating: records.length - i}))
 }
