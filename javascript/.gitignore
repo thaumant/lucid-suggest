@@ -1,13 +1,13 @@
-node_modules
-tmp
-dist
-build
-src/wasm.js
+/node_modules
+/tmp
+/dist
+/build
+/src/wasm.js
 
 # build
-lang
-tokenization
-index.js
-index.d.ts
-wasm.js
-wasm.d.ts
+/lang
+/tokenization
+/index.js
+/index.d.ts
+/wasm.js
+/wasm.d.ts
