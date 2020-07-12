@@ -194,6 +194,8 @@ await suggest.search("ne")
 
 ## Bundle sizes
 
+Note that base64-encoded Wasm source constitutes the bulk of a bundle. Minifiers don't affect it, but gzip compresses it well.
+
 | lang | size | gzipped |
 | :--- | ---: | ------: |
 | de   | 200K |     79K |
@@ -207,6 +209,8 @@ await suggest.search("ne")
 ## Performance
 
 LucidSuggest works best with shorter sentences, like shopping items or book titles. Using longer texts, like articles or movie descriptions, may lead to performance regressions and generally poor user experience.
+
+LucidSuggest can handle large dataset. For example, for 10000 records, each containing 4-8 common English words, you can expect a typical search to take about 1 ms, so you can simply call it at every keystroke without using throttling or Web Workers.
 
 Below are the detailed performance measurements, obtained using Node.js 14.3, Intel Core i7 (I7-9750H) 2.6 GHz.
 
