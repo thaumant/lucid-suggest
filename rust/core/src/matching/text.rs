@@ -1,13 +1,12 @@
 use std::cmp::Ordering::{Equal, Less};
 use std::cell::RefCell;
-use fnv::{FnvHashMap as HashMap};
 use crate::tokenization::{Word, TextRef};
 use super::WordMatch;
 use super::word::word_match;
 
 thread_local! {
-    static RMATCHES: RefCell<HashMap<usize, WordMatch>> = RefCell::new(HashMap::with_capacity_and_hasher(10, Default::default()));
-    static QMATCHES: RefCell<HashMap<usize, WordMatch>> = RefCell::new(HashMap::with_capacity_and_hasher(10, Default::default()));
+    static RMATCHES: RefCell<Vec<Option<WordMatch>>> = RefCell::new(Vec::with_capacity(20));
+    static QMATCHES: RefCell<Vec<Option<WordMatch>>> = RefCell::new(Vec::with_capacity(20));
 }
 
 
@@ -18,27 +17,32 @@ pub fn text_match(rtext: &TextRef, qtext: &TextRef) -> (Vec<WordMatch>, Vec<Word
         let qmatches = &mut *qcell.borrow_mut();
         rmatches.clear();
         qmatches.clear();
+        rmatches.resize(rtext.words.len(), None);
+        qmatches.resize(qtext.words.len(), None);
 
         for qword in qtext.words.iter() {
-            if qmatches.contains_key(&qword.offset) { continue; }
+            if qmatches[qword.offset].is_some() { continue; }
             let qword = qword.to_view(qtext);
 
             let mut candidate: Option<(WordMatch, WordMatch)> = None;
 
             for rword in rtext.words.iter() {
-                if rmatches.contains_key(&rword.offset) { continue; }
+                if rmatches[rword.offset].is_some() { continue; }
                 let rword = rword.to_view(rtext);
                 let mut stop = false;
 
                 None.or_else(|| {
                         let rnext = rtext.words.get(rword.offset + 1)?.to_view(rtext);
                         if qword.len() < rword.len() + rword.dist(&rnext) { return None; }
-                        if rmatches.contains_key(&(rword.offset + 1)) { return None; }
+                        if rmatches.get(rword.offset + 1)?.is_some() { return None; }
                         let (rmatch,  qmatch)  = word_match(&rword.join(&rnext), &qword)?;
                         let (rmatch1, rmatch2) = rmatch.split(&rword, &rnext)?;
-                        rmatches.insert(rmatch1.offset, rmatch1);
-                        rmatches.insert(rmatch2.offset, rmatch2);
-                        qmatches.insert(qmatch.offset,  qmatch);
+                        let roffset1 = rmatch1.offset;
+                        let roffset2 = rmatch2.offset;
+                        let qoffset  = qmatch.offset;
+                        rmatches[roffset1] = Some(rmatch1);
+                        rmatches[roffset2] = Some(rmatch2);
+                        qmatches[qoffset]  = Some(qmatch);
                         candidate.take();
                         stop = true;
                         Some(())
@@ -46,12 +50,15 @@ pub fn text_match(rtext: &TextRef, qtext: &TextRef) -> (Vec<WordMatch>, Vec<Word
                     .or_else(|| {
                         let qnext = qtext.words.get(qword.offset + 1)?.to_view(qtext);
                         if rword.len() < qword.len() + qword.dist(&qnext) { return None; }
-                        if qmatches.contains_key(&(qword.offset + 1)) { return None; }
+                        if qmatches.get(qword.offset + 1)?.is_some() { return None; }
                         let (rmatch,  qmatch)  = word_match(&rword, &qword.join(&qnext))?;
                         let (qmatch1, qmatch2) = qmatch.split(&qword, &qnext)?;
-                        rmatches.insert(rmatch.offset,  rmatch);
-                        qmatches.insert(qmatch1.offset, qmatch1);
-                        qmatches.insert(qmatch2.offset, qmatch2);
+                        let roffset        = rmatch.offset;
+                        let qoffset1       = qmatch1.offset;
+                        let qoffset2       = qmatch2.offset;
+                        rmatches[roffset]  = Some(rmatch);
+                        qmatches[qoffset1] = Some(qmatch1);
+                        qmatches[qoffset2] = Some(qmatch2);
                         candidate.take();
                         stop = true;
                         Some(())
@@ -82,17 +89,17 @@ pub fn text_match(rtext: &TextRef, qtext: &TextRef) -> (Vec<WordMatch>, Vec<Word
             }
 
             if let Some((rmatch, qmatch)) = candidate {
-                rmatches.insert(rmatch.offset, rmatch);
-                qmatches.insert(qmatch.offset, qmatch);
+                let roffset       = rmatch.offset;
+                let qoffset       = qmatch.offset;
+                rmatches[roffset] = Some(rmatch);
+                qmatches[qoffset] = Some(qmatch);
             }
         }
 
-        let mut rmatches = rmatches.drain().map(|(_, m)| m).collect::<Vec<_>>();
-        let mut qmatches = qmatches.drain().map(|(_, m)| m).collect::<Vec<_>>();
-        rmatches.sort_by(|m1, m2| m1.offset.cmp(&m2.offset));
-        qmatches.sort_by(|m1, m2| m1.offset.cmp(&m2.offset));
+        let rmatches2 = rmatches.drain(..).filter_map(|m| m).collect::<Vec<_>>();
+        let qmatches2 = qmatches.drain(..).filter_map(|m| m).collect::<Vec<_>>();
 
-        (rmatches, qmatches)
+        (rmatches2, qmatches2)
     }) })
 }
 

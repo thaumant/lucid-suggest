@@ -64,29 +64,26 @@ impl DamerauLevenshtein {
         for (i1, &ch1) in chars1.iter().enumerate() {
             let mut l2 = 0;
 
+            let cost1        = unsafe { *costs1.get_unchecked(i1) };
+            let double1      = i1 > 0 && ch1 == unsafe { *chars1.get_unchecked(i1 - 1) };
+            let cost_double1 = if double1 { COST_DOUBLE } else { COST_DEFAULT };
+            let cost_del     = fmin(cost1, cost_double1);
+
             for (i2, &ch2) in chars2.iter().enumerate() {
                 let l1 = *last_i1.get(&ch2).unwrap_or(&0);
 
-                let cost1      = costs1[i1];
-                let cost2      = costs2[i2];
-                let double1    = i1 > 0 && ch1 == unsafe { *chars1.get_unchecked(i1 - 1) };
-                let double2    = i2 > 0 && ch2 == unsafe { *chars2.get_unchecked(i2 - 1) };
-                let double1    = if double1 { COST_DOUBLE } else { COST_DEFAULT };
-                let double2    = if double2 { COST_DOUBLE } else { COST_DEFAULT };
+                let cost2        = unsafe { *costs2.get_unchecked(i2) };
+                let double2      = i2 > 0 && ch2 == unsafe { *chars2.get_unchecked(i2 - 1) };
+                let cost_double2 = if double2 { COST_DOUBLE } else { COST_DEFAULT };
+                let cost_add     = fmin(cost2, cost_double2);
+                let cost_sub     = if ch1 == ch2 { 0.0 } else { fmax(cost1, cost2) };
+                let cost_trans   = COST_TRANS * ((i1 - l1) + (i2 - l2) + 1) as f64;
 
-                let dist_add   = unsafe { dists.get_unchecked(i1 + 2, i2 + 1) }
-                               + f64::min(cost2, double2);
-
-                let dist_del   = unsafe { dists.get_unchecked(i1 + 1, i2 + 2) }
-                               + f64::min(cost1, double1);
-
-                let dist_sub   = unsafe { dists.get_unchecked(i1 + 1, i2 + 1) }
-                               + f64::max(cost1, cost2) * ((ch1 != ch2) as usize) as f64;
-
-                let dist_trans = unsafe { dists.get_unchecked(l1, l2) }
-                               + COST_TRANS * ((i1 - l1) + (i2 - l2) + 1) as f64;
-
-                let dist       = min4(dist_add, dist_del, dist_sub, dist_trans);
+                let dist_add   = cost_add   + unsafe { dists.get_unchecked(i1 + 2, i2 + 1) };
+                let dist_del   = cost_del   + unsafe { dists.get_unchecked(i1 + 1, i2 + 2) };
+                let dist_sub   = cost_sub   + unsafe { dists.get_unchecked(i1 + 1, i2 + 1) };
+                let dist_trans = cost_trans + unsafe { dists.get_unchecked(l1, l2) };
+                let dist       = fmin4(dist_add, dist_del, dist_sub, dist_trans);
 
                 unsafe {
                     dists.set_unchecked(i1 + 2, i2 + 2, dist);
@@ -102,11 +99,23 @@ impl DamerauLevenshtein {
 }
 
 
-fn min4(x1: f64, x2: f64, x3: f64, x4: f64) -> f64 {
-    f64::min(
-        f64::min(x1, x2),
-        f64::min(x3, x4),
-    )
+#[inline]
+fn fmin4(x1: f64, x2: f64, x3: f64, x4: f64) -> f64 {
+    let mut min = x1;
+    if x2 < min { min = x2; }
+    if x3 < min { min = x3; }
+    if x4 < min { min = x4; }
+    min
+}
+
+#[inline]
+fn fmin(x1: f64, x2: f64) -> f64 {
+    if x1 < x2 { x1 } else { x2 }
+}
+
+#[inline]
+fn fmax(x1: f64, x2: f64) -> f64 {
+    if x1 > x2 { x1 } else { x2 }
 }
 
 
